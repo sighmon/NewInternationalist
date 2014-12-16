@@ -1,0 +1,11 @@
+.gradle
+/local.properties
+/.idea/*
+/.idea/workspace.xml
+/.idea/libraries
+.DS_Store
+/build
+*.iml
+*.apk
+manifest-merger-release-report.txt
+config.properties
