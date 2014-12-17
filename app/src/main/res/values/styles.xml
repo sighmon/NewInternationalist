@@ -1,8 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
-        <!-- Customize your theme here. -->
+    <style name="AppTheme" parent="Theme.AppCompat">
+
+        <!-- NI app branding color for the app bar -->
+        <item name="colorPrimaryDark">@drawable/statusbar</item>
+        <!-- Actionbar -->
+        <item name="colorPrimary">@drawable/actionbar_background</item>
+
     </style>
+
+    <!-- Colours -->
+    <drawable name="statusbar">#D32F2F</drawable>
+    <drawable name="actionbar_background">#F44336</drawable>
 
 </resources>
