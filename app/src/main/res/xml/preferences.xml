@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory
+        android:title="@string/preferences_category_title"
+        android:key="pref_key_storage_settings">
+        <SwitchPreference
+            android:key="allow_anonymous_statistics"
+            android:title="@string/allow_anonymous_statistics_switch"
+            android:defaultValue="true" />
+        <SwitchPreference
+            android:key="show_help_alerts"
+            android:title="@string/show_help_alerts_switch"
+            android:defaultValue="true" />
+    </PreferenceCategory>
+</PreferenceScreen>
