@@ -1,17 +1,22 @@
 package au.com.newint.newinternationalist;
 
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.media.Image;
 import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.ActionBar;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.os.Build;
+import android.widget.ImageButton;
 
 
 public class MainActivity extends ActionBarActivity {
@@ -29,7 +34,6 @@ public class MainActivity extends ActionBarActivity {
         // Set default preferences, the false on the end means it's only set once
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -74,6 +78,29 @@ public class MainActivity extends ActionBarActivity {
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_main, container, false);
+
+            // Set a listener for home_cover taps
+            ImageButton home_cover = (ImageButton) rootView.findViewById(R.id.home_cover);
+            home_cover.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    // TODO: Handle cover clicked
+                    Log.i("Cover", "Cover was clicked!");
+
+                }
+            });
+
+            home_cover.setOnTouchListener(new View.OnTouchListener() {
+                @Override
+                public boolean onTouch(View v, MotionEvent event) {
+                    if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                        Log.i("Cover", "Cover was tapped!");
+                        // TODO: Add overlay to signify tap down
+                    }
+                    return false;
+                }
+            });
+
             return rootView;
         }
     }
