@@ -2,6 +2,7 @@ package au.com.newint.newinternationalist;
 
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Color;
 import android.media.Image;
 import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBarActivity;
@@ -80,7 +81,7 @@ public class MainActivity extends ActionBarActivity {
             View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
             // Set a listener for home_cover taps
-            ImageButton home_cover = (ImageButton) rootView.findViewById(R.id.home_cover);
+            final ImageButton home_cover = (ImageButton) rootView.findViewById(R.id.home_cover);
             home_cover.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
@@ -93,11 +94,20 @@ public class MainActivity extends ActionBarActivity {
             home_cover.setOnTouchListener(new View.OnTouchListener() {
                 @Override
                 public boolean onTouch(View v, MotionEvent event) {
-                    if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                        Log.i("Cover", "Cover was tapped!");
-                        // TODO: Add overlay to signify tap down
+                    switch (event.getAction()) {
+                        case MotionEvent.ACTION_DOWN:
+                            // Set 50% black overlay
+                            home_cover.setColorFilter(Color.argb(125, 0, 0, 0));
+                            return false;
+                        case MotionEvent.ACTION_UP:
+                            // Remove overlay
+                            home_cover.setColorFilter(null);
+                            return false;
+                        default:
+                            // Remove overlay
+                            home_cover.setColorFilter(null);
+                            return false;
                     }
-                    return false;
                 }
             });
 
