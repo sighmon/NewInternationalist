@@ -17,7 +17,11 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.os.Build;
+import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.TextView;
+
+import org.w3c.dom.Text;
 
 
 public class MainActivity extends ActionBarActivity {
@@ -78,7 +82,7 @@ public class MainActivity extends ActionBarActivity {
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
-            View rootView = inflater.inflate(R.layout.fragment_main, container, false);
+            final View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
             // Set a listener for home_cover taps
             final ImageButton home_cover = (ImageButton) rootView.findViewById(R.id.home_cover);
@@ -108,6 +112,16 @@ public class MainActivity extends ActionBarActivity {
                             home_cover.setColorFilter(null);
                             return false;
                     }
+                }
+            });
+
+            // Set a listener for Magazine Archive taps
+            Button magazineArchive = (Button) rootView.findViewById(R.id.home_magazine_archive);
+            magazineArchive.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent magazineArchiveIntent = new Intent(rootView.getContext(), MagazineArchiveActivity.class);
+                    startActivity(magazineArchiveIntent);
                 }
             });
 

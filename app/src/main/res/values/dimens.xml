@@ -6,4 +6,6 @@
     <dimen name="home_cover_height">354dp</dimen>
     <dimen name="home_cover_margin_top">20dp</dimen>
     <dimen name="home_cover_margin_bottom">20dp</dimen>
+    <dimen name="magazine_archive_column_width">100dp</dimen>
+    <dimen name="archive_cover_width">100dp</dimen>
 </resources>
