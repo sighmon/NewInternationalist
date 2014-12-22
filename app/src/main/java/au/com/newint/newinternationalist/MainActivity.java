@@ -1,7 +1,10 @@
 package au.com.newint.newinternationalist;
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.AssetManager;
+import android.content.res.Resources;
 import android.graphics.Color;
 import android.media.Image;
 import android.preference.PreferenceManager;
@@ -23,6 +26,16 @@ import android.widget.TextView;
 
 import org.w3c.dom.Text;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Properties;
+
 
 public class MainActivity extends ActionBarActivity {
 
@@ -38,6 +51,17 @@ public class MainActivity extends ActionBarActivity {
 
         // Set default preferences, the false on the end means it's only set once
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
+
+        // Log which SITE_URL we are using for debugging
+        String siteURL = (String) getVariableFromConfig(this, "SITE_URL");
+        Log.i("SITE_URL", siteURL);
+
+        // Get issues.json and save/update our cache
+        try {
+            updateIssuesJsonFromRails(siteURL);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -126,5 +150,41 @@ public class MainActivity extends ActionBarActivity {
 
             return rootView;
         }
+    }
+
+    private static String getVariableFromConfig(Context context, String string) {
+        Resources resources = context.getResources();
+        AssetManager assetManager = resources.getAssets();
+        try {
+            InputStream inputStream = assetManager.open("config.properties");
+            Properties properties = new Properties();
+            properties.load(inputStream);
+            return properties.getProperty(string);
+        } catch (IOException e) {
+            Log.e("Properties","Failed to open config property file");
+            return null;
+        }
+    }
+
+    private static void updateIssuesJsonFromRails(String siteURL) throws IOException {
+        URL url = new URL(siteURL + "issues.json");
+        HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+        try {
+            InputStream inputStream = new BufferedInputStream(urlConnection.getInputStream());
+            readStream(inputStream);
+        }
+        finally {
+            urlConnection.disconnect();
+        }
+    }
+
+    private static void readStream(InputStream inputStream) throws IOException {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
+        StringBuilder result = new StringBuilder();
+        String line;
+        while((line = reader.readLine()) != null) {
+            result.append(line);
+        }
+        Log.i("issues.json", result.toString());
     }
 }
