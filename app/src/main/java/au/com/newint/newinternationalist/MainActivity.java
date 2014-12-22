@@ -57,8 +57,8 @@ public class MainActivity extends ActionBarActivity {
             case R.id.action_settings:
                 // Log.i("Menu", "Settings pressed.");
                 // Settings intent
-                Intent intent = new Intent(this, SettingsActivity.class);
-                startActivity(intent);
+                Intent settingsIntent = new Intent(this, SettingsActivity.class);
+                startActivity(settingsIntent);
                 return true;
             case R.id.about:
                 // Log.i("Menu", "About pressed.");
@@ -108,8 +108,7 @@ public class MainActivity extends ActionBarActivity {
                             home_cover.setColorFilter(null);
                             return false;
                         default:
-                            // Remove overlay
-                            home_cover.setColorFilter(null);
+                            // Do nothing
                             return false;
                     }
                 }

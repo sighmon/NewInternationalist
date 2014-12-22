@@ -17,7 +17,7 @@
     <string name="allow_anonymous_statistics_switch">Allow anonymous statistics</string>
     <string name="show_help_alerts_switch">Show help alerts</string>
 
-    <!-- Home -->
+    <!-- About -->
     <string name="action_about">About</string>
     <string name="title_activity_about">About</string>
     <string name="version_title">Version</string>
