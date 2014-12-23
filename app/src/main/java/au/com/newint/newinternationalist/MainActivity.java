@@ -208,6 +208,7 @@ public class MainActivity extends ActionBarActivity {
             // TODO: Save to cache
 
             // TODO: Update home cover if there's a new issue
+//            new DownloadMagazineCover().execute(coverURL, issueID);
         }
     }
 
@@ -308,5 +309,16 @@ public class MainActivity extends ActionBarActivity {
         }
         reader.endObject();
         return magazine;
+    }
+
+    private class DownloadMagazineCover extends AsyncTask<URL, Integer, String> {
+
+        @Override
+        protected String doInBackground(URL... params) {
+
+            // TODO: Finish downloading the cover
+
+            return null;
+        }
     }
 }
