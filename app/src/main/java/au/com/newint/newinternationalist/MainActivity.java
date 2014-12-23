@@ -1,17 +1,17 @@
 package au.com.newint.newinternationalist;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.graphics.Color;
-import android.media.Image;
+import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBarActivity;
-import android.support.v7.app.ActionBar;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.util.JsonReader;
+import android.util.JsonToken;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -19,22 +19,25 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.os.Build;
 import android.widget.Button;
 import android.widget.ImageButton;
-import android.widget.TextView;
-
-import org.w3c.dom.Text;
+import android.widget.Toast;
 
 import java.io.BufferedInputStream;
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 import java.util.Properties;
+import java.util.TimeZone;
 
 
 public class MainActivity extends ActionBarActivity {
@@ -53,15 +56,17 @@ public class MainActivity extends ActionBarActivity {
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
 
         // Log which SITE_URL we are using for debugging
-        String siteURL = (String) getVariableFromConfig(this, "SITE_URL");
-        Log.i("SITE_URL", siteURL);
-
-        // Get issues.json and save/update our cache
+        String siteURLString = (String) getVariableFromConfig(this, "SITE_URL");
+        Log.i("SITE_URL", siteURLString);
+        URL siteURL = null;
         try {
-            updateIssuesJsonFromRails(siteURL);
-        } catch (IOException e) {
+            siteURL = new URL(siteURLString + "issues.json");
+        } catch (MalformedURLException e) {
             e.printStackTrace();
         }
+
+        // Get issues.json and save/update our cache
+        new DownloadIssuesJSONTask().execute(siteURL);
     }
 
     @Override
@@ -166,25 +171,141 @@ public class MainActivity extends ActionBarActivity {
         }
     }
 
-    private static void updateIssuesJsonFromRails(String siteURL) throws IOException {
-        URL url = new URL(siteURL + "issues.json");
-        HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
-        try {
-            InputStream inputStream = new BufferedInputStream(urlConnection.getInputStream());
-            readStream(inputStream);
+    private class DownloadIssuesJSONTask extends AsyncTask<URL, Integer, List> {
+
+        @Override
+        protected List doInBackground(URL... urls) {
+
+            List magazineIssues = new ArrayList();
+
+            HttpURLConnection urlConnection = null;
+            try {
+                urlConnection = (HttpURLConnection) urls[0].openConnection();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            try {
+                assert urlConnection != null;
+                InputStream inputStream = new BufferedInputStream(urlConnection.getInputStream());
+                magazineIssues = readJsonStream(inputStream);
+                Log.i("Issues.json", String.format("JSON has %1$d magazines.", magazineIssues.size()));
+            }
+            catch(Exception e) {
+                Log.e("http", e.toString());
+            }
+            finally {
+                assert urlConnection != null;
+                urlConnection.disconnect();
+            }
+
+            return magazineIssues;
         }
-        finally {
-            urlConnection.disconnect();
+
+        @Override
+        protected void onPostExecute(List list) {
+            super.onPostExecute(list);
+
+            // TODO: Save to cache
+
+            // TODO: Update home cover
         }
     }
 
-    private static void readStream(InputStream inputStream) throws IOException {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
-        StringBuilder result = new StringBuilder();
-        String line;
-        while((line = reader.readLine()) != null) {
-            result.append(line);
+    public List readJsonStream(InputStream in) throws IOException {
+        JsonReader reader = new JsonReader(new InputStreamReader(in, "UTF-8"));
+        try {
+            return readMagazineArray(reader);
         }
-        Log.i("issues.json", result.toString());
+        finally {
+            reader.close();
+        }
+    }
+
+    public List readMagazineArray(JsonReader reader) throws IOException {
+        List magazines = new ArrayList();
+
+        reader.beginArray();
+        while (reader.hasNext()) {
+            magazines.add(readMagazine(reader));
+        }
+        reader.endArray();
+        return magazines;
+    }
+
+    public List readMagazine(JsonReader reader) throws IOException {
+
+        List magazine = new ArrayList();
+
+        int id = 0;
+        int number = 0;
+        Date releaseDate = null;
+        String title = null;
+        String coverURL = null;
+        String editorsName = null;
+        String editorsPhoto = null;
+        String editorsLetterHTML = null;
+
+        // TODO: Finish this...
+
+        reader.beginObject();
+        while (reader.hasNext()) {
+            String fieldName = reader.nextName();
+            if (fieldName.equals("id")) {
+                id = reader.nextInt();
+                magazine.add(id);
+            } else if (fieldName.equals("number")) {
+                number = reader.nextInt();
+                magazine.add(number);
+            } else if (fieldName.equals("release")) {
+                String releaseString = reader.nextString();
+                DateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+                inputFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
+                try {
+                    releaseDate = inputFormat.parse(releaseString);
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+                magazine.add(releaseDate);
+            } else if (fieldName.equals("title")) {
+                title = reader.nextString();
+                magazine.add(title);
+            } else if (fieldName.equals("cover")) {
+                // Get URL from next node.
+                reader.beginObject();
+                while (reader.hasNext()) {
+                    String coverFieldName = reader.nextName();
+                    if (coverFieldName.equals("url")) {
+                        coverURL = reader.nextString();
+                        magazine.add(coverURL);
+                    } else {
+                        reader.skipValue();
+                    }
+                }
+                reader.endObject();
+            } else if (fieldName.equals("editors_name")) {
+                editorsName = reader.nextString();
+                magazine.add(editorsName);
+            } else if (fieldName.equals("editors_photo")) {
+                // Get URL from next node.
+                reader.beginObject();
+                while (reader.hasNext()) {
+                    String editorsFieldName = reader.nextName();
+                    if (editorsFieldName.equals("url")) {
+                        coverURL = reader.nextString();
+                        magazine.add(coverURL);
+                    } else {
+                        reader.skipValue();
+                    }
+                }
+                reader.endObject();
+            } else if (fieldName.equals("editors_letter_html")) {
+                editorsLetterHTML = reader.nextString();
+                magazine.add(editorsLetterHTML);
+            } else {
+                reader.skipValue();
+            }
+        }
+        reader.endObject();
+        return magazine;
     }
 }
