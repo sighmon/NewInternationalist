@@ -207,7 +207,7 @@ public class MainActivity extends ActionBarActivity {
 
             // TODO: Save to cache
 
-            // TODO: Update home cover
+            // TODO: Update home cover if there's a new issue
         }
     }
 
@@ -236,16 +236,17 @@ public class MainActivity extends ActionBarActivity {
 
         List magazine = new ArrayList();
 
+        // NOTE: List order is the same as the JSON feed.
+        // PIX: can List order be trusted in Android?
+
+        String coverURL = null;
+        String editorsLetterHTML = null;
+        String editorsName = null;
+        String editorsPhoto = null;
         int id = 0;
         int number = 0;
         Date releaseDate = null;
         String title = null;
-        String coverURL = null;
-        String editorsName = null;
-        String editorsPhoto = null;
-        String editorsLetterHTML = null;
-
-        // TODO: Finish this...
 
         reader.beginObject();
         while (reader.hasNext()) {
@@ -291,8 +292,8 @@ public class MainActivity extends ActionBarActivity {
                 while (reader.hasNext()) {
                     String editorsFieldName = reader.nextName();
                     if (editorsFieldName.equals("url")) {
-                        coverURL = reader.nextString();
-                        magazine.add(coverURL);
+                        editorsPhoto = reader.nextString();
+                        magazine.add(editorsPhoto);
                     } else {
                         reader.skipValue();
                     }
