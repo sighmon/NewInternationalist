@@ -24,9 +24,14 @@ import android.widget.ImageButton;
 import android.widget.Toast;
 
 import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -188,7 +193,7 @@ public class MainActivity extends ActionBarActivity {
                 assert urlConnection != null;
                 InputStream inputStream = new BufferedInputStream(urlConnection.getInputStream());
                 magazineIssues = readJsonStream(inputStream);
-                Log.i("Issues.json", String.format("JSON has %1$d magazines.", magazineIssues.size()));
+//                Log.i("www", String.format("Rails JSON has %1$d magazines.", magazineIssues.size()));
             }
             catch(Exception e) {
                 Log.e("http", e.toString());
@@ -205,7 +210,41 @@ public class MainActivity extends ActionBarActivity {
         protected void onPostExecute(List list) {
             super.onPostExecute(list);
 
-            // TODO: Save to cache
+            String filename = "issues.json";
+            File file = new File(getApplicationContext().getFilesDir(), filename);
+
+            if (file.exists()) {
+                // Read in file
+                FileInputStream fileInputStream;
+                ArrayList<Object> listOnFilesystem = new ArrayList();
+                try {
+                    fileInputStream = openFileInput(filename);
+                    ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
+                    listOnFilesystem = (ArrayList<Object>) objectInputStream.readObject();
+                    objectInputStream.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+                Log.i("JSON", String.format("Filesystem: %1$d magazines, Rails: %2$d magazines", listOnFilesystem.size(), list.size()));
+
+                Log.i("1st Magazine", String.format("Filesystem: %1$s, Rails: %2$s", listOnFilesystem.get(0), list.get(0)));
+
+                // Compare downloaded list to list on file
+                if (listOnFilesystem.get(0).equals(list.get(0))) {
+                    Log.i("JSON", "No new issues.");
+                } else {
+                    // New issues, so write new file
+                    Log.i("JSON", "New issues, writing to filesystem");
+                    writeListArrayToFilesystem(list, filename);
+
+                    // Download new cover
+//                    new DownloadMagazineCover().execute(coverURL, issueID);
+                }
+            } else {
+                // Create new file
+                writeListArrayToFilesystem(list, filename);
+            }
 
             // TODO: Update home cover if there's a new issue
 //            new DownloadMagazineCover().execute(coverURL, issueID);
@@ -311,12 +350,26 @@ public class MainActivity extends ActionBarActivity {
         return magazine;
     }
 
+    private void writeListArrayToFilesystem(List list, String filename) {
+        FileOutputStream outputStream;
+        try {
+            outputStream = openFileOutput(filename, Context.MODE_PRIVATE);
+            ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
+            objectOutputStream.writeObject(list);
+            objectOutputStream.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     private class DownloadMagazineCover extends AsyncTask<URL, Integer, String> {
 
         @Override
         protected String doInBackground(URL... params) {
 
             // TODO: Finish downloading the cover
+
+
 
             return null;
         }
