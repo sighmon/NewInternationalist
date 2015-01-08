@@ -23,15 +23,24 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.Writer;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -40,6 +49,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.TimeZone;
@@ -176,12 +186,12 @@ public class MainActivity extends ActionBarActivity {
         }
     }
 
-    private class DownloadIssuesJSONTask extends AsyncTask<URL, Integer, List> {
+    private class DownloadIssuesJSONTask extends AsyncTask<URL, Integer, JsonArray> {
 
         @Override
-        protected List doInBackground(URL... urls) {
+        protected JsonArray doInBackground(URL... urls) {
 
-            List magazineIssues = new ArrayList();
+            JsonArray rootArray = null;
 
             HttpURLConnection urlConnection = null;
             try {
@@ -191,9 +201,17 @@ public class MainActivity extends ActionBarActivity {
             }
             try {
                 assert urlConnection != null;
-                InputStream inputStream = new BufferedInputStream(urlConnection.getInputStream());
-                magazineIssues = readJsonStream(inputStream);
-//                Log.i("www", String.format("Rails JSON has %1$d magazines.", magazineIssues.size()));
+                InputStream urlConnectionInputStream = urlConnection.getInputStream();
+                BufferedInputStream bufferedInputStream = new BufferedInputStream(urlConnectionInputStream);
+                InputStreamReader inputStreamReader = new InputStreamReader(bufferedInputStream);
+                JsonElement root = new JsonParser().parse(inputStreamReader);
+                rootArray = root.getAsJsonArray();
+
+                //JsonObject firstMagazine = root.getAsJsonArray().get(0).getAsJsonObject();
+                //Log.i("firstMagazine", firstMagazine.toString());
+
+                //Log.i("toJson", new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create().toJson(firstMagazine));
+
             }
             catch(Exception e) {
                 Log.e("http", e.toString());
@@ -203,164 +221,47 @@ public class MainActivity extends ActionBarActivity {
                 urlConnection.disconnect();
             }
 
-            return magazineIssues;
+            return rootArray;
         }
 
         @Override
-        protected void onPostExecute(List list) {
-            super.onPostExecute(list);
+        protected void onPostExecute(JsonArray magazines) {
+            super.onPostExecute(magazines);
 
-            String filename = "issues.json";
-            File file = new File(getApplicationContext().getFilesDir(), filename);
+            Iterator<JsonElement> i = magazines.iterator();
+            while(i.hasNext()) {
+                JsonObject jsonObject = i.next().getAsJsonObject();
 
-            if (file.exists()) {
-                // Read in file
-                FileInputStream fileInputStream;
-                ArrayList<Object> listOnFilesystem = new ArrayList();
+                int id = jsonObject.get("id").getAsInt();
+
+                File dir = new File(getApplicationContext().getFilesDir(),Integer.toString(id));
+                dir.mkdirs();
+
+                File file = new File(dir,"issue.json");
+
                 try {
-                    fileInputStream = openFileInput(filename);
-                    ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
-                    listOnFilesystem = (ArrayList<Object>) objectInputStream.readObject();
-                    objectInputStream.close();
-                } catch (Exception e) {
+                    Writer w = new FileWriter(file);
+
+                    new Gson().toJson(jsonObject,w);
+
+                    w.close();
+                } catch (IOException e) {
                     e.printStackTrace();
                 }
 
-                Log.i("JSON", String.format("Filesystem: %1$d magazines, Rails: %2$d magazines", listOnFilesystem.size(), list.size()));
 
-                Log.i("1st Magazine", String.format("Filesystem: %1$s, Rails: %2$s", listOnFilesystem.get(0), list.get(0)));
-
-                // Compare downloaded list to list on file
-                if (listOnFilesystem.get(0).equals(list.get(0))) {
-                    Log.i("JSON", "No new issues.");
-                } else {
-                    // New issues, so write new file
-                    Log.i("JSON", "New issues, writing to filesystem");
-                    writeListArrayToFilesystem(list, filename);
-
-                    // Download new cover
-//                    new DownloadMagazineCover().execute(coverURL, issueID);
-                }
-            } else {
-                // Create new file
-                writeListArrayToFilesystem(list, filename);
             }
+
+
+
 
             // TODO: Update home cover if there's a new issue
 //            new DownloadMagazineCover().execute(coverURL, issueID);
         }
     }
 
-    public List readJsonStream(InputStream in) throws IOException {
-        JsonReader reader = new JsonReader(new InputStreamReader(in, "UTF-8"));
-        try {
-            return readMagazineArray(reader);
-        }
-        finally {
-            reader.close();
-        }
-    }
 
-    public List readMagazineArray(JsonReader reader) throws IOException {
-        List magazines = new ArrayList();
 
-        reader.beginArray();
-        while (reader.hasNext()) {
-            magazines.add(readMagazine(reader));
-        }
-        reader.endArray();
-        return magazines;
-    }
-
-    public List readMagazine(JsonReader reader) throws IOException {
-
-        List magazine = new ArrayList();
-
-        // NOTE: List order is the same as the JSON feed.
-        // PIX: can List order be trusted in Android?
-
-        String coverURL = null;
-        String editorsLetterHTML = null;
-        String editorsName = null;
-        String editorsPhoto = null;
-        int id = 0;
-        int number = 0;
-        Date releaseDate = null;
-        String title = null;
-
-        reader.beginObject();
-        while (reader.hasNext()) {
-            String fieldName = reader.nextName();
-            if (fieldName.equals("id")) {
-                id = reader.nextInt();
-                magazine.add(id);
-            } else if (fieldName.equals("number")) {
-                number = reader.nextInt();
-                magazine.add(number);
-            } else if (fieldName.equals("release")) {
-                String releaseString = reader.nextString();
-                DateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
-                inputFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
-                try {
-                    releaseDate = inputFormat.parse(releaseString);
-                } catch (ParseException e) {
-                    e.printStackTrace();
-                }
-                magazine.add(releaseDate);
-            } else if (fieldName.equals("title")) {
-                title = reader.nextString();
-                magazine.add(title);
-            } else if (fieldName.equals("cover")) {
-                // Get URL from next node.
-                reader.beginObject();
-                while (reader.hasNext()) {
-                    String coverFieldName = reader.nextName();
-                    if (coverFieldName.equals("url")) {
-                        coverURL = reader.nextString();
-                        magazine.add(coverURL);
-                    } else {
-                        reader.skipValue();
-                    }
-                }
-                reader.endObject();
-            } else if (fieldName.equals("editors_name")) {
-                editorsName = reader.nextString();
-                magazine.add(editorsName);
-            } else if (fieldName.equals("editors_photo")) {
-                // Get URL from next node.
-                reader.beginObject();
-                while (reader.hasNext()) {
-                    String editorsFieldName = reader.nextName();
-                    if (editorsFieldName.equals("url")) {
-                        editorsPhoto = reader.nextString();
-                        magazine.add(editorsPhoto);
-                    } else {
-                        reader.skipValue();
-                    }
-                }
-                reader.endObject();
-            } else if (fieldName.equals("editors_letter_html")) {
-                editorsLetterHTML = reader.nextString();
-                magazine.add(editorsLetterHTML);
-            } else {
-                reader.skipValue();
-            }
-        }
-        reader.endObject();
-        return magazine;
-    }
-
-    private void writeListArrayToFilesystem(List list, String filename) {
-        FileOutputStream outputStream;
-        try {
-            outputStream = openFileOutput(filename, Context.MODE_PRIVATE);
-            ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream);
-            objectOutputStream.writeObject(list);
-            objectOutputStream.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 
     private class DownloadMagazineCover extends AsyncTask<URL, Integer, String> {
 
