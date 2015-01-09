@@ -54,8 +54,9 @@ import java.util.List;
 import java.util.Properties;
 import java.util.TimeZone;
 
-
 public class MainActivity extends ActionBarActivity {
+
+    static boolean newIssueAvailable = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -135,7 +136,6 @@ public class MainActivity extends ActionBarActivity {
                 public void onClick(View view) {
                     // TODO: Handle cover clicked
                     Log.i("Cover", "Cover was clicked!");
-
                 }
             });
 
@@ -228,40 +228,46 @@ public class MainActivity extends ActionBarActivity {
         protected void onPostExecute(JsonArray magazines) {
             super.onPostExecute(magazines);
 
-            Iterator<JsonElement> i = magazines.iterator();
-            while(i.hasNext()) {
-                JsonObject jsonObject = i.next().getAsJsonObject();
+            // TODO: Check for new issues.
 
-                int id = jsonObject.get("id").getAsInt();
+            int newestOnlineIssueRailsId = magazines.get(0).getAsJsonObject().get("id").getAsInt();
+            int newestFilesystemIssueRailsId = 95; // TODO: Publisher.latestIssue().get("id").getAsInt();
 
-                File dir = new File(getApplicationContext().getFilesDir(),Integer.toString(id));
-                dir.mkdirs();
-
-                File file = new File(dir,"issue.json");
-
-                try {
-                    Writer w = new FileWriter(file);
-
-                    new Gson().toJson(jsonObject,w);
-
-                    w.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
+            if (magazines.size() > Publisher.numberOfIssues()) {
+                // There are more issues online. Now check if it's a new or backissue
+                if (newestOnlineIssueRailsId != newestFilesystemIssueRailsId) {
+                    // It's a new issue
+                    Log.i("NewIssue", String.format("New issue available! Id: %1$d", newestOnlineIssueRailsId));
+                    newIssueAvailable = true;
                 }
 
+                Iterator<JsonElement> i = magazines.iterator();
+                while(i.hasNext()) {
+                    JsonObject jsonObject = i.next().getAsJsonObject();
 
+                    int id = jsonObject.get("id").getAsInt();
+
+                    File dir = new File(getApplicationContext().getFilesDir(),Integer.toString(id));
+                    dir.mkdirs();
+
+                    File file = new File(dir,"issue.json");
+
+                    try {
+                        Writer w = new FileWriter(file);
+
+                        new Gson().toJson(jsonObject,w);
+
+                        w.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+                // TODO: Update home cover if there's a new issue
+//                new DownloadMagazineCover().execute(coverURL, issueID);
             }
-
-
-
-
-            // TODO: Update home cover if there's a new issue
-//            new DownloadMagazineCover().execute(coverURL, issueID);
         }
     }
-
-
-
 
     private class DownloadMagazineCover extends AsyncTask<URL, Integer, String> {
 
