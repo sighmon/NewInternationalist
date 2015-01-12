@@ -4,7 +4,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.media.Image;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBarActivity;
@@ -30,6 +33,8 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+import org.apache.http.util.ByteArrayBuffer;
+
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -40,6 +45,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -231,7 +237,8 @@ public class MainActivity extends ActionBarActivity {
             // Check for new issues.
 
             if (magazines != null) {
-                int newestOnlineIssueRailsId = magazines.get(0).getAsJsonObject().get("id").getAsInt();
+                JsonObject newestOnlineIssue = magazines.get(0).getAsJsonObject();
+                int newestOnlineIssueRailsId = newestOnlineIssue.get("id").getAsInt();
                 int magazinesOnFilesystem = Publisher.numberOfIssues(getApplicationContext());
 
                 Log.i("Filesystem", String.format("Number of issues on filesystem: %1$d", magazinesOnFilesystem));
@@ -269,23 +276,85 @@ public class MainActivity extends ActionBarActivity {
                         }
                     }
 
-                    // TODO: Update home cover if there's a new issue
-//                    new DownloadMagazineCover().execute(coverURL, issueID);
+                    // Update home cover if there's a new issue
+                    String coverURLString = newestOnlineIssue.get("cover").getAsJsonObject().get("url").getAsString();
+                    String issueID = newestOnlineIssue.get("id").getAsString();
+                    URL coverURL = null;
+                    try {
+                        coverURL = new URL(coverURLString);
+                    } catch (MalformedURLException e) {
+                        e.printStackTrace();
+                    }
+                    ArrayList<Object> coverParams = new ArrayList<Object>();
+                    // Send URL object and Rails issueID to request Cover.
+                    coverParams.add(coverURL);
+                    coverParams.add(issueID);
+                    new DownloadMagazineCover().execute(coverParams);
                 }
             }
         }
     }
 
-    private class DownloadMagazineCover extends AsyncTask<URL, Integer, String> {
+    private class DownloadMagazineCover extends AsyncTask<ArrayList, Integer, File> {
 
         @Override
-        protected String doInBackground(URL... params) {
+        protected File doInBackground(ArrayList... params) {
 
-            // TODO: Finish downloading the cover
+            // Download the cover
 
+            File coverFile = null;
 
+            URL coverURL = (URL) params[0].get(0);
+            String issueID = (String) params[0].get(1);
 
-            return null;
+            HttpURLConnection urlConnection = null;
+            try {
+                urlConnection = (HttpURLConnection) coverURL.openConnection();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            try {
+                assert urlConnection != null;
+                InputStream urlConnectionInputStream = urlConnection.getInputStream();
+                BufferedInputStream bufferedInputStream = new BufferedInputStream(urlConnectionInputStream);
+
+                ByteArrayBuffer byteArrayBuffer = new ByteArrayBuffer(6000);
+                int current = 0;
+                while ((current = bufferedInputStream.read()) != -1) {
+                    byteArrayBuffer.append((byte) current);
+                }
+
+                File dir = new File(getApplicationContext().getFilesDir(), issueID);
+                String[] pathComponents = coverURL.getPath().split("/");
+                String filename = pathComponents[pathComponents.length - 1];
+
+                coverFile = new File(dir,filename);
+
+                // Save to filesystem
+                FileOutputStream fos = new FileOutputStream(coverFile);
+                fos.write(byteArrayBuffer.toByteArray());
+                fos.flush();
+                fos.close();
+            }
+            catch(Exception e) {
+                Log.e("http", e.toString());
+            }
+            finally {
+                assert urlConnection != null;
+                urlConnection.disconnect();
+            }
+
+            return coverFile;
+        }
+
+        @Override
+        protected void onPostExecute(File coverFile) {
+            super.onPostExecute(coverFile);
+
+            // Load coverFile to screen.
+            final ImageButton home_cover = (ImageButton) findViewById(R.id.home_cover);
+            Bitmap coverBitmap = BitmapFactory.decodeFile(coverFile.getPath());
+            home_cover.setImageBitmap(coverBitmap);
         }
     }
 }
