@@ -7,14 +7,11 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
-import android.media.Image;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
-import android.util.JsonReader;
-import android.util.JsonToken;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -24,10 +21,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
-import android.widget.Toast;
+import android.widget.ImageView;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -37,32 +33,22 @@ import org.apache.http.util.ByteArrayBuffer;
 
 import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Properties;
-import java.util.TimeZone;
 
 public class MainActivity extends ActionBarActivity {
 
-    static boolean newIssueAvailable = false;
+    static boolean newIssueAdded = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -251,7 +237,7 @@ public class MainActivity extends ActionBarActivity {
                     if (newestOnlineIssueRailsId != newestFilesystemIssueRailsId) {
                         // It's a new issue
                         Log.i("NewIssue", String.format("New issue available! Id: %1$d", newestOnlineIssueRailsId));
-                        newIssueAvailable = true;
+                        newIssueAdded = true;
                     }
 
                     Iterator<JsonElement> i = magazines.iterator();
@@ -275,24 +261,30 @@ public class MainActivity extends ActionBarActivity {
                             e.printStackTrace();
                         }
                     }
-
-                    // Update home cover if there's a new issue
-                    String coverURLString = newestOnlineIssue.get("cover").getAsJsonObject().get("url").getAsString();
-                    String issueID = newestOnlineIssue.get("id").getAsString();
-                    URL coverURL = null;
-                    try {
-                        coverURL = new URL(coverURLString);
-                    } catch (MalformedURLException e) {
-                        e.printStackTrace();
+                    
+                    if (newIssueAdded) {
+                        // Download the new cover if there's a new issue
+                        String coverURLString = newestOnlineIssue.get("cover").getAsJsonObject().get("url").getAsString();
+                        String issueID = newestOnlineIssue.get("id").getAsString();
+                        new DownloadMagazineCover().execute(buildCoverParams(coverURLString, issueID));
                     }
-                    ArrayList<Object> coverParams = new ArrayList<Object>();
-                    // Send URL object and Rails issueID to request Cover.
-                    coverParams.add(coverURL);
-                    coverParams.add(issueID);
-                    new DownloadMagazineCover().execute(coverParams);
                 }
             }
         }
+    }
+
+    private static ArrayList buildCoverParams(String coverURLString, String issueID) {
+        URL coverURL = null;
+        try {
+            coverURL = new URL(coverURLString);
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+        ArrayList<Object> coverParams = new ArrayList<>();
+        // Send URL object and Rails issueID to request Cover.
+        coverParams.add(coverURL);
+        coverParams.add(issueID);
+        return coverParams;
     }
 
     private class DownloadMagazineCover extends AsyncTask<ArrayList, Integer, File> {
@@ -352,9 +344,12 @@ public class MainActivity extends ActionBarActivity {
             super.onPostExecute(coverFile);
 
             // Load coverFile to screen.
+            // TODO: Fix crash where user rotates screen before image has appeared.
+
             final ImageButton home_cover = (ImageButton) findViewById(R.id.home_cover);
             Bitmap coverBitmap = BitmapFactory.decodeFile(coverFile.getPath());
             home_cover.setImageBitmap(coverBitmap);
+            home_cover.setScaleType(ImageView.ScaleType.FIT_CENTER);
         }
     }
 }
