@@ -228,43 +228,50 @@ public class MainActivity extends ActionBarActivity {
         protected void onPostExecute(JsonArray magazines) {
             super.onPostExecute(magazines);
 
-            // TODO: Check for new issues.
+            // Check for new issues.
 
-            int newestOnlineIssueRailsId = magazines.get(0).getAsJsonObject().get("id").getAsInt();
-            int newestFilesystemIssueRailsId = 95; // TODO: Publisher.latestIssue().get("id").getAsInt();
+            if (magazines != null) {
+                int newestOnlineIssueRailsId = magazines.get(0).getAsJsonObject().get("id").getAsInt();
+                int magazinesOnFilesystem = Publisher.numberOfIssues(getApplicationContext());
 
-            if (magazines.size() > Publisher.numberOfIssues()) {
-                // There are more issues online. Now check if it's a new or backissue
-                if (newestOnlineIssueRailsId != newestFilesystemIssueRailsId) {
-                    // It's a new issue
-                    Log.i("NewIssue", String.format("New issue available! Id: %1$d", newestOnlineIssueRailsId));
-                    newIssueAvailable = true;
-                }
+                Log.i("Filesystem", String.format("Number of issues on filesystem: %1$d", magazinesOnFilesystem));
+                Log.i("www", String.format("Number of issues on www: %1$d", magazines.size()));
 
-                Iterator<JsonElement> i = magazines.iterator();
-                while(i.hasNext()) {
-                    JsonObject jsonObject = i.next().getAsJsonObject();
+                if (magazines.size() > magazinesOnFilesystem) {
+                    // There are more issues online. Now check if it's a new or backissue
+                    int newestFilesystemIssueRailsId = Publisher.latestIssue(getApplicationContext()).get("id").getAsInt();
 
-                    int id = jsonObject.get("id").getAsInt();
-
-                    File dir = new File(getApplicationContext().getFilesDir(),Integer.toString(id));
-                    dir.mkdirs();
-
-                    File file = new File(dir,"issue.json");
-
-                    try {
-                        Writer w = new FileWriter(file);
-
-                        new Gson().toJson(jsonObject,w);
-
-                        w.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
+                    if (newestOnlineIssueRailsId != newestFilesystemIssueRailsId) {
+                        // It's a new issue
+                        Log.i("NewIssue", String.format("New issue available! Id: %1$d", newestOnlineIssueRailsId));
+                        newIssueAvailable = true;
                     }
-                }
 
-                // TODO: Update home cover if there's a new issue
-//                new DownloadMagazineCover().execute(coverURL, issueID);
+                    Iterator<JsonElement> i = magazines.iterator();
+                    while(i.hasNext()) {
+                        JsonObject jsonObject = i.next().getAsJsonObject();
+
+                        int id = jsonObject.get("id").getAsInt();
+
+                        File dir = new File(getApplicationContext().getFilesDir(),Integer.toString(id));
+                        dir.mkdirs();
+
+                        File file = new File(dir,"issue.json");
+
+                        try {
+                            Writer w = new FileWriter(file);
+
+                            new Gson().toJson(jsonObject,w);
+
+                            w.close();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+
+                    // TODO: Update home cover if there's a new issue
+//                    new DownloadMagazineCover().execute(coverURL, issueID);
+                }
             }
         }
     }
