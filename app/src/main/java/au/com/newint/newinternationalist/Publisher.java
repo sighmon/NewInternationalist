@@ -1,16 +1,31 @@
 package au.com.newint.newinternationalist;
 
+import android.app.Activity;
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.os.AsyncTask;
 import android.util.Log;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+import org.apache.http.util.ByteArrayBuffer;
+
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -26,7 +41,6 @@ public class Publisher {
     public static int numberOfIssues(Context context) {
 
         // Count the number of instances of issue.json
-
         return getAllIssueJsonFromFilesystem(context).size();
     }
 
@@ -56,7 +70,7 @@ public class Publisher {
     }
 
     public static JsonObject latestIssue(Context context) {
-        // TODO: return latest issue.json
+        // Return latest issue.json
         ArrayList issuesJsonArray = getAllIssueJsonFromFilesystem(context);
 
         JsonObject newestIssue = null;
@@ -106,5 +120,112 @@ public class Publisher {
             e.printStackTrace();
         }
         return releaseDate;
+    }
+
+    public static File getCoverForIssue(ArrayList coverParams) {
+        // TODO: Search filesystem for file. Download if need be.
+
+        File coverFile = null;
+
+        URL coverURL = (URL) coverParams.get(0);
+        String issueID = (String) coverParams.get(1);
+        Context context = (Context) coverParams.get(2);
+
+        File dir = new File(context.getFilesDir(), issueID);
+        String[] pathComponents = coverURL.getPath().split("/");
+        String filename = pathComponents[pathComponents.length - 1];
+
+        coverFile = new File(dir,filename);
+
+        if (coverFile.exists()) {
+            // Return cover from filesystem
+            return coverFile;
+        } else {
+            // Download cover
+            new DownloadMagazineCover().execute(coverParams);
+            return null;
+        }
+    }
+
+    public static ArrayList buildCoverParams(String coverURLString, String issueID, Context context) {
+        URL coverURL = null;
+        try {
+            coverURL = new URL(coverURLString);
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+        ArrayList<Object> coverParams = new ArrayList<>();
+        // Send URL object and Rails issueID to request Cover.
+        coverParams.add(coverURL);
+        coverParams.add(issueID);
+        coverParams.add(context);
+        return coverParams;
+    }
+
+    public static class DownloadMagazineCover extends AsyncTask<ArrayList, Integer, File> {
+
+        @Override
+        protected File doInBackground(ArrayList... params) {
+
+            // Download the cover
+
+            File coverFile = null;
+
+            URL coverURL = (URL) params[0].get(0);
+            String issueID = (String) params[0].get(1);
+            Context context = (Context) params[0].get(2);
+
+            HttpURLConnection urlConnection = null;
+            try {
+                urlConnection = (HttpURLConnection) coverURL.openConnection();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            try {
+                assert urlConnection != null;
+                InputStream urlConnectionInputStream = urlConnection.getInputStream();
+                BufferedInputStream bufferedInputStream = new BufferedInputStream(urlConnectionInputStream);
+
+                ByteArrayBuffer byteArrayBuffer = new ByteArrayBuffer(6000);
+                int current = 0;
+                while ((current = bufferedInputStream.read()) != -1) {
+                    byteArrayBuffer.append((byte) current);
+                }
+
+                File dir = new File(context.getFilesDir(), issueID);
+                String[] pathComponents = coverURL.getPath().split("/");
+                String filename = pathComponents[pathComponents.length - 1];
+
+                coverFile = new File(dir,filename);
+
+                // Save to filesystem
+                FileOutputStream fos = new FileOutputStream(coverFile);
+                fos.write(byteArrayBuffer.toByteArray());
+                fos.flush();
+                fos.close();
+            }
+            catch(Exception e) {
+                Log.e("http", e.toString());
+            }
+            finally {
+                assert urlConnection != null;
+                urlConnection.disconnect();
+            }
+
+            return coverFile;
+        }
+
+        @Override
+        protected void onPostExecute(File coverFile) {
+            super.onPostExecute(coverFile);
+
+            // TODO: Tell view to ask for cover again.
+
+            // Load coverFile to screen.
+//        final ImageButton home_cover = (ImageButton) context.findViewById(R.id.home_cover);
+//        Bitmap coverBitmap = BitmapFactory.decodeFile(coverFile.getPath());
+//        home_cover.setImageBitmap(coverBitmap);
+//        home_cover.setScaleType(ImageView.ScaleType.FIT_CENTER);
+        }
     }
 }

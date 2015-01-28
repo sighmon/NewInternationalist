@@ -66,6 +66,8 @@ public class MainActivity extends ActionBarActivity {
         // Log which SITE_URL we are using for debugging
         String siteURLString = (String) getVariableFromConfig(this, "SITE_URL");
         Log.i("SITE_URL", siteURLString);
+
+        // Get issues.json and save/update our cache
         URL siteURL = null;
         try {
             siteURL = new URL(siteURLString + "issues.json");
@@ -73,7 +75,6 @@ public class MainActivity extends ActionBarActivity {
             e.printStackTrace();
         }
 
-        // Get issues.json and save/update our cache
         new DownloadIssuesJSONTask().execute(siteURL);
     }
 
@@ -120,6 +121,24 @@ public class MainActivity extends ActionBarActivity {
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
             final View rootView = inflater.inflate(R.layout.fragment_main, container, false);
+
+            // Display latest cover if available on filesystem
+            JsonObject latestIssueOnFileJson = Publisher.latestIssue(rootView.getContext());
+            if (latestIssueOnFileJson != null) {
+                String coverURLString = latestIssueOnFileJson.get("cover").getAsJsonObject().get("url").getAsString();
+                String issueID = latestIssueOnFileJson.get("id").getAsString();
+                File coverFile = Publisher.getCoverForIssue(Publisher.buildCoverParams(coverURLString, issueID, rootView.getContext()));
+
+                if (coverFile != null && coverFile.exists()) {
+                    // Show cover
+                    ImageButton home_cover = (ImageButton) rootView.findViewById(R.id.home_cover);
+                    if (home_cover != null) {
+                        Bitmap coverBitmap = BitmapFactory.decodeFile(coverFile.getPath());
+                        home_cover.setImageBitmap(coverBitmap);
+                        home_cover.setScaleType(ImageView.ScaleType.FIT_CENTER);
+                    }
+                }
+            }
 
             // Set a listener for home_cover taps
             final ImageButton home_cover = (ImageButton) rootView.findViewById(R.id.home_cover);
@@ -232,12 +251,15 @@ public class MainActivity extends ActionBarActivity {
 
                 if (magazines.size() > magazinesOnFilesystem) {
                     // There are more issues online. Now check if it's a new or backissue
-                    int newestFilesystemIssueRailsId = Publisher.latestIssue(getApplicationContext()).get("id").getAsInt();
+                    JsonObject latestIssue = Publisher.latestIssue(getApplicationContext());
+                    if (latestIssue != null) {
+                        int newestFilesystemIssueRailsId = latestIssue.get("id").getAsInt();
 
-                    if (newestOnlineIssueRailsId != newestFilesystemIssueRailsId) {
-                        // It's a new issue
-                        Log.i("NewIssue", String.format("New issue available! Id: %1$d", newestOnlineIssueRailsId));
-                        newIssueAdded = true;
+                        if (newestOnlineIssueRailsId != newestFilesystemIssueRailsId) {
+                            // It's a new issue
+                            Log.i("NewIssue", String.format("New issue available! Id: %1$d", newestOnlineIssueRailsId));
+                            newIssueAdded = true;
+                        }
                     }
 
                     Iterator<JsonElement> i = magazines.iterator();
@@ -266,90 +288,20 @@ public class MainActivity extends ActionBarActivity {
                         // Download the new cover if there's a new issue
                         String coverURLString = newestOnlineIssue.get("cover").getAsJsonObject().get("url").getAsString();
                         String issueID = newestOnlineIssue.get("id").getAsString();
-                        new DownloadMagazineCover().execute(buildCoverParams(coverURLString, issueID));
+                        File coverFile = Publisher.getCoverForIssue(Publisher.buildCoverParams(coverURLString, issueID, getApplicationContext()));
+
+                        if (coverFile.exists()) {
+                            // Show cover
+                            ImageButton home_cover = (ImageButton) findViewById(R.id.home_cover);
+                            if (home_cover != null) {
+                                Bitmap coverBitmap = BitmapFactory.decodeFile(coverFile.getPath());
+                                home_cover.setImageBitmap(coverBitmap);
+                                home_cover.setScaleType(ImageView.ScaleType.FIT_CENTER);
+                            }
+                        }
                     }
                 }
             }
-        }
-    }
-
-    private static ArrayList buildCoverParams(String coverURLString, String issueID) {
-        URL coverURL = null;
-        try {
-            coverURL = new URL(coverURLString);
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        }
-        ArrayList<Object> coverParams = new ArrayList<>();
-        // Send URL object and Rails issueID to request Cover.
-        coverParams.add(coverURL);
-        coverParams.add(issueID);
-        return coverParams;
-    }
-
-    private class DownloadMagazineCover extends AsyncTask<ArrayList, Integer, File> {
-
-        @Override
-        protected File doInBackground(ArrayList... params) {
-
-            // Download the cover
-
-            File coverFile = null;
-
-            URL coverURL = (URL) params[0].get(0);
-            String issueID = (String) params[0].get(1);
-
-            HttpURLConnection urlConnection = null;
-            try {
-                urlConnection = (HttpURLConnection) coverURL.openConnection();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            try {
-                assert urlConnection != null;
-                InputStream urlConnectionInputStream = urlConnection.getInputStream();
-                BufferedInputStream bufferedInputStream = new BufferedInputStream(urlConnectionInputStream);
-
-                ByteArrayBuffer byteArrayBuffer = new ByteArrayBuffer(6000);
-                int current = 0;
-                while ((current = bufferedInputStream.read()) != -1) {
-                    byteArrayBuffer.append((byte) current);
-                }
-
-                File dir = new File(getApplicationContext().getFilesDir(), issueID);
-                String[] pathComponents = coverURL.getPath().split("/");
-                String filename = pathComponents[pathComponents.length - 1];
-
-                coverFile = new File(dir,filename);
-
-                // Save to filesystem
-                FileOutputStream fos = new FileOutputStream(coverFile);
-                fos.write(byteArrayBuffer.toByteArray());
-                fos.flush();
-                fos.close();
-            }
-            catch(Exception e) {
-                Log.e("http", e.toString());
-            }
-            finally {
-                assert urlConnection != null;
-                urlConnection.disconnect();
-            }
-
-            return coverFile;
-        }
-
-        @Override
-        protected void onPostExecute(File coverFile) {
-            super.onPostExecute(coverFile);
-
-            // Load coverFile to screen.
-            // TODO: Fix crash where user rotates screen before image has appeared.
-
-            final ImageButton home_cover = (ImageButton) findViewById(R.id.home_cover);
-            Bitmap coverBitmap = BitmapFactory.decodeFile(coverFile.getPath());
-            home_cover.setImageBitmap(coverBitmap);
-            home_cover.setScaleType(ImageView.ScaleType.FIT_CENTER);
         }
     }
 }
