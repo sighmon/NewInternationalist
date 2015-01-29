@@ -103,6 +103,7 @@ public class Publisher {
             e.printStackTrace();
         }
 
+
         if (root != null) {
             return root.getAsJsonObject();
         } else {
@@ -184,13 +185,6 @@ public class Publisher {
             try {
                 assert urlConnection != null;
                 InputStream urlConnectionInputStream = urlConnection.getInputStream();
-                BufferedInputStream bufferedInputStream = new BufferedInputStream(urlConnectionInputStream);
-
-                ByteArrayBuffer byteArrayBuffer = new ByteArrayBuffer(6000);
-                int current = 0;
-                while ((current = bufferedInputStream.read()) != -1) {
-                    byteArrayBuffer.append((byte) current);
-                }
 
                 File dir = new File(context.getFilesDir(), issueID);
                 String[] pathComponents = coverURL.getPath().split("/");
@@ -200,8 +194,13 @@ public class Publisher {
 
                 // Save to filesystem
                 FileOutputStream fos = new FileOutputStream(coverFile);
-                fos.write(byteArrayBuffer.toByteArray());
-                fos.flush();
+
+                byte[] buffer = new byte[8192];
+                int bytesRead;
+                while ((bytesRead = urlConnectionInputStream.read(buffer,0,buffer.length)) != -1) {
+                    fos.write(buffer,0,bytesRead);
+                }
+
                 fos.close();
             }
             catch(Exception e) {
