@@ -50,6 +50,16 @@ public class MainActivity extends ActionBarActivity {
 
     static boolean newIssueAdded = false;
 
+    Cache<JsonObject> IssuesJSONCache;
+
+    public MainActivity() {
+        super();
+
+        IssuesJSONCache = new Cache<JsonObject>();
+
+        IssuesJSONCache.addMethod...
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -183,7 +193,7 @@ public class MainActivity extends ActionBarActivity {
         }
     }
 
-    private static String getVariableFromConfig(Context context, String string) {
+    public static String getVariableFromConfig(Context context, String string) {
         Resources resources = context.getResources();
         AssetManager assetManager = resources.getAssets();
         try {
