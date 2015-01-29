@@ -14,6 +14,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.http.util.ByteArrayBuffer;
 
 import java.io.BufferedInputStream;
@@ -195,11 +196,7 @@ public class Publisher {
                 // Save to filesystem
                 FileOutputStream fos = new FileOutputStream(coverFile);
 
-                byte[] buffer = new byte[8192];
-                int bytesRead;
-                while ((bytesRead = urlConnectionInputStream.read(buffer,0,buffer.length)) != -1) {
-                    fos.write(buffer,0,bytesRead);
-                }
+                IOUtils.copy(urlConnectionInputStream, fos);
 
                 fos.close();
             }
