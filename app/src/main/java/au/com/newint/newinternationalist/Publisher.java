@@ -135,14 +135,15 @@ public class Publisher {
         return releaseDate;
     }
 
-    public static File getCoverForIssue(ArrayList coverParams) {
+    public static File getCoverForIssue(JsonObject issue, Context context) {
         // TODO: Search filesystem for file. Download if need be.
 
         File coverFile = null;
 
+        ArrayList coverParams = buildCoverParams(issue, context);
+
         URL coverURL = (URL) coverParams.get(0);
         String issueID = (String) coverParams.get(1);
-        Context context = (Context) coverParams.get(2);
 
         File dir = new File(context.getFilesDir(), issueID);
         String[] pathComponents = coverURL.getPath().split("/");
@@ -160,7 +161,11 @@ public class Publisher {
         }
     }
 
-    public static ArrayList buildCoverParams(String coverURLString, String issueID, Context context) {
+    public static ArrayList buildCoverParams(JsonObject issue, Context context) {
+
+        String coverURLString = issue.get("cover").getAsJsonObject().get("url").getAsString();
+        String issueID = issue.get("id").getAsString();
+
         URL coverURL = null;
         try {
             coverURL = new URL(coverURLString);

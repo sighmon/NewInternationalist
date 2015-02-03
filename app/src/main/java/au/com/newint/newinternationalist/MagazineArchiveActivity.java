@@ -2,6 +2,8 @@ package au.com.newint.newinternationalist;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
@@ -17,6 +19,13 @@ import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.ListAdapter;
 import android.widget.Toast;
+
+import com.google.gson.JsonObject;
+
+import org.json.JSONObject;
+
+import java.io.File;
+import java.util.ArrayList;
 
 
 public class MagazineArchiveActivity extends ActionBarActivity {
@@ -65,10 +74,15 @@ public class MagazineArchiveActivity extends ActionBarActivity {
         public MagazineArchiveFragment() {
         }
 
+        ArrayList magazines = null;
+
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
             final View rootView = inflater.inflate(R.layout.fragment_magazine_archive, container, false);
+
+            // Get Magazines
+            magazines = Publisher.getAllIssueJsonFromFilesystem(rootView.getContext());
 
             // Setup the GridView
             GridView gridview = (GridView) rootView.findViewById(R.id.magazineArchiveGridView);
@@ -76,7 +90,9 @@ public class MagazineArchiveActivity extends ActionBarActivity {
 
             gridview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
-                    Toast.makeText(rootView.getContext(), "" + position, Toast.LENGTH_SHORT).show();
+                    // TODO: On tap, move to magazine table of contents
+                    String magazineTitle = Publisher.parseIssueJson(magazines.get(position)).get("title").getAsString();
+                    Toast.makeText(rootView.getContext(), magazineTitle, Toast.LENGTH_SHORT).show();
                 }
             });
 
@@ -91,7 +107,8 @@ public class MagazineArchiveActivity extends ActionBarActivity {
             }
 
             public int getCount() {
-                return mThumbIds.length;
+
+                return Publisher.numberOfIssues(mContext);
             }
 
             public Object getItem(int position) {
@@ -122,24 +139,20 @@ public class MagazineArchiveActivity extends ActionBarActivity {
                     imageView = (ImageView) convertView;
                 }
 
-                imageView.setImageResource(mThumbIds[position]);
+                // Get/set the cover for this view.
+                if (magazines != null) {
+                    JsonObject issue = Publisher.parseIssueJson(magazines.get(position));
+                    // TODO: Get cover thumb from cache
+                    File coverFile = Publisher.getCoverForIssue(issue, mContext);
+                    if (coverFile != null && coverFile.exists()) {
+                        Bitmap coverBitmap = BitmapFactory.decodeFile(coverFile.getPath());
+                        imageView.setImageBitmap(coverBitmap);
+//                        imageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
+                    }
+                }
+
                 return imageView;
             }
-
-            // references to our images
-            private Integer[] mThumbIds = {
-                    R.drawable.home_cover, R.drawable.home_cover,
-                    R.drawable.home_cover, R.drawable.home_cover,
-                    R.drawable.home_cover, R.drawable.home_cover,
-                    R.drawable.home_cover, R.drawable.home_cover,
-                    R.drawable.home_cover, R.drawable.home_cover,
-                    R.drawable.home_cover, R.drawable.home_cover,
-                    R.drawable.home_cover, R.drawable.home_cover,
-                    R.drawable.home_cover, R.drawable.home_cover,
-                    R.drawable.home_cover, R.drawable.home_cover,
-                    R.drawable.home_cover, R.drawable.home_cover,
-                    R.drawable.home_cover, R.drawable.home_cover
-            };
         }
     }
 }

@@ -143,9 +143,7 @@ public class MainActivity extends ActionBarActivity {
             // Display latest cover if available on filesystem
             JsonObject latestIssueOnFileJson = Publisher.latestIssue(rootView.getContext());
             if (latestIssueOnFileJson != null) {
-                String coverURLString = latestIssueOnFileJson.get("cover").getAsJsonObject().get("url").getAsString();
-                String issueID = latestIssueOnFileJson.get("id").getAsString();
-                File coverFile = Publisher.getCoverForIssue(Publisher.buildCoverParams(coverURLString, issueID, rootView.getContext()));
+                File coverFile = Publisher.getCoverForIssue(latestIssueOnFileJson, rootView.getContext());
 
                 if (coverFile != null && coverFile.exists()) {
                     // Show cover
@@ -304,9 +302,7 @@ public class MainActivity extends ActionBarActivity {
                     
                     if (newIssueAdded || magazinesOnFilesystem == 0) {
                         // Download the new cover if there's a new issue
-                        String coverURLString = newestOnlineIssue.get("cover").getAsJsonObject().get("url").getAsString();
-                        String issueID = newestOnlineIssue.get("id").getAsString();
-                        File coverFile = Publisher.getCoverForIssue(Publisher.buildCoverParams(coverURLString, issueID, getApplicationContext()));
+                        File coverFile = Publisher.getCoverForIssue(newestOnlineIssue, getApplicationContext());
 
                         if (coverFile != null && coverFile.exists()) {
                             // Show cover
