@@ -163,6 +163,8 @@ public class MainActivity extends ActionBarActivity {
                 public void onClick(View view) {
                     // TODO: Handle cover clicked
                     Log.i("Cover", "Cover was clicked!");
+                    Intent tableOfContentsIntent = new Intent(rootView.getContext(), TableOfContentsActivity.class);
+                    startActivity(tableOfContentsIntent);
                 }
             });
 

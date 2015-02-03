@@ -22,7 +22,12 @@
     <string name="title_activity_about">About</string>
     <string name="version_title">Version</string>
     <string name="about_version">1.0.0 (1)</string>
+
+    <!-- Magazine Archive -->
     <string name="title_activity_magazine_archive">Magazine Archive</string>
-    <string name="hello_world">Hello world!</string>
+
+    <!-- Table of Contents -->
+    <string name="title_activity_table_of_contents">Table of Contents</string>
+    <string name="article_title">Article title</string>
 
 </resources>
