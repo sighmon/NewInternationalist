@@ -122,6 +122,24 @@ public class MainActivity extends ActionBarActivity {
                                  Bundle savedInstanceState) {
             final View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
+            // Register for DownloadComplete listener
+            Publisher.DownloadCompleteListener listener = new Publisher.DownloadCompleteListener() {
+                @Override
+                public void onDownloadComplete(File fileDownloaded) {
+
+                    Log.i("DownloadComplete", "Received listener, showing cover.");
+
+                    // Show cover
+                    ImageButton home_cover = (ImageButton) rootView.findViewById(R.id.home_cover);
+                    if (home_cover != null) {
+                        Bitmap coverBitmap = BitmapFactory.decodeFile(fileDownloaded.getPath());
+                        home_cover.setImageBitmap(coverBitmap);
+                        home_cover.setScaleType(ImageView.ScaleType.FIT_CENTER);
+                    }
+                }
+            };
+            Publisher.setOnDownloadCompleteListener(listener);
+
             // Display latest cover if available on filesystem
             JsonObject latestIssueOnFileJson = Publisher.latestIssue(rootView.getContext());
             if (latestIssueOnFileJson != null) {
@@ -284,13 +302,13 @@ public class MainActivity extends ActionBarActivity {
                         }
                     }
                     
-                    if (newIssueAdded) {
+                    if (newIssueAdded || magazinesOnFilesystem == 0) {
                         // Download the new cover if there's a new issue
                         String coverURLString = newestOnlineIssue.get("cover").getAsJsonObject().get("url").getAsString();
                         String issueID = newestOnlineIssue.get("id").getAsString();
                         File coverFile = Publisher.getCoverForIssue(Publisher.buildCoverParams(coverURLString, issueID, getApplicationContext()));
 
-                        if (coverFile.exists()) {
+                        if (coverFile != null && coverFile.exists()) {
                             // Show cover
                             ImageButton home_cover = (ImageButton) findViewById(R.id.home_cover);
                             if (home_cover != null) {

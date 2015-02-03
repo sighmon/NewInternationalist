@@ -39,6 +39,17 @@ import java.util.TimeZone;
  */
 public class Publisher {
 
+    public interface DownloadCompleteListener {
+        void onDownloadComplete(File fileDownloaded);
+    }
+
+    static ArrayList <DownloadCompleteListener> listeners = new ArrayList <DownloadCompleteListener> ();
+
+    public static void setOnDownloadCompleteListener(DownloadCompleteListener listener) {
+        // Store the listener object
+        listeners.add(listener);
+    }
+
     public static int numberOfIssues(Context context) {
 
         // Count the number of instances of issue.json
@@ -215,13 +226,12 @@ public class Publisher {
         protected void onPostExecute(File coverFile) {
             super.onPostExecute(coverFile);
 
-            // TODO: Tell view to ask for cover again.
-
-            // Load coverFile to screen.
-//        final ImageButton home_cover = (ImageButton) context.findViewById(R.id.home_cover);
-//        Bitmap coverBitmap = BitmapFactory.decodeFile(coverFile.getPath());
-//        home_cover.setImageBitmap(coverBitmap);
-//        home_cover.setScaleType(ImageView.ScaleType.FIT_CENTER);
+            // Send coverFile to listener
+            for (DownloadCompleteListener listener : listeners) {
+                Log.i("DownloadComplete", "Calling onDownloadComplete");
+                // TODO: Handle multiple listeners
+                listener.onDownloadComplete(coverFile);
+            }
         }
     }
 }
