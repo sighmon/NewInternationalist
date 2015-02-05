@@ -9,17 +9,18 @@ import java.util.HashMap;
  */
 public class Article {
 
-    public static int id;
-    public static String title;
-    public static String teaser;
-    public static Date publication;
-    public static boolean keynote;
-    public static String featured_image_caption;
-    public static HashMap featured_image;
-    public static Array categories;
-    public static Array images;
+    int id;
+    String title;
+    String teaser;
+    Date publication;
+    boolean keynote;
+    String featured_image_caption;
+    HashMap featured_image;
+    Array categories;
+    Array images;
 
     public Article() {
         title = "Test article";
+        teaser = "Article teaser text goes here.";
     }
 }

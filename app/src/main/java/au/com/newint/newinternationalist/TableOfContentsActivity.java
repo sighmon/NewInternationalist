@@ -1,11 +1,13 @@
 package au.com.newint.newinternationalist;
 
+import android.content.Intent;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -51,6 +53,8 @@ public class TableOfContentsActivity extends ActionBarActivity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            Intent settingsIntent = new Intent(this, SettingsActivity.class);
+            startActivity(settingsIntent);
             return true;
         }
 
@@ -70,7 +74,7 @@ public class TableOfContentsActivity extends ActionBarActivity {
                                  Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_table_of_contents, container, false);
 
-            // TODO: Setup CardView
+            // TODO: Setup RecyclerView
             RecyclerView recList = (RecyclerView) rootView.findViewById(R.id.card_list);
             recList.setHasFixedSize(true);
             LinearLayoutManager llm = new LinearLayoutManager(rootView.getContext());
@@ -96,7 +100,7 @@ public class TableOfContentsActivity extends ActionBarActivity {
             public TableOfContentsViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
                 View itemView = LayoutInflater.
                         from(parent.getContext()).
-                        inflate(R.layout.fragment_table_of_contents, parent, false);
+                        inflate(R.layout.fragment_table_of_contents_card_view, parent, false);
 //                  View itemView = parent.getRootView().findViewById(R.id.card_view);
 
                 return new TableOfContentsViewHolder(itemView);
@@ -106,6 +110,7 @@ public class TableOfContentsActivity extends ActionBarActivity {
             public void onBindViewHolder(TableOfContentsViewHolder holder, int position) {
                 Article article = articles.get(position);
                 holder.articleTitleTextView.setText(article.title);
+                holder.articleTeaserTextView.setText(article.teaser);
             }
 
             @Override
@@ -116,10 +121,12 @@ public class TableOfContentsActivity extends ActionBarActivity {
             public class TableOfContentsViewHolder extends RecyclerView.ViewHolder {
 
                 public TextView articleTitleTextView;
+                public TextView articleTeaserTextView;
 
                 public TableOfContentsViewHolder(View itemView) {
                     super(itemView);
                     articleTitleTextView = (TextView) itemView.findViewById(R.id.article_title);
+                    articleTeaserTextView = (TextView) itemView.findViewById(R.id.article_teaser);
                 }
             }
         }
