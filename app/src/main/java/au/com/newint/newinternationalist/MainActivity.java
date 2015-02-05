@@ -29,11 +29,8 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
-import org.apache.http.util.ByteArrayBuffer;
-
 import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -42,7 +39,6 @@ import java.io.Writer;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Properties;
 
@@ -50,12 +46,12 @@ public class MainActivity extends ActionBarActivity {
 
     static boolean newIssueAdded = false;
 
-    Cache<JsonObject> IssuesJSONCache;
+    ByteCache<JsonObject> IssuesJSONCache;
 
     public MainActivity() {
         super();
 
-        IssuesJSONCache = new Cache<JsonObject>();
+        IssuesJSONCache = new ByteCache<JsonObject>();
 
         IssuesJSONCache.addMethod...
     }
