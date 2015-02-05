@@ -1,5 +1,6 @@
 package au.com.newint.newinternationalist;
 
+import android.content.Context;
 import android.util.Log;
 
 import java.util.ArrayList;
@@ -32,7 +33,7 @@ public class Issue {
         editors_photo = "http://www.somesite.com/somephoto.jpg";
         cover = new HashMap();
         articles = new ArrayList<Article>();
-        // TOFIX: For now lets just add 25 articles
+        // TODO: Hook this up to Publisher
         for (int i = 1; i <= 25; i++) {
             final Article article = new Article();
             article.title = article.title + i;

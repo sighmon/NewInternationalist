@@ -141,6 +141,7 @@ public class MainActivity extends ActionBarActivity {
             Publisher.setOnDownloadCompleteListener(listener);
 
             // Display latest cover if available on filesystem
+            // TODO: Make Issue object to pass to TableOfContents
             JsonObject latestIssueOnFileJson = Publisher.latestIssue(rootView.getContext());
             if (latestIssueOnFileJson != null) {
                 File coverFile = Publisher.getCoverForIssue(latestIssueOnFileJson, rootView.getContext());
@@ -162,6 +163,8 @@ public class MainActivity extends ActionBarActivity {
                 @Override
                 public void onClick(View view) {
                     // TODO: Handle cover clicked
+                    // TODO: Pass Issue object using Parcelable?
+                    // http://stackoverflow.com/questions/2139134/how-to-send-an-object-from-one-android-activity-to-another-using-intents
                     Log.i("Cover", "Cover was clicked!");
                     Intent tableOfContentsIntent = new Intent(rootView.getContext(), TableOfContentsActivity.class);
                     startActivity(tableOfContentsIntent);

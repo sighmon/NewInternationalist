@@ -81,6 +81,24 @@ public class Publisher {
         }
     }
 
+    public static JsonObject getIssueJsonForIdWithContext(int id, Context context) {
+        // Return issue.json for id handed in
+        File issueJson;
+
+        File dir = new File(context.getFilesDir(), Integer.toString(id));
+
+        issueJson = new File(dir,"issue.json");
+
+        if (issueJson.exists()) {
+            // Return parsed issue.json as JsonObject
+            return parseIssueJson(issueJson);
+        } else {
+            // We don't have the issue.json, something went wrong with the initial download. HELP!
+            // TODO: Download issues.json and re-save to filesystem
+            return null;
+        }
+    }
+
     public static JsonObject latestIssue(Context context) {
         // Return latest issue.json
         ArrayList issuesJsonArray = getAllIssueJsonFromFilesystem(context);
