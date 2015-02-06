@@ -29,11 +29,9 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
-import org.apache.http.util.ByteArrayBuffer;
-
 import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -42,13 +40,14 @@ import java.io.Writer;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Properties;
 
 public class MainActivity extends ActionBarActivity {
 
     static boolean newIssueAdded = false;
+
+    ByteCache issuesJSONCache;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,14 +67,23 @@ public class MainActivity extends ActionBarActivity {
         Log.i("SITE_URL", siteURLString);
 
         // Get issues.json and save/update our cache
-        URL siteURL = null;
+        URL issuesURL = null;
         try {
-            siteURL = new URL(siteURLString + "issues.json");
+            issuesURL = new URL(siteURLString + "issues.json");
         } catch (MalformedURLException e) {
             e.printStackTrace();
         }
 
-        new DownloadIssuesJSONTask().execute(siteURL);
+        issuesJSONCache = new ByteCache();
+
+        File cacheDir = getApplicationContext().getCacheDir();
+        File cacheFile = new File(cacheDir,"issues.json");
+
+        issuesJSONCache.addMethod(new MemoryByteCacheMethod());
+        issuesJSONCache.addMethod(new FileByteCacheMethod(cacheFile));
+        issuesJSONCache.addMethod(new URLByteCacheMethod(issuesURL));
+
+        new DownloadIssuesJSONTask().execute(issuesJSONCache);
     }
 
     @Override
@@ -204,7 +212,7 @@ public class MainActivity extends ActionBarActivity {
         }
     }
 
-    private static String getVariableFromConfig(Context context, String string) {
+    public static String getVariableFromConfig(Context context, String string) {
         Resources resources = context.getResources();
         AssetManager assetManager = resources.getAssets();
         try {
@@ -218,40 +226,26 @@ public class MainActivity extends ActionBarActivity {
         }
     }
 
-    private class DownloadIssuesJSONTask extends AsyncTask<URL, Integer, JsonArray> {
+    private class DownloadIssuesJSONTask extends AsyncTask<ByteCache, Integer, JsonArray> {
 
         @Override
-        protected JsonArray doInBackground(URL... urls) {
+        protected JsonArray doInBackground(ByteCache... caches) {
 
             JsonArray rootArray = null;
 
-            HttpURLConnection urlConnection = null;
-            try {
-                urlConnection = (HttpURLConnection) urls[0].openConnection();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            try {
-                assert urlConnection != null;
-                InputStream urlConnectionInputStream = urlConnection.getInputStream();
-                BufferedInputStream bufferedInputStream = new BufferedInputStream(urlConnectionInputStream);
-                InputStreamReader inputStreamReader = new InputStreamReader(bufferedInputStream);
-                JsonElement root = new JsonParser().parse(inputStreamReader);
-                rootArray = root.getAsJsonArray();
+            ByteCache issuesJSONCache = caches[0];
 
-                //JsonObject firstMagazine = root.getAsJsonArray().get(0).getAsJsonObject();
-                //Log.i("firstMagazine", firstMagazine.toString());
 
-                //Log.i("toJson", new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create().toJson(firstMagazine));
+            ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(issuesJSONCache.read());
+            BufferedInputStream bufferedInputStream = new BufferedInputStream(byteArrayInputStream);
+            InputStreamReader inputStreamReader = new InputStreamReader(bufferedInputStream);
+            JsonElement root = new JsonParser().parse(inputStreamReader);
+            rootArray = root.getAsJsonArray();
 
-            }
-            catch(Exception e) {
-                Log.e("http", e.toString());
-            }
-            finally {
-                assert urlConnection != null;
-                urlConnection.disconnect();
-            }
+            //JsonObject firstMagazine = root.getAsJsonArray().get(0).getAsJsonObject();
+            //Log.i("firstMagazine", firstMagazine.toString());
+
+            //Log.i("toJson", new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create().toJson(firstMagazine));
 
             return rootArray;
         }
