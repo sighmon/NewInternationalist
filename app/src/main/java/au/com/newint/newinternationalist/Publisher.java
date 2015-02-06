@@ -39,6 +39,8 @@ import java.util.TimeZone;
  */
 public class Publisher {
 
+    static ArrayList<Issue> issuesList;
+
     public interface DownloadCompleteListener {
         void onDownloadComplete(File fileDownloaded);
     }
@@ -50,35 +52,40 @@ public class Publisher {
         listeners.add(listener);
     }
 
-    public static int numberOfIssues(Context context) {
+    public static int numberOfIssues() {
 
         // Count the number of instances of issue.json
-        return getAllIssueJsonFromFilesystem(context).size();
+        return getIssuesFromFilesystem().size();
     }
 
-    public static ArrayList getAllIssueJsonFromFilesystem(Context context) {
-        File dir = context.getApplicationContext().getFilesDir();
-        ArrayList issuesJsonArray = new ArrayList();
-        addIssueJsonFilesToArrayFromDir(dir,issuesJsonArray);
-        return issuesJsonArray;
+    public static ArrayList<Issue> getIssuesFromFilesystem() {
+
+        if(issuesList==null) {
+            File dir = MainActivity.applicationContext.getFilesDir();
+            issuesList = buildIssuesFromDir(dir);
+        }
+
+        return issuesList;
+
     }
 
-    public static void addIssueJsonFilesToArrayFromDir (File dir, ArrayList arrayList) {
-
+    public static ArrayList<Issue> buildIssuesFromDir (File dir) {
+        ArrayList<Issue> issuesArray = new ArrayList<Issue>();
         if (dir.exists()) {
             File[] files = dir.listFiles();
             for (File file : files) {
                 if (file.isDirectory()) {
-                    addIssueJsonFilesToArrayFromDir(file, arrayList);
+                    issuesArray.addAll(buildIssuesFromDir(file));
                 } else {
                     // do something here with the file
                     if (file.getName().equals("issue.json")) {
                         // Add to array
-                        arrayList.add(file);
+                        issuesArray.add(new Issue(file));
                     }
                 }
             }
         }
+        return issuesArray;
     }
 
     public static JsonObject getIssueJsonForIdWithContext(int id, Context context) {
@@ -99,20 +106,17 @@ public class Publisher {
         }
     }
 
-    public static JsonObject latestIssue(Context context) {
+    public static Issue latestIssue() {
         // Return latest issue.json
-        ArrayList issuesJsonArray = getAllIssueJsonFromFilesystem(context);
+        ArrayList<Issue> issuesJsonArray = getIssuesFromFilesystem();
 
-        JsonObject newestIssue = null;
+        Issue newestIssue = null;
 
         for (int i = 0; i < issuesJsonArray.size(); i++) {
-            JsonObject thisIssue = parseIssueJson(issuesJsonArray.get(i));
+            Issue thisIssue = issuesJsonArray.get(i);
             if (newestIssue != null) {
-                // Compare release dates
-                Date newestIssueDate = parseDateFromString(newestIssue.get("release").getAsString());
-                Date thisIssueDate = parseDateFromString(thisIssue.get("release").getAsString());
 
-                if (thisIssueDate.after(newestIssueDate)) {
+                if (thisIssue.getRelease().after(newestIssue.getRelease())) {
                     newestIssue = thisIssue;
                 }
             } else {
@@ -120,7 +124,7 @@ public class Publisher {
             }
         }
         if (newestIssue != null) {
-            Log.i("LatestIssue", String.format("ID: %1$s, Title: %2$s", newestIssue.get("id"), newestIssue.get("title")));
+            Log.i("LatestIssue", String.format("ID: %1$s, Title: %2$s", newestIssue.getID(), newestIssue.getTitle()));
         }
         return newestIssue;
     }
@@ -153,18 +157,14 @@ public class Publisher {
         return releaseDate;
     }
 
-    public static File getCoverForIssue(JsonObject issue, Context context) {
+    public static File getCoverForIssue(Issue issue) {
         // TODO: Search filesystem for file. Download if need be.
 
         File coverFile = null;
 
-        ArrayList coverParams = buildCoverParams(issue, context);
 
-        URL coverURL = (URL) coverParams.get(0);
-        String issueID = (String) coverParams.get(1);
-
-        File dir = new File(context.getFilesDir(), issueID);
-        String[] pathComponents = coverURL.getPath().split("/");
+        File dir = new File(MainActivity.applicationContext.getFilesDir(), Integer.toString(issue.getID()));
+        String[] pathComponents = issue.getCoverURL().getPath().split("/");
         String filename = pathComponents[pathComponents.length - 1];
 
         coverFile = new File(dir,filename);
@@ -174,7 +174,7 @@ public class Publisher {
             return coverFile;
         } else {
             // Download cover
-            new DownloadMagazineCover().execute(coverParams);
+            new DownloadMagazineCover().execute(issue);
             return null;
         }
     }
@@ -198,22 +198,20 @@ public class Publisher {
         return coverParams;
     }
 
-    public static class DownloadMagazineCover extends AsyncTask<ArrayList, Integer, File> {
+    public static class DownloadMagazineCover extends AsyncTask<Issue, Integer, File> {
 
         @Override
-        protected File doInBackground(ArrayList... params) {
+        protected File doInBackground(Issue... params) {
 
             // Download the cover
 
             File coverFile = null;
 
-            URL coverURL = (URL) params[0].get(0);
-            String issueID = (String) params[0].get(1);
-            Context context = (Context) params[0].get(2);
+            Issue issue = (Issue) params[0];
 
             HttpURLConnection urlConnection = null;
             try {
-                urlConnection = (HttpURLConnection) coverURL.openConnection();
+                urlConnection = (HttpURLConnection) issue.getCoverURL().openConnection();
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -221,8 +219,8 @@ public class Publisher {
                 assert urlConnection != null;
                 InputStream urlConnectionInputStream = urlConnection.getInputStream();
 
-                File dir = new File(context.getFilesDir(), issueID);
-                String[] pathComponents = coverURL.getPath().split("/");
+                File dir = new File(MainActivity.applicationContext.getFilesDir(), Integer.toString(issue.getID()));
+                String[] pathComponents = issue.getCoverURL().getPath().split("/");
                 String filename = pathComponents[pathComponents.length - 1];
 
                 coverFile = new File(dir,filename);

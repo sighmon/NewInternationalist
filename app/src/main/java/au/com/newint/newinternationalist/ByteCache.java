@@ -1,5 +1,6 @@
 package au.com.newint.newinternationalist;
 
+import android.os.AsyncTask;
 import android.util.Log;
 
 import java.util.ArrayList;
@@ -8,7 +9,7 @@ import java.util.Date;
 /**
  * Created by pix on 29/01/15.
  */
-public class ByteCache {
+public class ByteCache extends AsyncTask<Object,Integer,byte[]> {
 
     ArrayList<ByteCacheMethod> methods;
 
@@ -19,6 +20,7 @@ public class ByteCache {
     public void addMethod(ByteCacheMethod method) {
         methods.add(method);
     }
+
 
     public byte[] read() {
         return read(null,null,new Date(Long.MAX_VALUE));
@@ -68,5 +70,45 @@ public class ByteCache {
         }
         return -1;
     }
+
+    // background read methods ----------------------------------------------
+
+    public void readWithCallback(CacheListener listener) {
+        execute(listener);
+    }
+
+    public void readWithCallback(CacheListener listener, String startingAt) {
+        execute(listener, startingAt);
+    }
+
+    //region AsyncTask
+    //------------------------------------------------------------------------
+
+    CacheListener cacheListener;
+
+    @Override
+    protected byte[] doInBackground(Object... params) {
+        cacheListener = (CacheListener)params[0];
+
+        if(params.length>1) {
+            String startingAt = (String) params[1];
+            if (startingAt!=null) {
+                return read(startingAt, null, new Date(Long.MAX_VALUE));
+            }
+        }
+        return read();
+    }
+
+    @Override
+    protected void onPostExecute(byte[] bytes) {
+        super.onPostExecute(bytes);
+        cacheListener.onReadComplete(bytes);
+    }
+
+    public interface CacheListener {
+        public void onReadComplete(byte[] payload);
+    }
+
+    //endregion
 
 }

@@ -20,7 +20,7 @@ import java.util.List;
 
 public class TableOfContentsActivity extends ActionBarActivity {
 
-    static Issue issue = new Issue();
+    static Issue issue = Publisher.getIssuesFromFilesystem().get(0);//new Issue();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,7 +33,7 @@ public class TableOfContentsActivity extends ActionBarActivity {
         }
 
         // TODO: Load magazine number/title/date here
-        setTitle(issue.title);
+        setTitle(issue.getTitle());
     }
 
 

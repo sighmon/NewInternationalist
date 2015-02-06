@@ -47,6 +47,8 @@ public class MainActivity extends ActionBarActivity {
 
     static boolean newIssueAdded = false;
 
+    static Context applicationContext;
+
     ByteCache issuesJSONCache;
 
     @Override
@@ -58,6 +60,8 @@ public class MainActivity extends ActionBarActivity {
                     .add(R.id.container, new PlaceholderFragment())
                     .commit();
         }
+
+        applicationContext = getApplicationContext();
 
         // Set default preferences, the false on the end means it's only set once
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
@@ -150,9 +154,9 @@ public class MainActivity extends ActionBarActivity {
 
             // Display latest cover if available on filesystem
             // TODO: Make Issue object to pass to TableOfContents
-            JsonObject latestIssueOnFileJson = Publisher.latestIssue(rootView.getContext());
-            if (latestIssueOnFileJson != null) {
-                File coverFile = Publisher.getCoverForIssue(latestIssueOnFileJson, rootView.getContext());
+            Issue latestIssueOnFile = Publisher.latestIssue();
+            if (latestIssueOnFile != null) {
+                File coverFile = Publisher.getCoverForIssue(latestIssueOnFile);
 
                 if (coverFile != null && coverFile.exists()) {
                     // Show cover
@@ -259,16 +263,16 @@ public class MainActivity extends ActionBarActivity {
             if (magazines != null) {
                 JsonObject newestOnlineIssue = magazines.get(0).getAsJsonObject();
                 int newestOnlineIssueRailsId = newestOnlineIssue.get("id").getAsInt();
-                int magazinesOnFilesystem = Publisher.numberOfIssues(getApplicationContext());
+                int magazinesOnFilesystem = Publisher.numberOfIssues();
 
                 Log.i("Filesystem", String.format("Number of issues on filesystem: %1$d", magazinesOnFilesystem));
                 Log.i("www", String.format("Number of issues on www: %1$d", magazines.size()));
 
                 if (magazines.size() > magazinesOnFilesystem) {
                     // There are more issues online. Now check if it's a new or backissue
-                    JsonObject latestIssue = Publisher.latestIssue(getApplicationContext());
+                    Issue latestIssue = Publisher.latestIssue();
                     if (latestIssue != null) {
-                        int newestFilesystemIssueRailsId = latestIssue.get("id").getAsInt();
+                        int newestFilesystemIssueRailsId = latestIssue.getID();
 
                         if (newestOnlineIssueRailsId != newestFilesystemIssueRailsId) {
                             // It's a new issue
@@ -301,7 +305,7 @@ public class MainActivity extends ActionBarActivity {
                     
                     if (newIssueAdded || magazinesOnFilesystem == 0) {
                         // Download the new cover if there's a new issue
-                        File coverFile = Publisher.getCoverForIssue(newestOnlineIssue, getApplicationContext());
+                        File coverFile = Publisher.getCoverForIssue(Publisher.getIssuesFromFilesystem().get(0));
 
                         if (coverFile != null && coverFile.exists()) {
                             // Show cover
