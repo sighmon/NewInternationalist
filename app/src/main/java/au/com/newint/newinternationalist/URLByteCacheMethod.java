@@ -1,5 +1,7 @@
 package au.com.newint.newinternationalist;
 
+import android.util.Log;
+
 import org.apache.commons.io.IOUtils;
 
 import java.io.ByteArrayOutputStream;
@@ -12,18 +14,18 @@ import java.util.Date;
 /**
  * Created by pix on 29/01/15.
  */
-public abstract class URLByteCacheMethod extends ByteCacheMethod {
+public class URLByteCacheMethod extends ByteCacheMethod {
 
     public String name;
     public URL sourceURL;
 
     public URLByteCacheMethod(URL sourceURL, String name) {
-        this.name = name;
+        super(name);
         this.sourceURL = sourceURL;
     }
 
     public URLByteCacheMethod(URL sourceURL) {
-        this(sourceURL, "net");
+        this(sourceURL, "url");
     }
 
     public ByteCacheHit read() {
@@ -35,21 +37,27 @@ public abstract class URLByteCacheMethod extends ByteCacheMethod {
             InputStream urlConnectionInputStream = urlConnection.getInputStream();
             int payloadLength = urlConnection.getContentLength();
 
-            if (payloadLength>=0) payloadLength=1024;
+            if (payloadLength<=0) payloadLength=1024;
             ByteArrayOutputStream baos = new ByteArrayOutputStream(payloadLength);
 
             IOUtils.copy(urlConnectionInputStream, baos);
 
-            // TODO: not 0, but now.. sigh
-            Date timestamp = new Date(urlConnection.getHeaderFieldDate("Last-modified"),0);
+            // make a date object, to turn it into a long, only to be converted back into a date *sigh*
+            Date timestamp = new Date(urlConnection.getHeaderFieldDate("Last-modified",new Date().getTime()));
 
-            return new ByteCacheHit(baos.toByteArray())
+            Log.i("URLByteCacheMethod", "creating ByteCacheHit");
+            return new ByteCacheHit(baos.toByteArray(), timestamp);
 
         } catch (IOException e) {
             e.printStackTrace();
         }
 
+        return null;
 
+    }
+
+    public void write(byte[] payload) {
+        throw new NoSuchMethodError();
     }
 
 }

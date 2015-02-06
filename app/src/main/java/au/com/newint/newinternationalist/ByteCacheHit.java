@@ -1,5 +1,7 @@
 package au.com.newint.newinternationalist;
 
+import android.util.Log;
+
 import java.util.Date;
 
 /**
@@ -14,6 +16,7 @@ public class ByteCacheHit {
     }
 
     public ByteCacheHit(byte[] payload, Date timestamp) {
+        Log.i("ByteCacheHit", "created with payload length: " + payload.length);
         this.payload = payload;
         this.timestamp = timestamp;
     }

@@ -12,7 +12,7 @@ public class ByteCache {
 
     ArrayList<ByteCacheMethod> methods;
 
-    public void Cache() {
+    public ByteCache() {
         methods = new ArrayList();
     }
 
@@ -20,6 +20,11 @@ public class ByteCache {
         methods.add(method);
     }
 
+    public byte[] read() {
+        return read(null,null,new Date(Long.MAX_VALUE));
+    }
+
+    // TODO: the returned byte array should really be immutable
     public byte[] read(String startingAt, String stoppingAt, Date expiryDate) {
 
 
@@ -36,8 +41,14 @@ public class ByteCache {
         for ( int i=0; i<methods.size() ; i++ ) {
             ByteCacheHit hit = methods.get(i).read();
             if (hit!=null && ((i==stopIndex-1) || (hit.timestamp.before(expiryDate)))) {
-                // writing back
-                for ( int j=0 ; j < i+1 ; j++) {
+                // writing back (all previous methods, in reverse)
+                // eg, first method is memory [i=0]
+                //     second method is disk [i=1]
+                //     third method is net [i=2]
+                // if disk is considered a cache hit,
+                //     the value in memory cache is refreshed with a write
+                // upshot of this is that the last method's write() should never be called
+                for ( int j=i-1 ; j >= 0 ; j--) {
                     methods.get(j).write(hit.payload);
                 }
                 return hit.payload;
