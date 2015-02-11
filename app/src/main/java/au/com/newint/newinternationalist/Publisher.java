@@ -88,11 +88,11 @@ public class Publisher {
         return issuesArray;
     }
 
-    public static JsonObject getIssueJsonForIdWithContext(int id, Context context) {
+    public static JsonObject getIssueJsonForId(int id) {
         // Return issue.json for id handed in
         File issueJson;
 
-        File dir = new File(context.getFilesDir(), Integer.toString(id));
+        File dir = new File(MainActivity.applicationContext.getFilesDir(), Integer.toString(id));
 
         issueJson = new File(dir,"issue.json");
 

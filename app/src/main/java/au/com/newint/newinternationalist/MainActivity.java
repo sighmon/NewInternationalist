@@ -8,6 +8,8 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.AsyncTask;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v4.app.Fragment;
@@ -129,6 +131,8 @@ public class MainActivity extends ActionBarActivity {
         public PlaceholderFragment() {
         }
 
+        Issue latestIssueOnFile;
+
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
@@ -153,8 +157,7 @@ public class MainActivity extends ActionBarActivity {
             Publisher.setOnDownloadCompleteListener(listener);
 
             // Display latest cover if available on filesystem
-            // TODO: Make Issue object to pass to TableOfContents
-            Issue latestIssueOnFile = Publisher.latestIssue();
+            latestIssueOnFile = Publisher.latestIssue();
             if (latestIssueOnFile != null) {
                 File coverFile = Publisher.getCoverForIssue(latestIssueOnFile);
 
@@ -179,6 +182,7 @@ public class MainActivity extends ActionBarActivity {
                     // http://stackoverflow.com/questions/2139134/how-to-send-an-object-from-one-android-activity-to-another-using-intents
                     Log.i("Cover", "Cover was clicked!");
                     Intent tableOfContentsIntent = new Intent(rootView.getContext(), TableOfContentsActivity.class);
+                    tableOfContentsIntent.putExtra("issue", latestIssueOnFile);
                     startActivity(tableOfContentsIntent);
                 }
             });

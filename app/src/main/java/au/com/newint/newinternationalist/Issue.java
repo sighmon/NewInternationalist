@@ -1,6 +1,8 @@
 package au.com.newint.newinternationalist;
 
 import android.content.Context;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.util.Log;
 
 import com.google.gson.JsonElement;
@@ -21,7 +23,7 @@ import java.util.List;
 /**
  * Created by New Internationalist on 4/02/15.
  */
-public class Issue {
+public class Issue implements Parcelable {
 
     /*
     String title;
@@ -48,10 +50,7 @@ public class Issue {
 
         issueJson = root.getAsJsonObject();
 
-        articles = new ArrayList<Article>();
-        for(int i=0;i<25;i++) {
-            articles.add(new Article());
-        }
+        articles = getArticles();
 
         /*
         title = getTitle();
@@ -67,6 +66,10 @@ public class Issue {
         */
     }
 
+    public Issue(int issueID) {
+        issueJson = Publisher.getIssueJsonForId(issueID);
+        articles = getArticles();
+    }
 
 
     public String getTitle() {
@@ -109,4 +112,43 @@ public class Issue {
         }
     }
 
+    // Get Articles function
+
+    public ArrayList getArticles() {
+        ArrayList articlesForIssue = new ArrayList<Article>();
+        for(int i=0;i<25;i++) {
+            Article article = new Article();
+            article.teaser = article.teaser + " Article #" + i + " for Issue#" + this.getID();
+            articlesForIssue.add(article);
+        }
+        return articlesForIssue;
+    }
+
+    // PARCELABLE delegate methods
+
+    private Issue(Parcel in) {
+        issueJson = Publisher.getIssueJsonForId(in.readInt());
+        articles = getArticles();
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeInt(this.getID());
+    }
+
+    public static final Parcelable.Creator<Issue> CREATOR
+            = new Parcelable.Creator<Issue>() {
+        public Issue createFromParcel(Parcel in) {
+            return new Issue(in);
+        }
+
+        public Issue[] newArray(int size) {
+            return new Issue[size];
+        }
+    };
 }

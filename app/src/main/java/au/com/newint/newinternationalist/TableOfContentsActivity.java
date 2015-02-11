@@ -1,6 +1,8 @@
 package au.com.newint.newinternationalist;
 
 import android.content.Intent;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
@@ -20,19 +22,26 @@ import java.util.List;
 
 public class TableOfContentsActivity extends ActionBarActivity {
 
-    static Issue issue = Publisher.getIssuesFromFilesystem().get(0);//new Issue();
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_table_of_contents);
+        Fragment tableOfContentsFragment = new TableOfContentsFragment();
+
+        Issue issue = getIntent().getParcelableExtra("issue");
+
+        // Send issue to fragment
+        Bundle bundle = new Bundle();
+        bundle.putParcelable("issue", issue);
+        tableOfContentsFragment.setArguments(bundle);
+
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
-                    .add(R.id.container, new TableOfContentsFragment())
+                    .add(R.id.container, tableOfContentsFragment)
                     .commit();
         }
 
-        // TODO: Load magazine number/title/date here
+        // Magazine title from Parcel issue
         setTitle(issue.getTitle());
     }
 
@@ -74,14 +83,22 @@ public class TableOfContentsActivity extends ActionBarActivity {
                                  Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_table_of_contents, container, false);
 
-            // TODO: Setup RecyclerView
             RecyclerView recList = (RecyclerView) rootView.findViewById(R.id.card_list);
             recList.setHasFixedSize(true);
             LinearLayoutManager llm = new LinearLayoutManager(rootView.getContext());
             llm.setOrientation(LinearLayoutManager.VERTICAL);
             recList.setLayoutManager(llm);
 
-            TableOfContentsAdapter adapter = new TableOfContentsAdapter(issue.articles);
+            // Get issue from bundle
+            Bundle bundle = this.getArguments();
+            Issue issueFromActivity;
+            if (bundle != null) {
+                issueFromActivity = bundle.getParcelable("issue");
+            } else {
+                issueFromActivity = new Issue(Publisher.latestIssue().getID());
+            }
+
+            TableOfContentsAdapter adapter = new TableOfContentsAdapter(issueFromActivity.articles);
             recList.setAdapter(adapter);
 
             return rootView;
