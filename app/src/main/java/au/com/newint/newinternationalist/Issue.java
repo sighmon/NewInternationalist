@@ -112,16 +112,13 @@ public class Issue implements Parcelable {
         }
     }
 
-    // Get Articles function
-
     public ArrayList getArticles() {
-        ArrayList articlesForIssue = new ArrayList<Article>();
-        for(int i=0;i<25;i++) {
-            Article article = new Article();
-            article.teaser = article.teaser + " Article #" + i + " for Issue#" + this.getID();
-            articlesForIssue.add(article);
+        if(articles == null) {
+            File dir = new File(MainActivity.applicationContext.getFilesDir() + "/" + Integer.toString(getID()) + "/");
+            articles = Publisher.buildArticlesFromDir(dir);
         }
-        return articlesForIssue;
+
+        return articles;
     }
 
     // PARCELABLE delegate methods

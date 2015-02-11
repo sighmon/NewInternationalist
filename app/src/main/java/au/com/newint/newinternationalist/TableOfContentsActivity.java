@@ -17,10 +17,17 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.google.gson.JsonArray;
+
+import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.List;
 
 
 public class TableOfContentsActivity extends ActionBarActivity {
+
+    ByteCache articlesJSONCache;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,6 +50,28 @@ public class TableOfContentsActivity extends ActionBarActivity {
 
         // Magazine title from Parcel issue
         setTitle(issue.getTitle());
+
+        // Get SITE_URL
+        String siteURLString = (String) MainActivity.getVariableFromConfig(this, "SITE_URL");
+
+        // Get articles.json (actually issueID.json) and save/update our cache
+        URL articlesURL = null;
+        try {
+            articlesURL = new URL(siteURLString + "issues/" + issue.getID() + ".json");
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+
+        articlesJSONCache = new ByteCache();
+
+        File cacheDir = getApplicationContext().getCacheDir();
+        File cacheFile = new File(cacheDir, issue.getID() + ".json");
+
+        articlesJSONCache.addMethod(new MemoryByteCacheMethod());
+        articlesJSONCache.addMethod(new FileByteCacheMethod(cacheFile));
+        articlesJSONCache.addMethod(new URLByteCacheMethod(articlesURL));
+
+        new Publisher.DownloadArticlesJSONTask().execute(articlesJSONCache, issue);
     }
 
 
@@ -67,6 +96,7 @@ public class TableOfContentsActivity extends ActionBarActivity {
                 startActivity(settingsIntent);
                 return true;
             case android.R.id.home:
+                // Handles a back/up button press and returns to previous Activity
                 finish();
                 return true;
             default:
@@ -87,7 +117,7 @@ public class TableOfContentsActivity extends ActionBarActivity {
                                  Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_table_of_contents, container, false);
 
-            RecyclerView recList = (RecyclerView) rootView.findViewById(R.id.card_list);
+            final RecyclerView recList = (RecyclerView) rootView.findViewById(R.id.card_list);
             recList.setHasFixedSize(true);
             LinearLayoutManager llm = new LinearLayoutManager(rootView.getContext());
             llm.setOrientation(LinearLayoutManager.VERTICAL);
@@ -95,15 +125,28 @@ public class TableOfContentsActivity extends ActionBarActivity {
 
             // Get issue from bundle
             Bundle bundle = this.getArguments();
-            Issue issueFromActivity;
+            final Issue issueFromActivity;
             if (bundle != null) {
                 issueFromActivity = bundle.getParcelable("issue");
             } else {
                 issueFromActivity = new Issue(Publisher.latestIssue().getID());
             }
 
-            TableOfContentsAdapter adapter = new TableOfContentsAdapter(issueFromActivity.articles);
+            final TableOfContentsAdapter adapter = new TableOfContentsAdapter(issueFromActivity.articles);
             recList.setAdapter(adapter);
+
+            // Register for DownloadComplete listener
+            Publisher.ArticlesDownloadCompleteListener listener = new Publisher.ArticlesDownloadCompleteListener() {
+
+                @Override
+                public void onArticlesDownloadComplete(JsonArray articles) {
+                    Log.i("ArticlesReady", "Received listener, refreshing articles view.");
+                    // TODO: Work out how to refresh adapter
+                    adapter.notifyDataSetChanged();
+                    Publisher.articleListeners.clear();
+                }
+            };
+            Publisher.setOnArticlesDownloadCompleteListener(listener);
 
             return rootView;
         }
@@ -130,8 +173,8 @@ public class TableOfContentsActivity extends ActionBarActivity {
             @Override
             public void onBindViewHolder(TableOfContentsViewHolder holder, int position) {
                 Article article = articles.get(position);
-                holder.articleTitleTextView.setText(article.title);
-                holder.articleTeaserTextView.setText(article.teaser);
+                holder.articleTitleTextView.setText(article.getTitle());
+                holder.articleTeaserTextView.setText(article.getTeaser());
             }
 
             @Override

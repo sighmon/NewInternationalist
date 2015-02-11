@@ -68,7 +68,7 @@ public class MainActivity extends ActionBarActivity {
         // Set default preferences, the false on the end means it's only set once
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
 
-        // Log which SITE_URL we are using for debugging
+        // Get SITE_URL from config variables
         String siteURLString = (String) getVariableFromConfig(this, "SITE_URL");
         Log.i("SITE_URL", siteURLString);
 
@@ -241,7 +241,6 @@ public class MainActivity extends ActionBarActivity {
             JsonArray rootArray = null;
 
             ByteCache issuesJSONCache = caches[0];
-
 
             ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(issuesJSONCache.read());
             BufferedInputStream bufferedInputStream = new BufferedInputStream(byteArrayInputStream);

@@ -2,6 +2,7 @@ package au.com.newint.newinternationalist;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
@@ -10,6 +11,7 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -18,12 +20,16 @@ import org.apache.commons.io.IOUtils;
 import org.apache.http.util.ByteArrayBuffer;
 
 import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Writer;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -32,6 +38,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.TimeZone;
 
 /**
@@ -45,11 +52,22 @@ public class Publisher {
         void onDownloadComplete(File fileDownloaded);
     }
 
+    public interface ArticlesDownloadCompleteListener {
+        void onArticlesDownloadComplete(JsonArray articles);
+    }
+
     static ArrayList <DownloadCompleteListener> listeners = new ArrayList <DownloadCompleteListener> ();
 
     public static void setOnDownloadCompleteListener(DownloadCompleteListener listener) {
         // Store the listener object
         listeners.add(listener);
+    }
+
+    static ArrayList <ArticlesDownloadCompleteListener> articleListeners = new ArrayList <ArticlesDownloadCompleteListener> ();
+
+    public static void setOnArticlesDownloadCompleteListener(ArticlesDownloadCompleteListener listener) {
+        // Store the listener object
+        articleListeners.add(listener);
     }
 
     public static int numberOfIssues() {
@@ -86,6 +104,25 @@ public class Publisher {
             }
         }
         return issuesArray;
+    }
+
+    public static ArrayList<Article> buildArticlesFromDir (File dir) {
+        ArrayList<Article> articlesArray = new ArrayList<Article>();
+        if (dir.exists()) {
+            File[] files = dir.listFiles();
+            for (File file : files) {
+                if (file.isDirectory()) {
+                    articlesArray.addAll(buildArticlesFromDir(file));
+                } else {
+                    // do something here with the file
+                    if (file.getName().equals("article.json")) {
+                        // Add to array
+                        articlesArray.add(new Article(file));
+                    }
+                }
+            }
+        }
+        return articlesArray;
     }
 
     public static JsonObject getIssueJsonForId(int id) {
@@ -158,10 +195,9 @@ public class Publisher {
     }
 
     public static File getCoverForIssue(Issue issue) {
-        // TODO: Search filesystem for file. Download if need be.
+        // Search filesystem for file. Download if need be.
 
         File coverFile = null;
-
 
         File dir = new File(MainActivity.applicationContext.getFilesDir(), Integer.toString(issue.getID()));
         String[] pathComponents = issue.getCoverURL().getPath().split("/");
@@ -177,25 +213,6 @@ public class Publisher {
             new DownloadMagazineCover().execute(issue);
             return null;
         }
-    }
-
-    public static ArrayList buildCoverParams(JsonObject issue, Context context) {
-
-        String coverURLString = issue.get("cover").getAsJsonObject().get("url").getAsString();
-        String issueID = issue.get("id").getAsString();
-
-        URL coverURL = null;
-        try {
-            coverURL = new URL(coverURLString);
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        }
-        ArrayList<Object> coverParams = new ArrayList<>();
-        // Send URL object and Rails issueID to request Cover.
-        coverParams.add(coverURL);
-        coverParams.add(issueID);
-        coverParams.add(context);
-        return coverParams;
     }
 
     public static class DownloadMagazineCover extends AsyncTask<Issue, Integer, File> {
@@ -252,6 +269,65 @@ public class Publisher {
                 Log.i("DownloadComplete", "Calling onDownloadComplete");
                 // TODO: Handle multiple listeners
                 listener.onDownloadComplete(coverFile);
+            }
+        }
+    }
+
+    // ARTICLES download task for Issue issue
+    public static class DownloadArticlesJSONTask extends AsyncTask<Object, Integer, JsonArray> {
+
+        @Override
+        protected JsonArray doInBackground(Object... objects) {
+
+            JsonArray rootArray = null;
+
+            ByteCache articlesJSONCache = (ByteCache) objects[0];
+            Issue issue = (Issue) objects[1];
+
+            ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(articlesJSONCache.read());
+            BufferedInputStream bufferedInputStream = new BufferedInputStream(byteArrayInputStream);
+            InputStreamReader inputStreamReader = new InputStreamReader(bufferedInputStream);
+            JsonElement root = new JsonParser().parse(inputStreamReader);
+            rootArray = root.getAsJsonObject().get("articles").getAsJsonArray();
+
+            // Save article.json for each article to the filesystem
+
+            if (rootArray != null) {
+                Iterator<JsonElement> i = rootArray.iterator();
+                while(i.hasNext()) {
+                    JsonObject jsonObject = i.next().getAsJsonObject();
+
+                    int id = jsonObject.get("id").getAsInt();
+
+                    File dir = new File(MainActivity.applicationContext.getFilesDir() + "/" + Integer.toString(issue.getID()) + "/",Integer.toString(id));
+                    dir.mkdirs();
+
+                    File file = new File(dir,"article.json");
+
+                    try {
+                        Writer w = new FileWriter(file);
+
+                        new Gson().toJson(jsonObject,w);
+
+                        w.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            return rootArray;
+        }
+
+        @Override
+        protected void onPostExecute(JsonArray articles) {
+            super.onPostExecute(articles);
+
+            // Send articles to listener
+            for (ArticlesDownloadCompleteListener listener : articleListeners) {
+                Log.i("ArticlesReady", "Calling onArticlesDownloadComplete");
+                // TODO: Handle multiple listeners
+                listener.onArticlesDownloadComplete(articles);
             }
         }
     }
