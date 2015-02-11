@@ -177,11 +177,10 @@ public class MainActivity extends ActionBarActivity {
             home_cover.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    // TODO: Handle cover clicked
-                    // TODO: Pass Issue object using Parcelable?
-                    // http://stackoverflow.com/questions/2139134/how-to-send-an-object-from-one-android-activity-to-another-using-intents
-                    Log.i("Cover", "Cover was clicked!");
+                    // Cover tapped
+                    Log.i("Cover", "Cover was tapped!");
                     Intent tableOfContentsIntent = new Intent(rootView.getContext(), TableOfContentsActivity.class);
+                    // Pass issue through as a Parcel
                     tableOfContentsIntent.putExtra("issue", latestIssueOnFile);
                     startActivity(tableOfContentsIntent);
                 }

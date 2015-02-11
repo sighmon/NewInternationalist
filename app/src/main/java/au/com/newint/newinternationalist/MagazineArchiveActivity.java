@@ -90,9 +90,11 @@ public class MagazineArchiveActivity extends ActionBarActivity {
 
             gridview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
-                    // TODO: On tap, move to magazine table of contents
-                    String magazineTitle = magazines.get(position).getTitle();
-                    Toast.makeText(rootView.getContext(), magazineTitle, Toast.LENGTH_SHORT).show();
+                    // On tap, move to magazine table of contents
+                    Intent tableOfContentsIntent = new Intent(rootView.getContext(), TableOfContentsActivity.class);
+                    // Pass issue through as a Parcel
+                    tableOfContentsIntent.putExtra("issue", magazines.get(position));
+                    startActivity(tableOfContentsIntent);
                 }
             });
 
