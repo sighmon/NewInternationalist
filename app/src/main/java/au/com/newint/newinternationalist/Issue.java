@@ -1,5 +1,7 @@
 package au.com.newint.newinternationalist;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -142,6 +144,47 @@ public class Issue implements Parcelable {
             // Download cover
             new DownloadMagazineCover().execute(this);
             return null;
+        }
+    }
+
+    public File getCoverForSize(int width, int height) {
+
+        // TODO: FIX THIS!!!!!!!!!!!!!
+
+        File coverForSize = null;
+
+        File coverDir =  new File(MainActivity.applicationContext.getFilesDir(), Integer.toString(getID()));
+        String[] pathComponents = getCoverURL().getPath().split("/");
+        // TODO: Get the extension programatically!
+        String coverForSizeFilename = pathComponents[pathComponents.length - 1] + "_" + width + "_" + height + ".jpg";
+        coverForSize = new File(coverDir,coverForSizeFilename);
+
+        if (coverForSize != null) {
+            // Return coverForSize from filesystem
+            return coverForSize;
+        } else {
+            File fullsizeCover = getCover();
+            if (fullsizeCover != null) {
+                // Scale cover for size requested
+                Bitmap fullsizeCoverBitmap = BitmapFactory.decodeFile(fullsizeCover.getPath());
+                Bitmap scaledCover = Bitmap.createScaledBitmap(fullsizeCoverBitmap, width, height, true);
+                // Save to filesystem
+                FileOutputStream fileOutputStream = null;
+                try {
+                    fileOutputStream = new FileOutputStream(coverForSize);
+                    scaledCover.compress(Bitmap.CompressFormat.JPEG, 85, fileOutputStream);
+                    fileOutputStream.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                return coverForSize;
+
+            } else {
+                // Download first, then scale
+                new DownloadMagazineCover().execute(this);
+                // TODO: Get callback to re-run coverForSize
+                return null;
+            }
         }
     }
 
