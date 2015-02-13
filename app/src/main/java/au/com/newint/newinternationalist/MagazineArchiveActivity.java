@@ -145,7 +145,7 @@ public class MagazineArchiveActivity extends ActionBarActivity {
                 if (magazines != null) {
                     Issue issue = magazines.get(position);
                     // TODO: Get cover thumb from cache
-                    File coverFile = Publisher.INSTANCE.latestIssue().getCover();
+                    File coverFile = issue.getCover();
                     if (coverFile != null && coverFile.exists()) {
                         Bitmap coverBitmap = BitmapFactory.decodeFile(coverFile.getPath());
                         imageView.setImageBitmap(coverBitmap);
