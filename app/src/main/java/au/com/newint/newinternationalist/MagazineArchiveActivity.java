@@ -82,7 +82,7 @@ public class MagazineArchiveActivity extends ActionBarActivity {
             final View rootView = inflater.inflate(R.layout.fragment_magazine_archive, container, false);
 
             // Get Magazines
-            magazines = Publisher.getIssuesFromFilesystem();
+            magazines = Publisher.INSTANCE.getIssuesFromFilesystem();
 
             // Setup the GridView
             GridView gridview = (GridView) rootView.findViewById(R.id.magazineArchiveGridView);
@@ -110,7 +110,7 @@ public class MagazineArchiveActivity extends ActionBarActivity {
 
             public int getCount() {
 
-                return Publisher.numberOfIssues();
+                return Publisher.INSTANCE.numberOfIssues();
             }
 
             public Object getItem(int position) {
@@ -145,7 +145,7 @@ public class MagazineArchiveActivity extends ActionBarActivity {
                 if (magazines != null) {
                     Issue issue = magazines.get(position);
                     // TODO: Get cover thumb from cache
-                    File coverFile = Publisher.getCoverForIssue(issue);
+                    File coverFile = Publisher.INSTANCE.latestIssue().getCover();
                     if (coverFile != null && coverFile.exists()) {
                         Bitmap coverBitmap = BitmapFactory.decodeFile(coverFile.getPath());
                         imageView.setImageBitmap(coverBitmap);

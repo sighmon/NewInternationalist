@@ -8,8 +8,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.AsyncTask;
-import android.os.Parcel;
-import android.os.Parcelable;
 import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v4.app.Fragment;
@@ -39,10 +37,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Writer;
-import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Iterator;
 import java.util.Properties;
 
 public class MainActivity extends ActionBarActivity {
@@ -139,27 +135,31 @@ public class MainActivity extends ActionBarActivity {
             final View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
             // Register for DownloadComplete listener
-            Publisher.DownloadCompleteListener listener = new Publisher.DownloadCompleteListener() {
+            Publisher.UpdateListener listener = new Publisher.UpdateListener() {
                 @Override
-                public void onDownloadComplete(File fileDownloaded) {
+                public void onUpdate(Object object) {
+
+                    Issue issue = (Issue) object;
 
                     Log.i("DownloadComplete", "Received listener, showing cover.");
 
                     // Show cover
                     ImageButton home_cover = (ImageButton) rootView.findViewById(R.id.home_cover);
                     if (home_cover != null) {
-                        Bitmap coverBitmap = BitmapFactory.decodeFile(fileDownloaded.getPath());
+                        Bitmap coverBitmap = BitmapFactory.decodeFile(issue.getCover().getPath());
                         home_cover.setImageBitmap(coverBitmap);
                         home_cover.setScaleType(ImageView.ScaleType.FIT_CENTER);
                     }
+
+                    latestIssueOnFile = issue;
                 }
             };
-            Publisher.setOnDownloadCompleteListener(listener);
+            Publisher.INSTANCE.setOnDownloadCompleteListener(listener);
 
             // Display latest cover if available on filesystem
-            latestIssueOnFile = Publisher.latestIssue();
+            latestIssueOnFile = Publisher.INSTANCE.latestIssue();
             if (latestIssueOnFile != null) {
-                File coverFile = Publisher.getCoverForIssue(latestIssueOnFile);
+                File coverFile = latestIssueOnFile.getCover();
 
                 if (coverFile != null && coverFile.exists()) {
                     // Show cover
@@ -179,10 +179,12 @@ public class MainActivity extends ActionBarActivity {
                 public void onClick(View view) {
                     // Cover tapped
                     Log.i("Cover", "Cover was tapped!");
-                    Intent tableOfContentsIntent = new Intent(rootView.getContext(), TableOfContentsActivity.class);
-                    // Pass issue through as a Parcel
-                    tableOfContentsIntent.putExtra("issue", latestIssueOnFile);
-                    startActivity(tableOfContentsIntent);
+                    if(latestIssueOnFile!=null) {
+                        Intent tableOfContentsIntent = new Intent(rootView.getContext(), TableOfContentsActivity.class);
+                        // Pass issue through as a Parcel
+                        tableOfContentsIntent.putExtra("issue", latestIssueOnFile);
+                        startActivity(tableOfContentsIntent);
+                    }
                 }
             });
 
@@ -253,26 +255,19 @@ public class MainActivity extends ActionBarActivity {
 
             //Log.i("toJson", new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create().toJson(firstMagazine));
 
-            return rootArray;
-        }
-
-        @Override
-        protected void onPostExecute(JsonArray magazines) {
-            super.onPostExecute(magazines);
-
-            // Check for new issues.
+            JsonArray magazines = rootArray;
 
             if (magazines != null) {
                 JsonObject newestOnlineIssue = magazines.get(0).getAsJsonObject();
                 int newestOnlineIssueRailsId = newestOnlineIssue.get("id").getAsInt();
-                int magazinesOnFilesystem = Publisher.numberOfIssues();
+                int magazinesOnFilesystem = Publisher.INSTANCE.numberOfIssues();
 
                 Log.i("Filesystem", String.format("Number of issues on filesystem: %1$d", magazinesOnFilesystem));
                 Log.i("www", String.format("Number of issues on www: %1$d", magazines.size()));
 
                 if (magazines.size() > magazinesOnFilesystem) {
                     // There are more issues online. Now check if it's a new or backissue
-                    Issue latestIssue = Publisher.latestIssue();
+                    Issue latestIssue = Publisher.INSTANCE.latestIssue();
                     if (latestIssue != null) {
                         int newestFilesystemIssueRailsId = latestIssue.getID();
 
@@ -283,45 +278,45 @@ public class MainActivity extends ActionBarActivity {
                         }
                     }
 
-                    Iterator<JsonElement> i = magazines.iterator();
-                    while(i.hasNext()) {
-                        JsonObject jsonObject = i.next().getAsJsonObject();
+                    for (JsonElement magazine : magazines) {
+                        JsonObject jsonObject = magazine.getAsJsonObject();
 
                         int id = jsonObject.get("id").getAsInt();
 
-                        File dir = new File(getApplicationContext().getFilesDir(),Integer.toString(id));
+                        File dir = new File(getApplicationContext().getFilesDir(), Integer.toString(id));
                         dir.mkdirs();
 
-                        File file = new File(dir,"issue.json");
+                        File file = new File(dir, "issue.json");
 
                         try {
                             Writer w = new FileWriter(file);
 
-                            new Gson().toJson(jsonObject,w);
+                            new Gson().toJson(jsonObject, w);
 
                             w.close();
                         } catch (IOException e) {
                             e.printStackTrace();
                         }
                     }
-                    
-                    if (newIssueAdded || magazinesOnFilesystem == 0) {
-                        // Download the new cover if there's a new issue
-                        //TODO: this fails first run after data wipe
-                        File coverFile = Publisher.getCoverForIssue(Publisher.getIssuesFromFilesystem().get(0));
 
-                        if (coverFile != null && coverFile.exists()) {
-                            // Show cover
-                            ImageButton home_cover = (ImageButton) findViewById(R.id.home_cover);
-                            if (home_cover != null) {
-                                Bitmap coverBitmap = BitmapFactory.decodeFile(coverFile.getPath());
-                                home_cover.setImageBitmap(coverBitmap);
-                                home_cover.setScaleType(ImageView.ScaleType.FIT_CENTER);
-                            }
-                        }
-                    }
+                    //TODO: this should be done in main activity in response to a listener
+                    Publisher.INSTANCE.issuesList = null;
+                    latestIssue = Publisher.INSTANCE.latestIssue();
+                    if (latestIssue!=null) latestIssue.getCover();
+
                 }
             }
+
+            return rootArray;
+        }
+
+        @Override
+        protected void onPostExecute(JsonArray magazines) {
+            super.onPostExecute(magazines);
+
+            // Check for new issues.
+
+
         }
     }
 }

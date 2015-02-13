@@ -1,6 +1,6 @@
 package au.com.newint.newinternationalist;
 
-import android.content.Context;
+import android.os.AsyncTask;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.Log;
@@ -9,16 +9,19 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+import org.apache.commons.io.IOUtils;
+
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
-import java.lang.reflect.Array;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
 
 /**
  * Created by New Internationalist on 4/02/15.
@@ -121,6 +124,27 @@ public class Issue implements Parcelable {
         return articles;
     }
 
+    public File getCover() {
+        // Search filesystem for file. Download if need be.
+
+        File coverFile = null;
+
+        File dir = new File(MainActivity.applicationContext.getFilesDir(), Integer.toString(getID()));
+        String[] pathComponents = getCoverURL().getPath().split("/");
+        String filename = pathComponents[pathComponents.length - 1];
+
+        coverFile = new File(dir,filename);
+
+        if (coverFile.exists()) {
+            // Return cover from filesystem
+            return coverFile;
+        } else {
+            // Download cover
+            new DownloadMagazineCover().execute(this);
+            return null;
+        }
+    }
+
     // PARCELABLE delegate methods
 
     private Issue(Parcel in) {
@@ -148,4 +172,65 @@ public class Issue implements Parcelable {
             return new Issue[size];
         }
     };
+
+    // async tasks -------------------------------------------------------
+
+    public static class DownloadMagazineCover extends AsyncTask<Issue, Integer, Issue> {
+
+        @Override
+        protected Issue doInBackground(Issue... params) {
+
+            // Download the cover
+
+            File coverFile = null;
+
+            Issue issue = (Issue) params[0];
+
+            HttpURLConnection urlConnection = null;
+            try {
+                urlConnection = (HttpURLConnection) issue.getCoverURL().openConnection();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            try {
+                assert urlConnection != null;
+                InputStream urlConnectionInputStream = urlConnection.getInputStream();
+
+                File dir = new File(MainActivity.applicationContext.getFilesDir(), Integer.toString(issue.getID()));
+                String[] pathComponents = issue.getCoverURL().getPath().split("/");
+                String filename = pathComponents[pathComponents.length - 1];
+
+                coverFile = new File(dir,filename);
+
+                // Save to filesystem
+                FileOutputStream fos = new FileOutputStream(coverFile);
+
+                IOUtils.copy(urlConnectionInputStream, fos);
+
+                fos.close();
+            }
+            catch(Exception e) {
+                Log.e("http", e.toString());
+            }
+            finally {
+                assert urlConnection != null;
+                urlConnection.disconnect();
+            }
+
+            return issue;
+        }
+
+        @Override
+        protected void onPostExecute(Issue issue) {
+            super.onPostExecute(issue);
+
+            // Send coverFile to listener
+            // TODO: in future, hand in listener in .execute parameters
+            for (Publisher.UpdateListener listener : Publisher.INSTANCE.listeners) {
+                Log.i("DownloadComplete", "Calling onDownloadComplete");
+                // TODO: Handle multiple listeners
+                listener.onUpdate(issue);
+            }
+        }
+    }
 }

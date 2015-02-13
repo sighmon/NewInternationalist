@@ -129,7 +129,7 @@ public class TableOfContentsActivity extends ActionBarActivity {
             if (bundle != null) {
                 issueFromActivity = bundle.getParcelable("issue");
             } else {
-                issueFromActivity = new Issue(Publisher.latestIssue().getID());
+                issueFromActivity = new Issue(Publisher.INSTANCE.latestIssue().getID());
             }
 
             final TableOfContentsAdapter adapter = new TableOfContentsAdapter(issueFromActivity);
@@ -146,7 +146,7 @@ public class TableOfContentsActivity extends ActionBarActivity {
                     Publisher.articleListeners.clear();
                 }
             };
-            Publisher.setOnArticlesDownloadCompleteListener(listener);
+            Publisher.INSTANCE.setOnArticlesDownloadCompleteListener(listener);
 
             return rootView;
         }
