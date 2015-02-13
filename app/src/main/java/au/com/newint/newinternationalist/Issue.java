@@ -112,7 +112,7 @@ public class Issue implements Parcelable {
         }
     }
 
-    public ArrayList getArticles() {
+    public ArrayList<Article> getArticles() {
         if(articles == null) {
             File dir = new File(MainActivity.applicationContext.getFilesDir() + "/" + Integer.toString(getID()) + "/");
             articles = Publisher.buildArticlesFromDir(dir);

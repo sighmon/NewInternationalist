@@ -132,7 +132,7 @@ public class TableOfContentsActivity extends ActionBarActivity {
                 issueFromActivity = new Issue(Publisher.latestIssue().getID());
             }
 
-            final TableOfContentsAdapter adapter = new TableOfContentsAdapter(issueFromActivity.articles);
+            final TableOfContentsAdapter adapter = new TableOfContentsAdapter(issueFromActivity);
             recList.setAdapter(adapter);
 
             // Register for DownloadComplete listener
@@ -154,10 +154,10 @@ public class TableOfContentsActivity extends ActionBarActivity {
         // Adapter for CardView
         public class TableOfContentsAdapter extends RecyclerView.Adapter<TableOfContentsAdapter.TableOfContentsViewHolder> {
 
-            public List<Article> articles;
+            public Issue issue;
 
-            public TableOfContentsAdapter(List<Article> articles) {
-                this.articles = articles;
+            public TableOfContentsAdapter(Issue issue) {
+                this.issue = issue;
             }
 
             @Override
@@ -171,16 +171,17 @@ public class TableOfContentsActivity extends ActionBarActivity {
             }
 
             @Override
+            public int getItemCount() {
+                return issue.getArticles().size();
+            }
+
+            @Override
             public void onBindViewHolder(TableOfContentsViewHolder holder, int position) {
-                Article article = articles.get(position);
+                Article article = issue.getArticles().get(position);
                 holder.articleTitleTextView.setText(article.getTitle());
                 holder.articleTeaserTextView.setText(article.getTeaser());
             }
 
-            @Override
-            public int getItemCount() {
-                return articles.size();
-            }
 
             public class TableOfContentsViewHolder extends RecyclerView.ViewHolder {
 

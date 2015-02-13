@@ -307,6 +307,7 @@ public class MainActivity extends ActionBarActivity {
                     
                     if (newIssueAdded || magazinesOnFilesystem == 0) {
                         // Download the new cover if there's a new issue
+                        //TODO: this fails first run after data wipe
                         File coverFile = Publisher.getCoverForIssue(Publisher.getIssuesFromFilesystem().get(0));
 
                         if (coverFile != null && coverFile.exists()) {

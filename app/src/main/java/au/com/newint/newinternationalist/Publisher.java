@@ -316,6 +316,10 @@ public class Publisher {
                 }
             }
 
+            //TODO: articles should inform their issue when they are updated
+            // make issue reload articles from disk
+            issue.articles = null;
+
             return rootArray;
         }
 
