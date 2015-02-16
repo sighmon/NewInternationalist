@@ -2,6 +2,7 @@ package au.com.newint.newinternationalist;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.support.v7.app.ActionBarActivity;
@@ -150,6 +151,10 @@ public class MagazineArchiveActivity extends ActionBarActivity {
                         Bitmap coverBitmap = BitmapFactory.decodeFile(coverFile.getPath());
                         imageView.setImageBitmap(coverBitmap);
 //                        imageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
+                    } else {
+                        // Set default loading cover...
+                        Bitmap defaultCoverBitmap = BitmapFactory.decodeResource(mContext.getResources(), R.drawable.home_cover);
+                        imageView.setImageBitmap(defaultCoverBitmap);
                     }
                 }
 

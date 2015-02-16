@@ -44,6 +44,8 @@ public class Issue implements Parcelable {
 
     JsonObject issueJson;
 
+    boolean requestingCover;
+
     public Issue(File jsonFile) {
         JsonElement root = null;
         try {
@@ -140,8 +142,12 @@ public class Issue implements Parcelable {
         if (coverFile.exists()) {
             // Return cover from filesystem
             return coverFile;
+        } else if (requestingCover) {
+            // Cover is already being requested
+            return null;
         } else {
             // Download cover
+            requestingCover = true;
             new DownloadMagazineCover().execute(this);
             return null;
         }
@@ -149,40 +155,52 @@ public class Issue implements Parcelable {
 
     public File getCoverForSize(int width, int height) {
 
-        // TODO: FIX THIS!!!!!!!!!!!!!
-
         File coverForSize = null;
 
         File coverDir =  new File(MainActivity.applicationContext.getFilesDir(), Integer.toString(getID()));
         String[] pathComponents = getCoverURL().getPath().split("/");
-        // TODO: Get the extension programatically!
-        String coverForSizeFilename = pathComponents[pathComponents.length - 1] + "_" + width + "_" + height + ".jpg";
+        String fullsizeCoverFilename = pathComponents[pathComponents.length -1];
+        String fileExtension = null;
+        if (fullsizeCoverFilename.contains(".")) {
+            fileExtension = fullsizeCoverFilename.substring(fullsizeCoverFilename.lastIndexOf("."));
+        } else {
+            fileExtension = "";
+        }
+        String coverForSizeFilename = fullsizeCoverFilename + "_" + width + "_" + height + fileExtension;
         coverForSize = new File(coverDir,coverForSizeFilename);
 
-        if (coverForSize != null) {
+        if (coverForSize != null && coverForSize.exists()) {
             // Return coverForSize from filesystem
             return coverForSize;
         } else {
             File fullsizeCover = getCover();
-            if (fullsizeCover != null) {
+            if (fullsizeCover != null && fullsizeCover.exists()) {
                 // Scale cover for size requested
                 Bitmap fullsizeCoverBitmap = BitmapFactory.decodeFile(fullsizeCover.getPath());
-                Bitmap scaledCover = Bitmap.createScaledBitmap(fullsizeCoverBitmap, width, height, true);
-                // Save to filesystem
-                FileOutputStream fileOutputStream = null;
-                try {
-                    fileOutputStream = new FileOutputStream(coverForSize);
-                    scaledCover.compress(Bitmap.CompressFormat.JPEG, 85, fileOutputStream);
-                    fileOutputStream.close();
-                } catch (Exception e) {
-                    e.printStackTrace();
+                if (fullsizeCoverBitmap != null) {
+                    Bitmap scaledCover = Bitmap.createScaledBitmap(fullsizeCoverBitmap, width, height, true);
+                    // Save to filesystem
+                    FileOutputStream fileOutputStream = null;
+                    try {
+                        fileOutputStream = new FileOutputStream(coverForSize);
+                        scaledCover.compress(Bitmap.CompressFormat.JPEG, 100, fileOutputStream);
+                        fileOutputStream.close();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    return coverForSize;
+                } else {
+                    // The cover file is corrupt!!
+                    if (fullsizeCover.delete()) {
+                        Log.i("Cover", "This cover was corrupt, but deleted successfully.");
+                    } else {
+                        Log.i("Cover", "ERROR: Couldn't delete this cover..." + fullsizeCover);
+                    }
+                    return null;
                 }
-                return coverForSize;
-
             } else {
-                // Download first, then scale
-                new DownloadMagazineCover().execute(this);
                 // TODO: Get callback to re-run coverForSize
+                // At the moment the cover only updates once downloaded when the user scrolls back onto it.
                 return null;
             }
         }

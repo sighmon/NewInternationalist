@@ -128,6 +128,7 @@ public class MainActivity extends ActionBarActivity {
         }
 
         Issue latestIssueOnFile;
+        Publisher.UpdateListener listener;
 
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -135,7 +136,7 @@ public class MainActivity extends ActionBarActivity {
             final View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
             // Register for DownloadComplete listener
-            Publisher.UpdateListener listener = new Publisher.UpdateListener() {
+            listener = new Publisher.UpdateListener() {
                 @Override
                 public void onUpdate(Object object) {
 
@@ -218,6 +219,12 @@ public class MainActivity extends ActionBarActivity {
             });
 
             return rootView;
+        }
+
+        @Override
+        public void onPause() {
+            super.onPause();
+            Publisher.INSTANCE.removeDownloadCompleteListener(listener);
         }
     }
 

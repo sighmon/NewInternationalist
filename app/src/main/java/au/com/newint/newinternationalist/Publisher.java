@@ -50,6 +50,11 @@ public enum Publisher {
         listeners.add(listener);
     }
 
+    public void removeDownloadCompleteListener(UpdateListener listener) {
+        // Remove the listener object
+        listeners.remove(listener);
+    }
+
     static ArrayList <ArticlesDownloadCompleteListener> articleListeners = new ArrayList <ArticlesDownloadCompleteListener> ();
 
     public void setOnArticlesDownloadCompleteListener(ArticlesDownloadCompleteListener listener) {
