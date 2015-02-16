@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.Html;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -179,7 +180,7 @@ public class TableOfContentsActivity extends ActionBarActivity {
             public void onBindViewHolder(TableOfContentsViewHolder holder, int position) {
                 Article article = issue.getArticles().get(position);
                 holder.articleTitleTextView.setText(article.getTitle());
-                holder.articleTeaserTextView.setText(article.getTeaser());
+                holder.articleTeaserTextView.setText(Html.fromHtml(article.getTeaser()));
             }
 
 

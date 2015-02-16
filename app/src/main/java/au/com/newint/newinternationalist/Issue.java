@@ -178,6 +178,7 @@ public class Issue implements Parcelable {
                 // Scale cover for size requested
                 Bitmap fullsizeCoverBitmap = BitmapFactory.decodeFile(fullsizeCover.getPath());
                 if (fullsizeCoverBitmap != null) {
+                    // TODO: Work out why this creates jagged images. Is the image size wrong??
                     Bitmap scaledCover = Bitmap.createScaledBitmap(fullsizeCoverBitmap, width, height, true);
                     // Save to filesystem
                     FileOutputStream fileOutputStream = null;
