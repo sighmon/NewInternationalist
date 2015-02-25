@@ -28,6 +28,8 @@ import org.w3c.dom.Text;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -233,7 +235,8 @@ public class TableOfContentsActivity extends ActionBarActivity {
 
                 if (holder instanceof TableOfContentsHeaderViewHolder) {
                     // Header
-                    String issueNumberDate = Integer.toString(issue.getNumber()) + " - " + issue.getRelease();
+                    DateFormat dateFormat = new SimpleDateFormat("MMMM, yyyy");
+                    String issueNumberDate = Integer.toString(issue.getNumber()) + " - " + dateFormat.format(issue.getRelease());
                     ((TableOfContentsHeaderViewHolder) holder).issueNumberDateTextView.setText(issueNumberDate);
 
                     ImageView coverImageView = ((TableOfContentsHeaderViewHolder) holder).issueCoverImageView;
