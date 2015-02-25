@@ -31,5 +31,9 @@
     <string name="article_title">Article title</string>
     <string name="article_teaser">Article teaser</string>
     <string name="article_categories">Category, Category</string>
+    <string name="toc_issue_number_date">000 - Date, Year</string>
+    <string name="toc_cover_description">Magazine cover image</string>
+    <string name="toc_editor_image_description">Photo of the editor of this magazine</string>
+    <string name="toc_editors_letter">Editors letter.</string>
 
 </resources>

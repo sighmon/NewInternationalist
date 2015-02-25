@@ -161,78 +161,127 @@ public class TableOfContentsActivity extends ActionBarActivity {
         }
 
         // Adapter for CardView
-        public class TableOfContentsAdapter extends RecyclerView.Adapter<TableOfContentsAdapter.TableOfContentsViewHolder> {
+        public class TableOfContentsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
             public Issue issue;
+            private static final int TYPE_HEADER = 0;
+            private static final int TYPE_ARTICLE = 1;
+            private static final int TYPE_FOOTER = 2;
 
             public TableOfContentsAdapter(Issue issue) {
                 this.issue = issue;
             }
 
             @Override
-            public TableOfContentsViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-                View itemView = LayoutInflater.
-                        from(parent.getContext()).
-                        inflate(R.layout.fragment_table_of_contents_card_view, parent, false);
-//                  View itemView = parent.getRootView().findViewById(R.id.card_view);
+            public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+                View itemView = null;
+                if (viewType == 0) {
+                    // Header
+                    itemView = LayoutInflater.
+                            from(parent.getContext()).
+                            inflate(R.layout.fragment_table_of_contents_header_view, parent, false);
+                    return new TableOfContentsHeaderViewHolder(itemView);
 
-                return new TableOfContentsViewHolder(itemView);
+                } else if (viewType == 1) {
+                    // Article
+                    itemView = LayoutInflater.
+                            from(parent.getContext()).
+                            inflate(R.layout.fragment_table_of_contents_card_view, parent, false);
+                    return new TableOfContentsViewHolder(itemView);
+
+                } else if (viewType == 2) {
+                    // Footer
+                    itemView = LayoutInflater.
+                            from(parent.getContext()).
+                            inflate(R.layout.fragment_table_of_contents_footer_view, parent, false);
+                    return new TableOfContentsFooterViewHolder(itemView);
+                } else {
+                    // Uh oh... didn't match view type.
+                    return null;
+                }
             }
 
             @Override
             public int getItemCount() {
-                return issue.getArticles().size();
+                return issue.getArticles().size() + 2; // 2 = header + footer
             }
 
             @Override
-            public void onBindViewHolder(TableOfContentsViewHolder holder, int position) {
-                Article article = issue.getArticles().get(position);
-                holder.articleTitleTextView.setText(article.getTitle());
-                holder.articleTeaserTextView.setText(Html.fromHtml(article.getTeaser()));
-
-                String categoriesTemporaryString = "";
-                String separator = "";
-                ArrayList<HashMap<String,Object>> categories = article.getCategories();
-                for (HashMap<String,Object> category : categories) {
-                    categoriesTemporaryString += separator;
-                    categoriesTemporaryString += category.get("name");
-                    separator = "\n";
+            public int getItemViewType(int position) {
+                if (isPositionHeader(position)) {
+                    return TYPE_HEADER;
+                } else if (isPositionFooter(position)) {
+                    return TYPE_FOOTER;
                 }
+                return TYPE_ARTICLE;
+            }
 
-                holder.articleCategoriesTextView.setText(categoriesTemporaryString);
+            private boolean isPositionHeader(int position) {
+                return position == 0;
+            }
 
-                // Load the cover into the keynote card
-                // TODO: is this the best idea? make a new card for it?
-                if (article != null && article.getKeynote()) {
+            private boolean isPositionFooter(int position) {
+                return position == issue.getArticles().size() + 1;
+            }
 
-                    if (holder.issueCoverImageView.getLayoutParams().width < 1) {
+            private Article getArticle(int position) {
+                return issue.getArticles().get(position - 1); // Header
+            }
+
+            @Override
+            public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
+
+                if (holder instanceof TableOfContentsHeaderViewHolder) {
+                    // Header
+                    String issueNumberDate = Integer.toString(issue.getNumber()) + " - " + issue.getRelease();
+                    ((TableOfContentsHeaderViewHolder) holder).issueNumberDateTextView.setText(issueNumberDate);
+
+                    ImageView coverImageView = ((TableOfContentsHeaderViewHolder) holder).issueCoverImageView;
+                    if (coverImageView.getLayoutParams().width < 1) {
 
                         int coverWidth = 400;
                         int coverHeight = 576;
                         File coverFile = issue.getCoverForSize(coverWidth, coverHeight);
 
                         // Expand the image to the right size
-                        ViewGroup.LayoutParams params = holder.issueCoverImageView.getLayoutParams();
+                        ViewGroup.LayoutParams params = coverImageView.getLayoutParams();
                         params.width = coverWidth;
                         params.height = coverHeight;
-                        holder.issueCoverImageView.setLayoutParams(params);
+                        coverImageView.setLayoutParams(params);
 
                         if (coverFile != null && coverFile.exists()) {
                             Bitmap coverBitmap = BitmapFactory.decodeFile(coverFile.getPath());
-                            holder.issueCoverImageView.setImageBitmap(coverBitmap);
+                            coverImageView.setImageBitmap(coverBitmap);
                         } else {
                             // Set default loading cover...
                             Bitmap defaultCoverBitmap = BitmapFactory.decodeResource(MainActivity.applicationContext.getResources(), R.drawable.home_cover);
-                            holder.issueCoverImageView.setImageBitmap(defaultCoverBitmap);
+                            coverImageView.setImageBitmap(defaultCoverBitmap);
                         }
                     }
-                } else {
-                    // Remove recycled cover if it exists
-                    ViewGroup.LayoutParams params = holder.issueCoverImageView.getLayoutParams();
-                    params.width = 0;
-                    params.height = 0;
-                    holder.issueCoverImageView.setLayoutParams(params);
-                    holder.issueCoverImageView.setImageDrawable(null);
+
+                } else if (holder instanceof TableOfContentsViewHolder) {
+                    // Article
+                    Article article = getArticle(position);
+                    ((TableOfContentsViewHolder) holder).articleTitleTextView.setText(article.getTitle());
+                    ((TableOfContentsViewHolder) holder).articleTeaserTextView.setText(Html.fromHtml(article.getTeaser()));
+
+                    String categoriesTemporaryString = "";
+                    String separator = "";
+                    ArrayList<HashMap<String,Object>> categories = article.getCategories();
+                    for (HashMap<String,Object> category : categories) {
+                        categoriesTemporaryString += separator;
+                        categoriesTemporaryString += category.get("name");
+                        separator = "\n";
+                    }
+
+                    ((TableOfContentsViewHolder) holder).articleCategoriesTextView.setText(categoriesTemporaryString);
+
+                } else if (holder instanceof TableOfContentsFooterViewHolder) {
+                    // Footer
+                    // TODO: get editor image.
+//                    ImageView editorImageView = ((TableOfContentsFooterViewHolder) holder).editorImageView;
+
+                    ((TableOfContentsFooterViewHolder) holder).editorsLetterTextView.setText(Html.fromHtml(issue.getEditorsLetterHtml()));
                 }
             }
 
@@ -242,14 +291,36 @@ public class TableOfContentsActivity extends ActionBarActivity {
                 public TextView articleTitleTextView;
                 public TextView articleTeaserTextView;
                 public TextView articleCategoriesTextView;
-                public ImageView issueCoverImageView;
 
                 public TableOfContentsViewHolder(View itemView) {
                     super(itemView);
                     articleTitleTextView = (TextView) itemView.findViewById(R.id.article_title);
                     articleTeaserTextView = (TextView) itemView.findViewById(R.id.article_teaser);
                     articleCategoriesTextView = (TextView) itemView.findViewById(R.id.article_categories);
+                }
+            }
+
+            public class TableOfContentsHeaderViewHolder extends RecyclerView.ViewHolder {
+
+                public ImageView issueCoverImageView;
+                public TextView issueNumberDateTextView;
+
+                public TableOfContentsHeaderViewHolder(View itemView) {
+                    super(itemView);
                     issueCoverImageView = (ImageView) itemView.findViewById(R.id.toc_cover);
+                    issueNumberDateTextView = (TextView) itemView.findViewById(R.id.toc_issue_number_date);
+                }
+            }
+
+            public class TableOfContentsFooterViewHolder extends RecyclerView.ViewHolder {
+
+                public ImageView editorImageView;
+                public TextView editorsLetterTextView;
+
+                public TableOfContentsFooterViewHolder(View itemView) {
+                    super(itemView);
+                    editorImageView = (ImageView) itemView.findViewById(R.id.toc_editor_image);
+                    editorsLetterTextView = (TextView) itemView.findViewById(R.id.toc_editors_letter);
                 }
             }
         }
