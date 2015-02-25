@@ -1,6 +1,8 @@
 package au.com.newint.newinternationalist;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.v7.app.ActionBarActivity;
@@ -16,6 +18,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.google.gson.JsonArray;
@@ -142,7 +145,7 @@ public class TableOfContentsActivity extends ActionBarActivity {
                 @Override
                 public void onArticlesDownloadComplete(JsonArray articles) {
                     Log.i("ArticlesReady", "Received listener, refreshing articles view.");
-                    // TODO: Work out how to refresh adapter
+                    // Refresh adapter data
                     adapter.notifyDataSetChanged();
                     Publisher.articleListeners.clear();
                 }
@@ -181,6 +184,40 @@ public class TableOfContentsActivity extends ActionBarActivity {
                 Article article = issue.getArticles().get(position);
                 holder.articleTitleTextView.setText(article.getTitle());
                 holder.articleTeaserTextView.setText(Html.fromHtml(article.getTeaser()));
+
+                // Load the cover into the keynote card
+                // TODO: is this the best idea? make a new card for it?
+                if (article != null && article.getKeynote()) {
+
+                    if (holder.issueCoverImageView.getLayoutParams().width < 1) {
+
+                        int coverWidth = 400;
+                        int coverHeight = 576;
+                        File coverFile = issue.getCoverForSize(coverWidth, coverHeight);
+
+                        // Expand the image to the right size
+                        ViewGroup.LayoutParams params = holder.issueCoverImageView.getLayoutParams();
+                        params.width = coverWidth;
+                        params.height = coverHeight;
+                        holder.issueCoverImageView.setLayoutParams(params);
+
+                        if (coverFile != null && coverFile.exists()) {
+                            Bitmap coverBitmap = BitmapFactory.decodeFile(coverFile.getPath());
+                            holder.issueCoverImageView.setImageBitmap(coverBitmap);
+                        } else {
+                            // Set default loading cover...
+                            Bitmap defaultCoverBitmap = BitmapFactory.decodeResource(MainActivity.applicationContext.getResources(), R.drawable.home_cover);
+                            holder.issueCoverImageView.setImageBitmap(defaultCoverBitmap);
+                        }
+                    }
+                } else {
+                    // Remove recycled cover if it exists
+                    ViewGroup.LayoutParams params = holder.issueCoverImageView.getLayoutParams();
+                    params.width = 0;
+                    params.height = 0;
+                    holder.issueCoverImageView.setLayoutParams(params);
+                    holder.issueCoverImageView.setImageDrawable(null);
+                }
             }
 
 
@@ -188,11 +225,13 @@ public class TableOfContentsActivity extends ActionBarActivity {
 
                 public TextView articleTitleTextView;
                 public TextView articleTeaserTextView;
+                public ImageView issueCoverImageView;
 
                 public TableOfContentsViewHolder(View itemView) {
                     super(itemView);
                     articleTitleTextView = (TextView) itemView.findViewById(R.id.article_title);
                     articleTeaserTextView = (TextView) itemView.findViewById(R.id.article_teaser);
+                    issueCoverImageView = (ImageView) itemView.findViewById(R.id.toc_cover);
                 }
             }
         }

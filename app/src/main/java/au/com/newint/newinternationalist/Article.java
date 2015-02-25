@@ -1,5 +1,7 @@
 package au.com.newint.newinternationalist;
 
+import android.util.Log;
+
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -62,7 +64,15 @@ public class Article {
     }
 
     public boolean getKeynote() {
-        return articleJson.get("keynote").getAsBoolean();
+        boolean keynote = false;
+        try {
+            keynote = articleJson.get("keynote").getAsBoolean();
+        } catch (Exception e) {
+            // Keynote is empty, so getAsBoolean barfs.
+            // TODO: more graceful fail?
+//            Log.i("GetKeynote", e.toString());
+        }
+        return keynote;
     }
 
     public String getFeaturedImageCaption() {

@@ -14,13 +14,23 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
+        <ImageView
+            android:id="@+id/toc_cover"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:paddingTop="@dimen/toc_cover_padding"
+            android:paddingBottom="@dimen/toc_cover_padding"
+            android:layout_centerHorizontal="true" />
+
         <TextView
             android:text="@string/article_title"
             android:id="@+id/article_title"
+            android:textSize="@dimen/article_font_size_title"
             android:textColor="@color/primary_text_default_material_light"
             android:padding="8dp"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/toc_cover" />
 
         <TextView
             android:text="@string/article_teaser"

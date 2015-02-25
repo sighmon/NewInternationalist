@@ -11,4 +11,8 @@
     <dimen name="archive_cover_width">100dp</dimen>
     <dimen name="card_corner_radius">4dp</dimen>
     <dimen name="toc_margin">16dp</dimen>
+    <dimen name="toc_cover_width">100dp</dimen>
+    <dimen name="toc_cover_height">144dp</dimen>
+    <dimen name="article_font_size_title">16dp</dimen>
+    <dimen name="toc_cover_padding">5dp</dimen>
 </resources>
