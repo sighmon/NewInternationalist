@@ -23,6 +23,8 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 
 /**
@@ -120,9 +122,16 @@ public class Issue implements Parcelable {
     }
 
     public ArrayList<Article> getArticles() {
-        if(articles == null) {
+        if (articles == null) {
             File dir = new File(MainActivity.applicationContext.getFilesDir() + "/" + Integer.toString(getID()) + "/");
             articles = Publisher.buildArticlesFromDir(dir);
+            // TODO: Sort into sections by category
+            Collections.sort(articles, new Comparator<Article>() {
+                @Override
+                public int compare(Article lhs, Article rhs) {
+                    return lhs.getPublication().compareTo(rhs.getPublication());
+                }
+            });
         }
 
         return articles;

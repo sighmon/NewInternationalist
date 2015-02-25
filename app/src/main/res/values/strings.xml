@@ -30,5 +30,6 @@
     <string name="title_activity_table_of_contents">Table of Contents</string>
     <string name="article_title">Article title</string>
     <string name="article_teaser">Article teaser</string>
+    <string name="article_categories">Category, Category</string>
 
 </resources>

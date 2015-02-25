@@ -23,10 +23,15 @@ import android.widget.TextView;
 
 import com.google.gson.JsonArray;
 
+import org.w3c.dom.Text;
+
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 
 
 public class TableOfContentsActivity extends ActionBarActivity {
@@ -185,6 +190,17 @@ public class TableOfContentsActivity extends ActionBarActivity {
                 holder.articleTitleTextView.setText(article.getTitle());
                 holder.articleTeaserTextView.setText(Html.fromHtml(article.getTeaser()));
 
+                String categoriesTemporaryString = "";
+                String separator = "";
+                ArrayList<HashMap<String,Object>> categories = article.getCategories();
+                for (HashMap<String,Object> category : categories) {
+                    categoriesTemporaryString += separator;
+                    categoriesTemporaryString += category.get("name");
+                    separator = "\n";
+                }
+
+                holder.articleCategoriesTextView.setText(categoriesTemporaryString);
+
                 // Load the cover into the keynote card
                 // TODO: is this the best idea? make a new card for it?
                 if (article != null && article.getKeynote()) {
@@ -225,12 +241,14 @@ public class TableOfContentsActivity extends ActionBarActivity {
 
                 public TextView articleTitleTextView;
                 public TextView articleTeaserTextView;
+                public TextView articleCategoriesTextView;
                 public ImageView issueCoverImageView;
 
                 public TableOfContentsViewHolder(View itemView) {
                     super(itemView);
                     articleTitleTextView = (TextView) itemView.findViewById(R.id.article_title);
                     articleTeaserTextView = (TextView) itemView.findViewById(R.id.article_teaser);
+                    articleCategoriesTextView = (TextView) itemView.findViewById(R.id.article_categories);
                     issueCoverImageView = (ImageView) itemView.findViewById(R.id.toc_cover);
                 }
             }
