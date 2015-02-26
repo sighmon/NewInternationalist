@@ -96,7 +96,9 @@ public class Article {
                     HashMap<String, Object> category = new HashMap<>();
                     category.put("id", jsonObject.get("id").getAsInt());
                     category.put("name", jsonObject.get("name").getAsString());
-                    category.put("colour", jsonObject.get("colour").getAsInt());
+                    if (jsonObject.get("colour") != null) {
+                        category.put("colour", jsonObject.get("colour").getAsInt());
+                    }
                     categories.add(category);
                 }
             }

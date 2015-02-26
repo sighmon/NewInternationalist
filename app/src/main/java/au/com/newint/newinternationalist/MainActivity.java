@@ -81,8 +81,9 @@ public class MainActivity extends ActionBarActivity {
         File cacheDir = getApplicationContext().getCacheDir();
         File cacheFile = new File(cacheDir,"issues.json");
 
-        issuesJSONCache.addMethod(new MemoryByteCacheMethod());
-        issuesJSONCache.addMethod(new FileByteCacheMethod(cacheFile));
+        // TODO: Aren't we always wanting to get from Net? Commented out other methods.
+//        issuesJSONCache.addMethod(new MemoryByteCacheMethod());
+//        issuesJSONCache.addMethod(new FileByteCacheMethod(cacheFile));
         issuesJSONCache.addMethod(new URLByteCacheMethod(issuesURL));
 
         new DownloadIssuesJSONTask().execute(issuesJSONCache);

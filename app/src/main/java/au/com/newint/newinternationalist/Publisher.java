@@ -22,6 +22,8 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.TimeZone;
 
@@ -70,9 +72,15 @@ public enum Publisher {
 
     public ArrayList<Issue> getIssuesFromFilesystem() {
 
-        if(issuesList==null) {
+        if (issuesList == null) {
             File dir = MainActivity.applicationContext.getFilesDir();
             issuesList = buildIssuesFromDir(dir);
+            Collections.sort(issuesList, new Comparator<Issue>() {
+                @Override
+                public int compare(Issue lhs, Issue rhs) {
+                    return rhs.getRelease().compareTo(lhs.getRelease());
+                }
+            });
         }
 
         return issuesList;
