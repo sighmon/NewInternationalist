@@ -46,6 +46,7 @@ public class MainActivity extends ActionBarActivity {
     static boolean newIssueAdded = false;
 
     static Context applicationContext;
+    static Resources applicationResources;
 
     ByteCache issuesJSONCache;
 
@@ -60,6 +61,7 @@ public class MainActivity extends ActionBarActivity {
         }
 
         applicationContext = getApplicationContext();
+        applicationResources = getResources();
 
         // Set default preferences, the false on the end means it's only set once
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);

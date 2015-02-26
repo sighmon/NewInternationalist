@@ -5,6 +5,8 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
+import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
@@ -123,10 +125,13 @@ public class TableOfContentsActivity extends ActionBarActivity {
         public TableOfContentsFragment() {
         }
 
+        int editorsImageWidth = 400;
+        int editorsImageHeight = 400;
+
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
-            View rootView = inflater.inflate(R.layout.fragment_table_of_contents, container, false);
+            final View rootView = inflater.inflate(R.layout.fragment_table_of_contents, container, false);
 
             final RecyclerView recList = (RecyclerView) rootView.findViewById(R.id.card_list);
             recList.setHasFixedSize(true);
@@ -159,7 +164,27 @@ public class TableOfContentsActivity extends ActionBarActivity {
             };
             Publisher.INSTANCE.setOnArticlesDownloadCompleteListener(listener);
 
-            // TODO: Register for editors photo complete listener.
+            // Register for editors photo complete listener.
+            // Register for DownloadComplete listener
+            Publisher.UpdateListener editorImageListener = new Publisher.UpdateListener() {
+                @Override
+                public void onUpdate(Object object) {
+
+                    Issue issue = (Issue) object;
+
+                    Log.i("DownloadComplete", "Received listener, showing editor image.");
+
+                    // Show editor's image
+                    ImageView editorImage = (ImageView) rootView.findViewById(R.id.toc_editor_image);
+                    if (editorImage != null) {
+                        // TODO: Fix this so it gets image for size...
+//                        Bitmap editorImageBitmap = BitmapFactory.decodeFile(issue.getEditorsImageForSize(editorsImageWidth, editorsImageHeight).getPath());
+                        Bitmap editorImageBitmap = BitmapFactory.decodeFile(issue.getEditorsImage().getPath());
+                        editorImage.setImageDrawable(Helpers.roundDrawableFromBitmap(editorImageBitmap));
+                    }
+                }
+            };
+            Publisher.INSTANCE.setOnDownloadCompleteListener(editorImageListener);
 
             return rootView;
         }
@@ -283,27 +308,25 @@ public class TableOfContentsActivity extends ActionBarActivity {
 
                 } else if (holder instanceof TableOfContentsFooterViewHolder) {
                     // Footer
-                    // TODO: get editor image.
+                    // Get editor image.
                     ImageView editorImageView = ((TableOfContentsFooterViewHolder) holder).editorImageView;
                     if (editorImageView.getLayoutParams().width < 1) {
 
-                        int imageWidth = 300;
-                        int imageHeight = 300;
-                        File imageFile = issue.getEditorsImageForSize(imageWidth, imageHeight);
+                        File imageFile = issue.getEditorsImageForSize(editorsImageWidth, editorsImageHeight);
 
                         // Expand the imageView to the right size
                         ViewGroup.LayoutParams params = editorImageView.getLayoutParams();
-                        params.width = imageWidth;
-                        params.height = imageHeight;
+                        params.width = editorsImageWidth;
+                        params.height = editorsImageHeight;
                         editorImageView.setLayoutParams(params);
 
                         if (imageFile != null && imageFile.exists()) {
                             Bitmap imageBitmap = BitmapFactory.decodeFile(imageFile.getPath());
-                            editorImageView.setImageBitmap(imageBitmap);
+                            editorImageView.setImageDrawable(Helpers.roundDrawableFromBitmap(imageBitmap));
                         } else {
                             // Set default loading image...
-                            Bitmap defaultImageBitmap = BitmapFactory.decodeResource(MainActivity.applicationContext.getResources(), R.drawable.home_cover);
-                            editorImageView.setImageBitmap(defaultImageBitmap);
+                            Bitmap defaultImageBitmap = BitmapFactory.decodeResource(MainActivity.applicationContext.getResources(), R.drawable.editors_photo);
+                            editorImageView.setImageDrawable(Helpers.roundDrawableFromBitmap(defaultImageBitmap));
                         }
                     }
 
