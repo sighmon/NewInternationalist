@@ -15,5 +15,8 @@
     <dimen name="toc_cover_height">144dp</dimen>
     <dimen name="article_font_size_title">16dp</dimen>
     <dimen name="toc_cover_padding">5dp</dimen>
-    <dimen name="toc_editor_image_padding">5dp</dimen>
+    <dimen name="toc_editor_image_padding_top">20dp</dimen>
+    <dimen name="toc_editor_image_padding_bottom">10dp</dimen>
+    <dimen name="toc_editors_letter_padding">10dp</dimen>
+    <dimen name="toc_editors_name_padding">10dp</dimen>
 </resources>

@@ -2,6 +2,9 @@ package au.com.newint.newinternationalist;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Matrix;
+import android.graphics.Paint;
 import android.os.AsyncTask;
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -26,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 
 /**
  * Created by New Internationalist on 4/02/15.
@@ -46,7 +50,7 @@ public class Issue implements Parcelable {
 
     JsonObject issueJson;
 
-    boolean requestingCover;
+    HashMap<URL,Object> imageRequestsHashMap;
 
     public Issue(File jsonFile) {
         JsonElement root = null;
@@ -138,79 +142,112 @@ public class Issue implements Parcelable {
     }
 
     public File getCover() {
+        return getImage(getCoverURL());
+    }
+
+    public File getCoverForSize(int width, int height) {
+        return getImageForSize(getCoverURL(), width, height);
+    }
+
+    public File getEditorsImage() {
+        return getImage(getEditorsPhotoURL());
+    }
+
+    public File getEditorsImageForSize(int width, int height) {
+        return getImageForSize(getEditorsPhotoURL(), width, height);
+    }
+
+    public File getImage(URL imageURL) {
         // Search filesystem for file. Download if need be.
 
-        File coverFile = null;
+        File imageFile = null;
 
         File dir = new File(MainActivity.applicationContext.getFilesDir(), Integer.toString(getID()));
-        String[] pathComponents = getCoverURL().getPath().split("/");
+        String[] pathComponents = imageURL.getPath().split("/");
         String filename = pathComponents[pathComponents.length - 1];
 
-        coverFile = new File(dir,filename);
+        imageFile = new File(dir,filename);
 
-        if (coverFile.exists()) {
-            // Return cover from filesystem
-            return coverFile;
-        } else if (requestingCover) {
-            // Cover is already being requested
+        if (imageFile.exists()) {
+            // Return image from filesystem
+            return imageFile;
+        } else if (imageRequestsHashMap != null && (int) imageRequestsHashMap.get(imageURL) == 1) {
+            // Image is already being requested
             return null;
         } else {
-            // Download cover
-            requestingCover = true;
-            new DownloadMagazineCover().execute(this);
+            // Download image
+            if (imageRequestsHashMap == null) {
+                imageRequestsHashMap = new HashMap<>();
+            }
+            imageRequestsHashMap.put(imageURL, 1);
+            new DownloadImage().execute(this, imageURL);
             return null;
         }
     }
 
-    public File getCoverForSize(int width, int height) {
+    public File getImageForSize(URL imageURL, int width, int height) {
 
-        File coverForSize = null;
+        File imageForSize = null;
 
-        File coverDir =  new File(MainActivity.applicationContext.getFilesDir(), Integer.toString(getID()));
-        String[] pathComponents = getCoverURL().getPath().split("/");
-        String fullsizeCoverFilename = pathComponents[pathComponents.length -1];
+        File issueDir =  new File(MainActivity.applicationContext.getFilesDir(), Integer.toString(getID()));
+        String[] pathComponents = imageURL.getPath().split("/");
+        String fullsizeImageFilename = pathComponents[pathComponents.length -1];
         String fileExtension = null;
-        if (fullsizeCoverFilename.contains(".")) {
-            fileExtension = fullsizeCoverFilename.substring(fullsizeCoverFilename.lastIndexOf("."));
+        if (fullsizeImageFilename.contains(".")) {
+            fileExtension = fullsizeImageFilename.substring(fullsizeImageFilename.lastIndexOf("."));
         } else {
             fileExtension = "";
         }
-        String coverForSizeFilename = fullsizeCoverFilename + "_" + width + "_" + height + fileExtension;
-        coverForSize = new File(coverDir,coverForSizeFilename);
+        String imageForSizeFilename = fullsizeImageFilename + "_" + width + "_" + height + fileExtension;
+        imageForSize = new File(issueDir,imageForSizeFilename);
 
-        if (coverForSize != null && coverForSize.exists()) {
-            // Return coverForSize from filesystem
-            return coverForSize;
+        if (imageForSize != null && imageForSize.exists()) {
+            // Return imageForSize from filesystem
+            return imageForSize;
         } else {
-            File fullsizeCover = getCover();
-            if (fullsizeCover != null && fullsizeCover.exists()) {
-                // Scale cover for size requested
-                Bitmap fullsizeCoverBitmap = BitmapFactory.decodeFile(fullsizeCover.getPath());
-                if (fullsizeCoverBitmap != null) {
+            File fullsizeImage = getImage(imageURL);
+            if (fullsizeImage != null && fullsizeImage.exists()) {
+                // Scale image for size requested
+                Bitmap fullsizeImageBitmap = BitmapFactory.decodeFile(fullsizeImage.getPath());
+                if (fullsizeImageBitmap != null) {
                     // TODO: Work out why this creates jagged images. Is the image size wrong??
-                    Bitmap scaledCover = Bitmap.createScaledBitmap(fullsizeCoverBitmap, width, height, true);
+//                    Bitmap scaledCover = Bitmap.createScaledBitmap(fullsizeImageBitmap, width, height, true);
+
+                    // Scale image with fixed width and aspect ratio, crop if need be
+                    Bitmap scaledImage = Bitmap.createBitmap((int)width, (int)height, Bitmap.Config.ARGB_8888);
+                    float originalWidth = fullsizeImageBitmap.getWidth(), originalHeight = fullsizeImageBitmap.getHeight();
+                    Canvas canvas = new Canvas(scaledImage);
+                    float scale = width/originalWidth;
+                    float xTranslation = 0.0f, yTranslation = (height - originalHeight * scale)/2.0f;
+                    Matrix transformation = new Matrix();
+                    transformation.postTranslate(xTranslation, yTranslation);
+                    transformation.preScale(scale, scale);
+                    Paint paint = new Paint();
+                    paint.setFilterBitmap(true);
+                    canvas.drawBitmap(fullsizeImageBitmap, transformation, paint);
+
                     // Save to filesystem
                     FileOutputStream fileOutputStream = null;
                     try {
-                        fileOutputStream = new FileOutputStream(coverForSize);
-                        scaledCover.compress(Bitmap.CompressFormat.JPEG, 100, fileOutputStream);
+                        fileOutputStream = new FileOutputStream(imageForSize);
+                        scaledImage.compress(Bitmap.CompressFormat.JPEG, 100, fileOutputStream);
                         fileOutputStream.close();
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
-                    return coverForSize;
+                    return imageForSize;
                 } else {
-                    // The cover file is corrupt!!
-                    if (fullsizeCover.delete()) {
-                        Log.i("Cover", "This cover was corrupt, but deleted successfully.");
+                    // The image file is corrupt!!
+                    if (fullsizeImage.delete()) {
+                        Log.i("Image", "This image " + imageURL.toString() + " was corrupt, but deleted successfully.");
                     } else {
-                        Log.i("Cover", "ERROR: Couldn't delete this cover..." + fullsizeCover);
+                        Log.i("Image", "ERROR: Couldn't delete this cover..." + fullsizeImage);
                     }
                     return null;
                 }
             } else {
-                // TODO: Get callback to re-run coverForSize
-                // At the moment the cover only updates once downloaded when the user scrolls back onto it.
+                // TODO: Get callback to re-run imageForSize
+                // At the moment the image only updates once downloaded when the user scrolls back onto it.
                 return null;
             }
         }
@@ -246,20 +283,21 @@ public class Issue implements Parcelable {
 
     // async tasks -------------------------------------------------------
 
-    public static class DownloadMagazineCover extends AsyncTask<Issue, Integer, Issue> {
+    public static class DownloadImage extends AsyncTask<Object, Integer, Issue> {
 
         @Override
-        protected Issue doInBackground(Issue... params) {
+        protected Issue doInBackground(Object... params) {
 
-            // Download the cover
+            // Download the image
 
-            File coverFile = null;
+            File imageFile = null;
 
             Issue issue = (Issue) params[0];
+            URL imageURL = (URL) params[1];
 
             HttpURLConnection urlConnection = null;
             try {
-                urlConnection = (HttpURLConnection) issue.getCoverURL().openConnection();
+                urlConnection = (HttpURLConnection) imageURL.openConnection();
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -268,13 +306,13 @@ public class Issue implements Parcelable {
                 InputStream urlConnectionInputStream = urlConnection.getInputStream();
 
                 File dir = new File(MainActivity.applicationContext.getFilesDir(), Integer.toString(issue.getID()));
-                String[] pathComponents = issue.getCoverURL().getPath().split("/");
+                String[] pathComponents = imageURL.getPath().split("/");
                 String filename = pathComponents[pathComponents.length - 1];
 
-                coverFile = new File(dir,filename);
+                imageFile = new File(dir,filename);
 
                 // Save to filesystem
-                FileOutputStream fos = new FileOutputStream(coverFile);
+                FileOutputStream fos = new FileOutputStream(imageFile);
 
                 IOUtils.copy(urlConnectionInputStream, fos);
 
@@ -288,6 +326,11 @@ public class Issue implements Parcelable {
                 urlConnection.disconnect();
             }
 
+            // Remove imageRequest entry
+            if (issue.imageRequestsHashMap != null && issue.imageRequestsHashMap.size() > 0) {
+                issue.imageRequestsHashMap.remove(imageURL);
+            }
+
             return issue;
         }
 
@@ -295,7 +338,7 @@ public class Issue implements Parcelable {
         protected void onPostExecute(Issue issue) {
             super.onPostExecute(issue);
 
-            // Send coverFile to listener
+            // Send issue to listener
             // TODO: in future, hand in listener in .execute parameters
             for (Publisher.UpdateListener listener : Publisher.INSTANCE.listeners) {
                 Log.i("DownloadComplete", "Calling onDownloadComplete");

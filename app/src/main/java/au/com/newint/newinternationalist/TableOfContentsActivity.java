@@ -159,6 +159,8 @@ public class TableOfContentsActivity extends ActionBarActivity {
             };
             Publisher.INSTANCE.setOnArticlesDownloadCompleteListener(listener);
 
+            // TODO: Register for editors photo complete listener.
+
             return rootView;
         }
 
@@ -282,9 +284,31 @@ public class TableOfContentsActivity extends ActionBarActivity {
                 } else if (holder instanceof TableOfContentsFooterViewHolder) {
                     // Footer
                     // TODO: get editor image.
-//                    ImageView editorImageView = ((TableOfContentsFooterViewHolder) holder).editorImageView;
+                    ImageView editorImageView = ((TableOfContentsFooterViewHolder) holder).editorImageView;
+                    if (editorImageView.getLayoutParams().width < 1) {
+
+                        int imageWidth = 300;
+                        int imageHeight = 300;
+                        File imageFile = issue.getEditorsImageForSize(imageWidth, imageHeight);
+
+                        // Expand the imageView to the right size
+                        ViewGroup.LayoutParams params = editorImageView.getLayoutParams();
+                        params.width = imageWidth;
+                        params.height = imageHeight;
+                        editorImageView.setLayoutParams(params);
+
+                        if (imageFile != null && imageFile.exists()) {
+                            Bitmap imageBitmap = BitmapFactory.decodeFile(imageFile.getPath());
+                            editorImageView.setImageBitmap(imageBitmap);
+                        } else {
+                            // Set default loading image...
+                            Bitmap defaultImageBitmap = BitmapFactory.decodeResource(MainActivity.applicationContext.getResources(), R.drawable.home_cover);
+                            editorImageView.setImageBitmap(defaultImageBitmap);
+                        }
+                    }
 
                     ((TableOfContentsFooterViewHolder) holder).editorsLetterTextView.setText(Html.fromHtml(issue.getEditorsLetterHtml()));
+                    ((TableOfContentsFooterViewHolder) holder).editorsNameTextView.setText("Edited by:\n" + issue.getEditorsName());
                 }
             }
 
@@ -319,11 +343,13 @@ public class TableOfContentsActivity extends ActionBarActivity {
 
                 public ImageView editorImageView;
                 public TextView editorsLetterTextView;
+                public TextView editorsNameTextView;
 
                 public TableOfContentsFooterViewHolder(View itemView) {
                     super(itemView);
                     editorImageView = (ImageView) itemView.findViewById(R.id.toc_editor_image);
                     editorsLetterTextView = (TextView) itemView.findViewById(R.id.toc_editors_letter);
+                    editorsNameTextView = (TextView) itemView.findViewById(R.id.toc_editors_name);
                 }
             }
         }

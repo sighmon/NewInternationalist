@@ -35,5 +35,6 @@
     <string name="toc_cover_description">Magazine cover image</string>
     <string name="toc_editor_image_description">Photo of the editor of this magazine</string>
     <string name="toc_editors_letter">Editors letter.</string>
+    <string name="toc_editors_name">Edited by:\\nEditor\'s name</string>
 
 </resources>
