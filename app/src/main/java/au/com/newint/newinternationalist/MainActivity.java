@@ -84,8 +84,8 @@ public class MainActivity extends ActionBarActivity {
         File cacheFile = new File(cacheDir,"issues.json");
 
         // TODO: Aren't we always wanting to get from Net? Commented out other methods.
-//        issuesJSONCache.addMethod(new MemoryByteCacheMethod());
-//        issuesJSONCache.addMethod(new FileByteCacheMethod(cacheFile));
+        issuesJSONCache.addMethod(new MemoryByteCacheMethod());
+        issuesJSONCache.addMethod(new FileByteCacheMethod(cacheFile));
         issuesJSONCache.addMethod(new URLByteCacheMethod(issuesURL));
 
         new DownloadIssuesJSONTask().execute(issuesJSONCache);
@@ -254,7 +254,7 @@ public class MainActivity extends ActionBarActivity {
 
             ByteCache issuesJSONCache = caches[0];
 
-            ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(issuesJSONCache.read());
+            ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(issuesJSONCache.read("net"));
             BufferedInputStream bufferedInputStream = new BufferedInputStream(byteArrayInputStream);
             InputStreamReader inputStreamReader = new InputStreamReader(bufferedInputStream);
             JsonElement root = new JsonParser().parse(inputStreamReader);
@@ -324,8 +324,7 @@ public class MainActivity extends ActionBarActivity {
         protected void onPostExecute(JsonArray magazines) {
             super.onPostExecute(magazines);
 
-            // Check for new issues.
-
+            // ...
 
         }
     }

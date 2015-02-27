@@ -194,10 +194,6 @@ public enum Publisher {
         return releaseDate;
     }
 
-
-
-
-
     // ARTICLES download task for Issue issue
     public static class DownloadArticlesJSONTask extends AsyncTask<Object, Integer, JsonArray> {
 
@@ -259,5 +255,22 @@ public enum Publisher {
                 listener.onArticlesDownloadComplete(articles);
             }
         }
+    }
+
+    // DEBUG FUNCTIONS
+
+    public boolean deleteDirectory(Issue issue) {
+        File dir = new File(MainActivity.applicationContext.getFilesDir().getPath() + "/" + issue.getID());
+
+        boolean success = false;
+
+        if (dir.isDirectory()) {
+            String[] children = dir.list();
+            for (String aChildren : children) {
+                success = new File(dir, aChildren).delete();
+            }
+        }
+
+        return success;
     }
 }
