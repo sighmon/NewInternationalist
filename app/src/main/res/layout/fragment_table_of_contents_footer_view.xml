@@ -6,11 +6,12 @@
 
     <ImageView
         android:id="@+id/toc_editor_image"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
+        android:layout_width="400dp"
+        android:layout_height="400dp"
         android:paddingTop="@dimen/toc_editor_image_padding_top"
         android:paddingBottom="@dimen/toc_editor_image_padding_bottom"
         android:layout_centerHorizontal="true"
+        android:src="@drawable/editors_photo"
         android:contentDescription="@string/toc_editor_image_description" />
 
     <TextView

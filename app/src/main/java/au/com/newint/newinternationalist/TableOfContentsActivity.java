@@ -170,18 +170,8 @@ public class TableOfContentsActivity extends ActionBarActivity {
                 @Override
                 public void onUpdate(Object object) {
 
-                    Issue issue = (Issue) object;
-
-                    Log.i("DownloadComplete", "Received listener, showing editor image.");
-
-                    // Show editor's image
-                    ImageView editorImage = (ImageView) rootView.findViewById(R.id.toc_editor_image);
-                    if (editorImage != null) {
-                        // TODO: Fix this so it gets image for size...
-//                        Bitmap editorImageBitmap = BitmapFactory.decodeFile(issue.getEditorsImageForSize(editorsImageWidth, editorsImageHeight).getPath());
-                        Bitmap editorImageBitmap = BitmapFactory.decodeFile(issue.getEditorsImage().getPath());
-                        editorImage.setImageDrawable(Helpers.roundDrawableFromBitmap(editorImageBitmap));
-                    }
+                    // Tell the adapter to update the footer view so it loads the editor image
+                    adapter.notifyItemChanged(adapter.getItemCount() - 1);
                 }
             };
             Publisher.INSTANCE.setOnDownloadCompleteListener(editorImageListener);
@@ -310,7 +300,7 @@ public class TableOfContentsActivity extends ActionBarActivity {
                     // Footer
                     // Get editor image.
                     ImageView editorImageView = ((TableOfContentsFooterViewHolder) holder).editorImageView;
-                    if (editorImageView.getLayoutParams().width < 1) {
+                    if (editorImageView != null) {
 
                         File imageFile = issue.getEditorsImageForSize(editorsImageWidth, editorsImageHeight);
 
@@ -325,8 +315,8 @@ public class TableOfContentsActivity extends ActionBarActivity {
                             editorImageView.setImageDrawable(Helpers.roundDrawableFromBitmap(imageBitmap));
                         } else {
                             // Set default loading image...
-                            Bitmap defaultImageBitmap = BitmapFactory.decodeResource(MainActivity.applicationContext.getResources(), R.drawable.editors_photo);
-                            editorImageView.setImageDrawable(Helpers.roundDrawableFromBitmap(defaultImageBitmap));
+//                            Bitmap defaultImageBitmap = BitmapFactory.decodeResource(MainActivity.applicationContext.getResources(), R.drawable.editors_photo);
+//                            editorImageView.setImageDrawable(Helpers.roundDrawableFromBitmap(defaultImageBitmap));
                         }
                     }
 
