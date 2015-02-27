@@ -315,8 +315,8 @@ public class TableOfContentsActivity extends ActionBarActivity {
                             editorImageView.setImageDrawable(Helpers.roundDrawableFromBitmap(imageBitmap));
                         } else {
                             // Set default loading image...
-//                            Bitmap defaultImageBitmap = BitmapFactory.decodeResource(MainActivity.applicationContext.getResources(), R.drawable.editors_photo);
-//                            editorImageView.setImageDrawable(Helpers.roundDrawableFromBitmap(defaultImageBitmap));
+                            Bitmap defaultImageBitmap = BitmapFactory.decodeResource(MainActivity.applicationContext.getResources(), R.drawable.editors_photo);
+                            editorImageView.setImageDrawable(Helpers.roundDrawableFromBitmap(defaultImageBitmap));
                         }
                     }
 
