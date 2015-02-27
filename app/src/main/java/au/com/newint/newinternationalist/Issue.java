@@ -52,6 +52,8 @@ public class Issue implements Parcelable {
 
     HashMap<URL,Object> imageRequestsHashMap;
 
+    CacheStreamFactory coverCacheStreamFactory;
+
     public Issue(File jsonFile) {
         JsonElement root = null;
         try {
@@ -64,6 +66,17 @@ public class Issue implements Parcelable {
         issueJson = root.getAsJsonObject();
 
         articles = getArticles();
+
+        URL coverURL = getCoverURL();
+
+        File issueDir =  new File(MainActivity.applicationContext.getFilesDir(), Integer.toString(getID()));
+        String[] pathComponents = coverURL.getPath().split("/");
+        String filename = pathComponents[pathComponents.length - 1];
+
+        File imageFile = new File(issueDir,filename);
+
+        coverCacheStreamFactory = new FileCacheStreamFactory(imageFile,
+                new URLCacheStreamFactory(coverURL));
 
         /*
         title = getTitle();

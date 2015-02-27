@@ -84,8 +84,8 @@ public class MainActivity extends ActionBarActivity {
         File cacheFile = new File(cacheDir,"issues.json");
 
         // TODO: Aren't we always wanting to get from Net? Commented out other methods.
-//        issuesJSONCache.addMethod(new MemoryByteCacheMethod());
-//        issuesJSONCache.addMethod(new FileByteCacheMethod(cacheFile));
+        //issuesJSONCache.addMethod(new MemoryByteCacheMethod());
+        issuesJSONCache.addMethod(new FileByteCacheMethod(cacheFile));
         issuesJSONCache.addMethod(new URLByteCacheMethod(issuesURL));
 
         new DownloadIssuesJSONTask().execute(issuesJSONCache);
@@ -150,7 +150,7 @@ public class MainActivity extends ActionBarActivity {
                     // Show cover
                     ImageButton home_cover = (ImageButton) rootView.findViewById(R.id.home_cover);
                     if (home_cover != null) {
-                        Bitmap coverBitmap = BitmapFactory.decodeFile(issue.getCover().getPath());
+                        Bitmap coverBitmap = BitmapFactory.decodeStream(issue.coverCacheStreamFactory.createInputStream());
                         home_cover.setImageBitmap(coverBitmap);
                         home_cover.setScaleType(ImageView.ScaleType.FIT_CENTER);
                     }
@@ -312,7 +312,7 @@ public class MainActivity extends ActionBarActivity {
                     //TODO: this should be done in main activity in response to a listener
                     Publisher.INSTANCE.issuesList = null;
                     latestIssue = Publisher.INSTANCE.latestIssue();
-                    if (latestIssue!=null) latestIssue.getCover();
+                    //if (latestIssue!=null) latestIssue.getCover();
 
                 }
             }

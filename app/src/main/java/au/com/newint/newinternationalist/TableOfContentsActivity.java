@@ -80,7 +80,7 @@ public class TableOfContentsActivity extends ActionBarActivity {
         File cacheDir = getApplicationContext().getCacheDir();
         File cacheFile = new File(cacheDir, issue.getID() + ".json");
 
-        articlesJSONCache.addMethod(new MemoryByteCacheMethod());
+        //articlesJSONCache.addMethod(new MemoryByteCacheMethod());
         articlesJSONCache.addMethod(new FileByteCacheMethod(cacheFile));
         articlesJSONCache.addMethod(new URLByteCacheMethod(articlesURL));
 
