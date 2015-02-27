@@ -19,4 +19,5 @@
     <dimen name="toc_editor_image_padding_bottom">10dp</dimen>
     <dimen name="toc_editors_letter_padding">10dp</dimen>
     <dimen name="toc_editors_name_padding">10dp</dimen>
+    <dimen name="home_button_font_size">20sp</dimen>
 </resources>

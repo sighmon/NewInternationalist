@@ -29,6 +29,8 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+import org.apache.http.cookie.Cookie;
+
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -39,6 +41,7 @@ import java.io.InputStreamReader;
 import java.io.Writer;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.List;
 import java.util.Properties;
 
 public class MainActivity extends ActionBarActivity {
@@ -67,7 +70,7 @@ public class MainActivity extends ActionBarActivity {
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
 
         // Get SITE_URL from config variables
-        String siteURLString = (String) getVariableFromConfig(this, "SITE_URL");
+        String siteURLString = Helpers.getSiteURL();
         Log.i("SITE_URL", siteURLString);
 
         // Get issues.json and save/update our cache
@@ -83,7 +86,6 @@ public class MainActivity extends ActionBarActivity {
         File cacheDir = getApplicationContext().getCacheDir();
         File cacheFile = new File(cacheDir,"issues.json");
 
-        // TODO: Aren't we always wanting to get from Net? Commented out other methods.
         issuesJSONCache.addMethod(new MemoryByteCacheMethod());
         issuesJSONCache.addMethod(new FileByteCacheMethod(cacheFile));
         issuesJSONCache.addMethod(new URLByteCacheMethod(issuesURL));
@@ -137,6 +139,15 @@ public class MainActivity extends ActionBarActivity {
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
             final View rootView = inflater.inflate(R.layout.fragment_main, container, false);
+
+            // TODO: Add listener for login successful!
+            // Check if we've got a cookie
+            List<Cookie> cookies = Publisher.INSTANCE.cookieStore.getCookies();
+            if (!cookies.isEmpty()) {
+                // Set login text to Logged in
+                Button loginButton = (Button) rootView.findViewById(R.id.home_login);
+                loginButton.setText("Logged in");
+            }
 
             // Register for DownloadComplete listener
             listener = new Publisher.UpdateListener() {
@@ -221,6 +232,16 @@ public class MainActivity extends ActionBarActivity {
                 }
             });
 
+            // Set a listener for Login taps
+            Button login = (Button) rootView.findViewById(R.id.home_login);
+            login.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent loginIntent = new Intent(rootView.getContext(), LoginActivity.class);
+                    startActivity(loginIntent);
+                }
+            });
+
             return rootView;
         }
 
@@ -228,20 +249,6 @@ public class MainActivity extends ActionBarActivity {
         public void onPause() {
             super.onPause();
             Publisher.INSTANCE.removeDownloadCompleteListener(listener);
-        }
-    }
-
-    public static String getVariableFromConfig(Context context, String string) {
-        Resources resources = context.getResources();
-        AssetManager assetManager = resources.getAssets();
-        try {
-            InputStream inputStream = assetManager.open("config.properties");
-            Properties properties = new Properties();
-            properties.load(inputStream);
-            return properties.getProperty(string);
-        } catch (IOException e) {
-            Log.e("Properties","Failed to open config property file");
-            return null;
         }
     }
 

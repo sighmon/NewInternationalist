@@ -65,7 +65,7 @@ public class TableOfContentsActivity extends ActionBarActivity {
         setTitle(issue.getTitle());
 
         // Get SITE_URL
-        String siteURLString = (String) MainActivity.getVariableFromConfig(this, "SITE_URL");
+        String siteURLString = (String) Helpers.getSiteURL();
 
         // Get articles.json (actually issueID.json) and save/update our cache
         URL articlesURL = null;

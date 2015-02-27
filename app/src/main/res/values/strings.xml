@@ -9,6 +9,7 @@
     <string name="home_cover">Cover of the latest edition of New Internationalist magazine</string>
     <string name="home_subscribe">Subscribe</string>
     <string name="home_magazine_archive">Magazine archive</string>
+    <string name="home_login">Login</string>
 
     <!-- Settings -->
     <string name="action_settings">Settings</string>
@@ -36,5 +37,14 @@
     <string name="toc_editor_image_description">Photo of the editor of this magazine</string>
     <string name="toc_editors_letter">Editors letter.</string>
     <string name="toc_editors_name">Edited by:\\nEditor\'s name</string>
+
+    <!-- Login -->
+    <string name="title_activity_login">Login</string>
+    <string name="prompt_email">Email or username</string>
+    <string name="prompt_password">Password</string>
+    <string name="action_sign_in">Login</string>
+    <string name="action_sign_in_short">Login</string>
+    <string name="error_incorrect_password">This password is incorrect</string>
+    <string name="error_field_required">This field is required</string>
 
 </resources>

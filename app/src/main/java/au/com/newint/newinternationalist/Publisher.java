@@ -9,6 +9,8 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+import org.apache.http.impl.client.BasicCookieStore;
+
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -36,6 +38,16 @@ public enum Publisher {
     ArrayList<Issue> issuesList;
 
     ArrayList <UpdateListener> listeners = new ArrayList <UpdateListener> ();
+
+    BasicCookieStore cookieStore;
+
+    Publisher() {
+        deleteCookieStore();
+    }
+
+    public void deleteCookieStore() {
+        cookieStore = new BasicCookieStore();
+    }
 
     public interface UpdateListener {
         void onUpdate(Object object);
