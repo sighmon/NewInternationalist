@@ -97,6 +97,8 @@ public class LoginActivity extends ActionBarActivity implements LoaderCallbacks<
 
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
+
+        // TODO: Save and load the username/password so it doesn't have to be entered each time
     }
 
     private void populateAutoComplete() {
@@ -333,9 +335,9 @@ public class LoginActivity extends ActionBarActivity implements LoaderCallbacks<
                 finish();
 
                 // Let listener know
-                for (Publisher.UpdateListener listener : Publisher.INSTANCE.listeners) {
+                for (Publisher.LoginListener listener : Publisher.INSTANCE.loginListeners) {
                     Log.i("Login", "Sending listener login success: True");
-                    // Pass in login success boolean? Or nothing?
+                    // Pass in login success boolean
                     listener.onUpdate(success);
                 }
 

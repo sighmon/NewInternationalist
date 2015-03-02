@@ -39,6 +39,8 @@ public enum Publisher {
 
     ArrayList <UpdateListener> listeners = new ArrayList <UpdateListener> ();
 
+    ArrayList <LoginListener> loginListeners = new ArrayList<>();
+
     BasicCookieStore cookieStore;
 
     Publisher() {
@@ -50,6 +52,10 @@ public enum Publisher {
     }
 
     public interface UpdateListener {
+        void onUpdate(Object object);
+    }
+
+    public interface LoginListener {
         void onUpdate(Object object);
     }
 
@@ -69,9 +75,9 @@ public enum Publisher {
         listeners.remove(listener);
     }
 
-    public void setLoggedInListener(UpdateListener listener) {
+    public void setLoggedInListener(LoginListener listener) {
         // Store the listener object
-        listeners.add(listener);
+        loginListeners.add(listener);
     }
 
     static ArrayList <ArticlesDownloadCompleteListener> articleListeners = new ArrayList <ArticlesDownloadCompleteListener> ();

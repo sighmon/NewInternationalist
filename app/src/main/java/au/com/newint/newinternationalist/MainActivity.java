@@ -131,27 +131,31 @@ public class MainActivity extends ActionBarActivity {
 
         Issue latestIssueOnFile;
         Publisher.UpdateListener listener;
+        Publisher.LoginListener loginListener;
 
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
             final View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
+            // Check if we've got a cookie
+            List<Cookie> cookies = Publisher.INSTANCE.cookieStore.getCookies();
+            if (!cookies.isEmpty()) {
+                // Set login text to Logged in
+                Button loginButton = (Button) rootView.findViewById(R.id.home_login);
+                loginButton.setText("Logged in");
+            }
+
             // Add listener for login successful!
-            listener = new Publisher.UpdateListener() {
+            loginListener = new Publisher.LoginListener() {
 
                 @Override
                 public void onUpdate(Object object) {
-                    // Check if we've got a cookie
-                    List<Cookie> cookies = Publisher.INSTANCE.cookieStore.getCookies();
-                    if (!cookies.isEmpty()) {
-                        // Set login text to Logged in
-                        Button loginButton = (Button) rootView.findViewById(R.id.home_login);
-                        loginButton.setText("Logged in");
-                    }
+                    Button loginButton = (Button) rootView.findViewById(R.id.home_login);
+                    loginButton.setText("Logged in");
                 }
             };
-            Publisher.INSTANCE.setLoggedInListener(listener);
+            Publisher.INSTANCE.setLoggedInListener(loginListener);
 
             // Register for DownloadComplete listener
             listener = new Publisher.UpdateListener() {
