@@ -2,7 +2,6 @@ package au.com.newint.newinternationalist;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -36,13 +35,11 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Writer;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
-import java.util.Properties;
 
 public class MainActivity extends ActionBarActivity {
 
@@ -59,7 +56,7 @@ public class MainActivity extends ActionBarActivity {
         setContentView(R.layout.activity_main);
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
-                    .add(R.id.container, new PlaceholderFragment())
+                    .add(R.id.container, new MainFragment())
                     .commit();
         }
 
@@ -127,9 +124,9 @@ public class MainActivity extends ActionBarActivity {
     /**
      * A placeholder fragment containing a simple view.
      */
-    public static class PlaceholderFragment extends Fragment {
+    public static class MainFragment extends Fragment {
 
-        public PlaceholderFragment() {
+        public MainFragment() {
         }
 
         Issue latestIssueOnFile;
@@ -140,14 +137,21 @@ public class MainActivity extends ActionBarActivity {
                                  Bundle savedInstanceState) {
             final View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
-            // TODO: Add listener for login successful!
-            // Check if we've got a cookie
-            List<Cookie> cookies = Publisher.INSTANCE.cookieStore.getCookies();
-            if (!cookies.isEmpty()) {
-                // Set login text to Logged in
-                Button loginButton = (Button) rootView.findViewById(R.id.home_login);
-                loginButton.setText("Logged in");
-            }
+            // Add listener for login successful!
+            listener = new Publisher.UpdateListener() {
+
+                @Override
+                public void onUpdate(Object object) {
+                    // Check if we've got a cookie
+                    List<Cookie> cookies = Publisher.INSTANCE.cookieStore.getCookies();
+                    if (!cookies.isEmpty()) {
+                        // Set login text to Logged in
+                        Button loginButton = (Button) rootView.findViewById(R.id.home_login);
+                        loginButton.setText("Logged in");
+                    }
+                }
+            };
+            Publisher.INSTANCE.setLoggedInListener(listener);
 
             // Register for DownloadComplete listener
             listener = new Publisher.UpdateListener() {

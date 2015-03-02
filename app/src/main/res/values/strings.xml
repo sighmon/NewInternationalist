@@ -44,7 +44,7 @@
     <string name="prompt_password">Password</string>
     <string name="action_sign_in">Login</string>
     <string name="action_sign_in_short">Login</string>
-    <string name="error_incorrect_password">This password is incorrect</string>
+    <string name="error_incorrect_password">Sorry, your username/email or password is incorrect.</string>
     <string name="error_field_required">This field is required</string>
 
 </resources>

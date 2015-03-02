@@ -4,8 +4,8 @@
     <dimen name="activity_vertical_margin">16dp</dimen>
     <dimen name="home_cover_width">250dp</dimen>
     <dimen name="home_cover_height">354dp</dimen>
-    <dimen name="home_cover_margin_top">20dp</dimen>
-    <dimen name="home_cover_margin_bottom">20dp</dimen>
+    <dimen name="home_cover_margin_top">10dp</dimen>
+    <dimen name="home_cover_margin_bottom">10dp</dimen>
     <dimen name="magazine_archive_column_width">100dp</dimen>
     <dimen name="magazine_archive_column_height">141dp</dimen>
     <dimen name="archive_cover_width">100dp</dimen>

@@ -69,6 +69,11 @@ public enum Publisher {
         listeners.remove(listener);
     }
 
+    public void setLoggedInListener(UpdateListener listener) {
+        // Store the listener object
+        listeners.add(listener);
+    }
+
     static ArrayList <ArticlesDownloadCompleteListener> articleListeners = new ArrayList <ArticlesDownloadCompleteListener> ();
 
     public void setOnArticlesDownloadCompleteListener(ArticlesDownloadCompleteListener listener) {

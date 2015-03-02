@@ -242,14 +242,12 @@ public class LoginActivity extends ActionBarActivity implements LoaderCallbacks<
         mEmailView.setAdapter(adapter);
     }
 
-    /**
-     * Represents an asynchronous login/registration task used to authenticate
-     * the user.
-     */
+    // User login to Rails.
     public class UserLoginTask extends AsyncTask<Void, Void, Boolean> {
 
         private final String mEmail;
         private final String mPassword;
+        private String loginErrorString = getString(R.string.error_incorrect_password);
 
         UserLoginTask(String email, String password) {
             mEmail = email;
@@ -299,12 +297,28 @@ public class LoginActivity extends ActionBarActivity implements LoaderCallbacks<
                 Log.i("Login", "IOException: " + e);
             }
 
-            if (response != null && response.getStatusLine().getStatusCode() > 200 && response.getStatusLine().getStatusCode() < 300) {
-                success = true;
-                // TODO: Post listener for login success
+            int responseStatusCode;
+            if (response != null) {
+                responseStatusCode = response.getStatusLine().getStatusCode();
+
+                if (responseStatusCode > 200 && responseStatusCode < 300) {
+                    // Login was successful, we should have a cookie
+                    success = true;
+
+                } else if (responseStatusCode > 400 && responseStatusCode < 500) {
+                    // Login was incorrect.
+                    Log.i("Login", "Failed with code: " + responseStatusCode);
+
+                } else {
+                    // Server error.
+                    Log.i("Login", "Failed with code: " + responseStatusCode + " and response: " + response.getStatusLine());
+                    loginErrorString = "Sorry, it looks like our server has a problem. Please try again later.";
+                }
+
             } else {
                 // Error logging in
-                Log.i("Login", "Failed with code: " + response.getStatusLine().getStatusCode() + " and response: " + response.getStatusLine());
+                Log.i("Login", "Failed! Response is null");
+                loginErrorString = "It doesn't look like you have internet access.";
             }
 
             return success;
@@ -317,8 +331,16 @@ public class LoginActivity extends ActionBarActivity implements LoaderCallbacks<
 
             if (success) {
                 finish();
+
+                // Let listener know
+                for (Publisher.UpdateListener listener : Publisher.INSTANCE.listeners) {
+                    Log.i("Login", "Sending listener login success: True");
+                    // Pass in login success boolean? Or nothing?
+                    listener.onUpdate(success);
+                }
+
             } else {
-                mPasswordView.setError(getString(R.string.error_incorrect_password));
+                mPasswordView.setError(loginErrorString);
                 mPasswordView.requestFocus();
             }
         }
