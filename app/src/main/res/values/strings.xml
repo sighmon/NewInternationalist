@@ -28,10 +28,10 @@
     <string name="title_activity_magazine_archive">Magazine Archive</string>
 
     <!-- Table of Contents -->
-    <string name="title_activity_table_of_contents">Table of Contents</string>
-    <string name="article_title">Article title</string>
-    <string name="article_teaser">Article teaser</string>
-    <string name="article_categories">Category, Category</string>
+    <string name="toc_activity_title">Table of Contents</string>
+    <string name="toc_article_title">Article title</string>
+    <string name="toc_article_teaser">Article teaser</string>
+    <string name="toc_article_categories">Category, Category</string>
     <string name="toc_issue_number_date">000 - Date, Year</string>
     <string name="toc_cover_description">Magazine cover image</string>
     <string name="toc_editor_image_description">Photo of the editor of this magazine</string>
@@ -46,5 +46,9 @@
     <string name="action_sign_in_short">Login</string>
     <string name="error_incorrect_password">Sorry, your username/email or password is incorrect.</string>
     <string name="error_field_required">This field is required</string>
+    <string name="title_activity_article">ArticleActivity</string>
+
+    <!-- Article -->
+    <string name="article_title"></string>
 
 </resources>
