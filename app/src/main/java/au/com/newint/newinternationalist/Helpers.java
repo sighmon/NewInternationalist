@@ -84,9 +84,9 @@ public class Helpers {
     }
 
     private static byte[] getKey() {
-        MessageDigest md = null;
         try {
-            md = MessageDigest.getInstance("SHA-256");
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            // we know that the device ID isn't very secure but this is just to obscure naive attacks
             byte[] id = hexStringToByteArray(Settings.Secure.ANDROID_ID);
             md.update(id, 0, id.length);
             return md.digest();
