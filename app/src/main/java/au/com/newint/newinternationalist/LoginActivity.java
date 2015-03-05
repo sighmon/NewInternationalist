@@ -3,9 +3,7 @@ package au.com.newint.newinternationalist;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
-import android.app.Activity;
 import android.app.LoaderManager.LoaderCallbacks;
-import android.content.ContentResolver;
 import android.content.CursorLoader;
 import android.content.Loader;
 import android.database.Cursor;
@@ -32,19 +30,15 @@ import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.protocol.ClientContext;
 import org.apache.http.cookie.Cookie;
-import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.params.HttpParams;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
 
 import java.io.IOException;
-import java.net.CookieStore;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -98,7 +92,9 @@ public class LoginActivity extends ActionBarActivity implements LoaderCallbacks<
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
 
-        // TODO: Save and load the username/password so it doesn't have to be entered each time
+        // Load the user credentials
+        mEmailView.setText(Helpers.getFromPrefs(Helpers.LOGIN_USERNAME_KEY, ""));
+        mPasswordView.setText(Helpers.getPassword(Helpers.LOGIN_PASSWORD_KEY, ""));
     }
 
     private void populateAutoComplete() {
@@ -290,6 +286,9 @@ public class LoginActivity extends ActionBarActivity implements LoaderCallbacks<
                 nameValuePairs.add(new BasicNameValuePair("user[password]", mPassword));
                 post.setEntity(new UrlEncodedFormEntity(nameValuePairs));
 
+                // Save username to SharedPreferences
+                Helpers.saveToPrefs(Helpers.LOGIN_USERNAME_KEY,mEmail);
+
                 // Execute HTTP Post Request
                 response = httpclient.execute(post, ctx);
 
@@ -306,6 +305,7 @@ public class LoginActivity extends ActionBarActivity implements LoaderCallbacks<
                 if (responseStatusCode > 200 && responseStatusCode < 300) {
                     // Login was successful, we should have a cookie
                     success = true;
+                    Helpers.savePassword(Helpers.LOGIN_PASSWORD_KEY,mPassword);
 
                 } else if (responseStatusCode > 400 && responseStatusCode < 500) {
                     // Login was incorrect.
