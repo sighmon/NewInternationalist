@@ -94,7 +94,7 @@ public class LoginActivity extends ActionBarActivity implements LoaderCallbacks<
 
         // Load the user credentials
         mEmailView.setText(Helpers.getFromPrefs(Helpers.LOGIN_USERNAME_KEY, ""));
-        mPasswordView.setText(Helpers.getPassword(Helpers.LOGIN_PASSWORD_KEY, ""));
+        mPasswordView.setText(Helpers.getPassword(""));
     }
 
     private void populateAutoComplete() {
@@ -305,7 +305,7 @@ public class LoginActivity extends ActionBarActivity implements LoaderCallbacks<
                 if (responseStatusCode > 200 && responseStatusCode < 300) {
                     // Login was successful, we should have a cookie
                     success = true;
-                    Helpers.savePassword(Helpers.LOGIN_PASSWORD_KEY,mPassword);
+                    Helpers.savePassword(mPassword);
 
                 } else if (responseStatusCode > 400 && responseStatusCode < 500) {
                     // Login was incorrect.
