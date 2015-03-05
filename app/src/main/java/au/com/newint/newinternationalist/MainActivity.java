@@ -138,9 +138,8 @@ public class MainActivity extends ActionBarActivity {
                                  Bundle savedInstanceState) {
             final View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
-            // Check if we've got a cookie
-            List<Cookie> cookies = Publisher.INSTANCE.cookieStore.getCookies();
-            if (!cookies.isEmpty()) {
+            // Check if we're logged in
+            if (Publisher.INSTANCE.loggedIn) {
                 // Set login text to Logged in
                 Button loginButton = (Button) rootView.findViewById(R.id.home_login);
                 loginButton.setText("Logged in");

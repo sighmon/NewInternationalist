@@ -299,12 +299,14 @@ public class LoginActivity extends ActionBarActivity implements LoaderCallbacks<
             }
 
             int responseStatusCode;
+            Publisher.INSTANCE.loggedIn = false;
             if (response != null) {
                 responseStatusCode = response.getStatusLine().getStatusCode();
 
                 if (responseStatusCode > 200 && responseStatusCode < 300) {
                     // Login was successful, we should have a cookie
                     success = true;
+                    Publisher.INSTANCE.loggedIn = true;
                     Helpers.savePassword(Helpers.LOGIN_PASSWORD_KEY,mPassword);
 
                 } else if (responseStatusCode > 400 && responseStatusCode < 500) {
