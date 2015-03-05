@@ -41,6 +41,8 @@ public enum Publisher {
 
     ArrayList <LoginListener> loginListeners = new ArrayList<>();
 
+    boolean loggedIn;
+
     BasicCookieStore cookieStore;
 
     Publisher() {

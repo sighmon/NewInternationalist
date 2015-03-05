@@ -14,6 +14,7 @@ import android.util.Log;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Properties;
 
@@ -83,7 +84,16 @@ public class Helpers {
     }
 
     private static byte[] getKey() {
-        return hexStringToByteArray(Settings.Secure.ANDROID_ID);
+        MessageDigest md = null;
+        try {
+            md = MessageDigest.getInstance("SHA-256");
+            byte[] id = hexStringToByteArray(Settings.Secure.ANDROID_ID);
+            md.update(id, 0, id.length);
+            return md.digest();
+        } catch (Exception e) {
+            Log.e("Helper.getKey","error digesting ANDROID_ID: "+e);
+            return null;
+        }
     }
 
     public static void savePassword(String value) {
@@ -99,13 +109,14 @@ public class Helpers {
             saveToPrefs(LOGIN_PASSWORD_KEY, encryptedString);
         } catch (Exception e) {
             // TODO: let the user know
-            e.printStackTrace();
+            Log.e("Helper.getPassword","Error encrypting password "+e);
         }
 
     }
 
     public static String getPassword(String defaultValue) {
         byte[] encryptedBytes = Base64.decode(getFromPrefs(LOGIN_PASSWORD_KEY, defaultValue), Base64.DEFAULT);
+
 
         SecretKeySpec skeySpec = new SecretKeySpec(getKey(), "AES");
         try {
@@ -115,6 +126,7 @@ public class Helpers {
             return new String(decrypted,"UTF-8");
         } catch (Exception e) {
             // TODO: let the user know?
+            Log.e("Helper.getPassword","Error decrypting password "+e);
             return defaultValue;
         }
     }
