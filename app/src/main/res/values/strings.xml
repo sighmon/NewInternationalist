@@ -50,5 +50,7 @@
 
     <!-- Article -->
     <string name="article_title">Article title</string>
+    <string name="article_teaser">Article teaser</string>
+    <string name="article_categories">Category, category</string>
 
 </resources>

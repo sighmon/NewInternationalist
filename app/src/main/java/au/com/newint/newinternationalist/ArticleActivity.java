@@ -5,6 +5,7 @@ import android.support.v4.app.NavUtils;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.text.Html;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -12,6 +13,11 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
+import org.w3c.dom.Text;
+
+import java.util.ArrayList;
+import java.util.HashMap;
 
 
 public class ArticleActivity extends ActionBarActivity {
@@ -74,9 +80,22 @@ public class ArticleActivity extends ActionBarActivity {
                                  Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_article, container, false);
 
-            Log.i("ArticleFragment", article.getTitle());
             TextView articleTitle = (TextView) rootView.findViewById(R.id.article_title);
+            TextView articleTeaser = (TextView) rootView.findViewById(R.id.article_teaser);
+            TextView articleCategories = (TextView) rootView.findViewById(R.id.article_categories);
+
             articleTitle.setText(article.getTitle());
+            articleTeaser.setText(Html.fromHtml(article.getTeaser()));
+
+            String categoriesTemporaryString = "";
+            String separator = "";
+            ArrayList<HashMap<String,Object>> categories = article.getCategories();
+            for (HashMap<String,Object> category : categories) {
+                categoriesTemporaryString += separator;
+                categoriesTemporaryString += category.get("name");
+                separator = "\n";
+            }
+            articleCategories.setText(categoriesTemporaryString);
 
             return rootView;
         }
