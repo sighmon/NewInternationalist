@@ -1,5 +1,7 @@
 package au.com.newint.newinternationalist;
 
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.util.Log;
 
 import com.google.gson.JsonArray;
@@ -22,7 +24,7 @@ import java.util.Objects;
 /**
  * Created by New Internationalist on 4/02/15.
  */
-public class Article {
+public class Article implements Parcelable {
 
 /*    int id;
     String title;
@@ -35,6 +37,8 @@ public class Article {
     ArrayList images; */
 
     JsonObject articleJson;
+    int issueID;
+
     // TODO: create Images class
 //    ArrayList<Images> articles;
     // TODO: create Categories class
@@ -49,11 +53,19 @@ public class Article {
             throw new IllegalStateException("Issue(File) was passed a non-existent file");
         }
 
+        // TODO: Work out why this is crashing sometimes when root is JsonNull here.
+        // Maybe that the article.json half gets downloaded and never saved?
+        // So file exists but data was never saved?
         articleJson = root.getAsJsonObject();
+        issueID = Integer.parseInt(jsonFile.getPath().split("/")[5]);
     }
 
-    public int getId() {
+    public int getID() {
         return articleJson.get("id").getAsInt();
+    }
+
+    public int getIssueID() {
+        return issueID;
     }
 
     public String getTitle() {
@@ -105,5 +117,35 @@ public class Article {
         }
 
         return categories;
+    }
+
+    // PARCELABLE delegate methods
+
+    private Article(Parcel in) {
+        int[] intArray = in.createIntArray();
+        articleJson = Publisher.getArticleJsonForId(intArray[0], intArray[1]);
+        issueID = intArray[1];
+    }
+
+    public static final Parcelable.Creator<Article> CREATOR
+            = new Parcelable.Creator<Article>() {
+        public Article createFromParcel(Parcel in) {
+            return new Article(in);
+        }
+
+        public Article[] newArray(int size) {
+            return new Article[size];
+        }
+    };
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        int[] intArray = {this.getID(), this.getIssueID()};
+        dest.writeIntArray(intArray);
     }
 }

@@ -160,10 +160,28 @@ public enum Publisher {
 
         if (issueJson.exists()) {
             // Return parsed issue.json as JsonObject
-            return parseIssueJson(issueJson);
+            return parseJsonFile(issueJson);
         } else {
             // We don't have the issue.json, something went wrong with the initial download. HELP!
             // TODO: Download issues.json and re-save to filesystem
+            return null;
+        }
+    }
+
+    public static JsonObject getArticleJsonForId(int id, int issueID) {
+        // Return article.json for id handed in
+        File articleJson;
+
+        File dir = new File(MainActivity.applicationContext.getFilesDir(), Integer.toString(issueID) + "/" + Integer.toString(id));
+
+        articleJson = new File(dir,"article.json");
+
+        if (articleJson.exists()) {
+            // Return parsed issue.json as JsonObject
+            return parseJsonFile(articleJson);
+        } else {
+            // We don't have the issue.json, something went wrong with the initial download. HELP!
+            // TODO: Download article.json and re-save to filesystem
             return null;
         }
     }
@@ -191,10 +209,10 @@ public enum Publisher {
         return newestIssue;
     }
 
-    public static JsonObject parseIssueJson(Object issueJson) {
+    public static JsonObject parseJsonFile(Object jsonFile) {
         JsonElement root = null;
         try {
-            root = new JsonParser().parse(new FileReader((File) issueJson));
+            root = new JsonParser().parse(new FileReader((File) jsonFile));
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }

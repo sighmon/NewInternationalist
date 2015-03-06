@@ -63,7 +63,7 @@ public class Issue implements Parcelable {
 
         issueJson = root.getAsJsonObject();
 
-        articles = getArticles();
+//        articles = getArticles();
 
         /*
         title = getTitle();

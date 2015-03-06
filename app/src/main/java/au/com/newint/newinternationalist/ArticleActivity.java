@@ -1,16 +1,22 @@
 package au.com.newint.newinternationalist;
 
+import android.content.Intent;
+import android.support.v4.app.NavUtils;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 
 public class ArticleActivity extends ActionBarActivity {
+
+    static Article article;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -21,6 +27,10 @@ public class ArticleActivity extends ActionBarActivity {
                     .add(R.id.container, new ArticleFragment())
                     .commit();
         }
+
+        article = getIntent().getParcelableExtra("article");
+
+        setTitle(article.getTitle());
     }
 
 
@@ -40,6 +50,11 @@ public class ArticleActivity extends ActionBarActivity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            Intent settingsIntent = new Intent(this, SettingsActivity.class);
+            startActivity(settingsIntent);
+            return true;
+        } else if (id == android.R.id.home) {
+            finish();
             return true;
         }
 
@@ -58,6 +73,11 @@ public class ArticleActivity extends ActionBarActivity {
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_article, container, false);
+
+            Log.i("ArticleFragment", article.getTitle());
+            TextView articleTitle = (TextView) rootView.findViewById(R.id.article_title);
+            articleTitle.setText(article.getTitle());
+
             return rootView;
         }
     }

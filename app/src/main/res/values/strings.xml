@@ -49,6 +49,6 @@
     <string name="title_activity_article">ArticleActivity</string>
 
     <!-- Article -->
-    <string name="article_title"></string>
+    <string name="article_title">Article title</string>
 
 </resources>
