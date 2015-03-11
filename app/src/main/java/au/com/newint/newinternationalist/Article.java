@@ -76,6 +76,11 @@ public class Article implements Parcelable {
         return articleJson.get("teaser").getAsString();
     }
 
+    public String getBody() {
+        return "<html><body style='margin: 0; padding: 0;'><p>TODO: Article.getBody()</p><br /><br /><br /><br /><br /><br /><br /><br /><br /><br />" +
+                "<p>Long article simulation.</p><br /><br /><br /><br /><br /><br /><br /><p>Bottom.</p></body></html>";
+    }
+
     public Date getPublication() {
         return Publisher.parseDateFromString(articleJson.get("publication").getAsString());
     }

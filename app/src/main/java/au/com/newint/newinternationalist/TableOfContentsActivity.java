@@ -52,8 +52,8 @@ public class TableOfContentsActivity extends ActionBarActivity {
                     .commit();
         }
 
-        // Magazine title from Parcel issue
-        setTitle(issue.getTitle());
+        // Set title to Home screen
+        setTitle("Home");
 
         // Get SITE_URL
         String siteURLString = (String) Helpers.getSiteURL();
@@ -337,6 +337,7 @@ public class TableOfContentsActivity extends ActionBarActivity {
                     Intent articleIntent = new Intent(MainActivity.applicationContext, ArticleActivity.class);
                     // Pass issue through as a Parcel
                     articleIntent.putExtra("article", issue.articles.get(getPosition() - 1));
+                    articleIntent.putExtra("issue", issue);
                     startActivity(articleIntent);
                 }
             }

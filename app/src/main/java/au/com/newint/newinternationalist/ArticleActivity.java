@@ -1,5 +1,6 @@
 package au.com.newint.newinternationalist;
 
+import android.content.Context;
 import android.content.Intent;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.ActionBarActivity;
@@ -7,11 +8,13 @@ import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.text.Html;
 import android.util.Log;
+import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.WebView;
 import android.widget.TextView;
 
 import org.w3c.dom.Text;
@@ -23,6 +26,7 @@ import java.util.HashMap;
 public class ArticleActivity extends ActionBarActivity {
 
     static Article article;
+    static Issue issue;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,8 +39,9 @@ public class ArticleActivity extends ActionBarActivity {
         }
 
         article = getIntent().getParcelableExtra("article");
+        issue = getIntent().getParcelableExtra("issue");
 
-        setTitle(article.getTitle());
+        setTitle(issue.getTitle());
     }
 
 
@@ -78,11 +83,19 @@ public class ArticleActivity extends ActionBarActivity {
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
-            View rootView = inflater.inflate(R.layout.fragment_article, container, false);
+
+            // Set a light theme
+            final Context contextThemeWrapper = new ContextThemeWrapper(getActivity(), R.style.ArticleTheme);
+
+            // Clone the inflater using the ContextThemeWrapper to apply the theme
+            LayoutInflater localInflater = inflater.cloneInContext(contextThemeWrapper);
+
+            View rootView = localInflater.inflate(R.layout.fragment_article, container, false);
 
             TextView articleTitle = (TextView) rootView.findViewById(R.id.article_title);
             TextView articleTeaser = (TextView) rootView.findViewById(R.id.article_teaser);
             TextView articleCategories = (TextView) rootView.findViewById(R.id.article_categories);
+            WebView articleBody = (WebView) rootView.findViewById(R.id.article_body);
 
             articleTitle.setText(article.getTitle());
             articleTeaser.setText(Html.fromHtml(article.getTeaser()));
@@ -96,6 +109,11 @@ public class ArticleActivity extends ActionBarActivity {
                 separator = "\n";
             }
             articleCategories.setText(categoriesTemporaryString);
+
+            // Article body html
+//            articleBody.getSettings().setJavaScriptEnabled(true);
+//            articleBody.loadDataWithBaseURL("", article.getBody(), "text/html", "UTF-8", "");
+            articleBody.loadData(article.getBody(),"text/html", "UTF-8");
 
             return rootView;
         }
