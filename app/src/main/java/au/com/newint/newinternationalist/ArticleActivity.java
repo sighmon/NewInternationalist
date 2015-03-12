@@ -95,7 +95,7 @@ public class ArticleActivity extends ActionBarActivity {
             TextView articleTitle = (TextView) rootView.findViewById(R.id.article_title);
             TextView articleTeaser = (TextView) rootView.findViewById(R.id.article_teaser);
             TextView articleCategories = (TextView) rootView.findViewById(R.id.article_categories);
-            WebView articleBody = (WebView) rootView.findViewById(R.id.article_body);
+            final WebView articleBody = (WebView) rootView.findViewById(R.id.article_body);
 
             articleTitle.setText(article.getTitle());
             articleTeaser.setText(Html.fromHtml(article.getTeaser()));
@@ -114,6 +114,19 @@ public class ArticleActivity extends ActionBarActivity {
 //            articleBody.getSettings().setJavaScriptEnabled(true);
 //            articleBody.loadDataWithBaseURL("", article.getBody(), "text/html", "UTF-8", "");
             articleBody.loadData(article.getBody(),"text/html", "UTF-8");
+
+            // Register for ArticleBodyDownloadComplete listener
+            Publisher.ArticleBodyDownloadCompleteListener listener = new Publisher.ArticleBodyDownloadCompleteListener() {
+
+                @Override
+                public void onArticleBodyDownloadComplete(String bodyHTML) {
+                    Log.i("ArticleBody", "Received listener, refreshing article body.");
+                    // Refresh WebView
+                    articleBody.loadData(bodyHTML, "text/html", "UTF-8");
+                    Publisher.INSTANCE.articleBodyDownloadCompleteListener = null;
+                }
+            };
+            Publisher.INSTANCE.setOnArticleBodyDownloadCompleteListener(listener);
 
             return rootView;
         }

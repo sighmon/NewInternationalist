@@ -1,5 +1,6 @@
 package au.com.newint.newinternationalist;
 
+import android.os.AsyncTask;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.Log;
@@ -11,10 +12,17 @@ import com.google.gson.JsonParser;
 
 import org.json.JSONArray;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.lang.reflect.Array;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -77,8 +85,28 @@ public class Article implements Parcelable {
     }
 
     public String getBody() {
-        return "<html><body style='margin: 0; padding: 0;'><p>TODO: Article.getBody()</p><br /><br /><br /><br /><br /><br /><br /><br /><br /><br />" +
-                "<p>Long article simulation.</p><br /><br /><br /><br /><br /><br /><br /><p>Bottom.</p></body></html>";
+
+        // POST request to rails.
+
+        URL articleBodyURL = null;
+        try {
+            articleBodyURL = new URL(Helpers.getSiteURL() + "issues/" + Integer.toString(getIssueID()) + "/articles/" + Integer.toString(getID()) + "/body");
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+
+        ByteCache bodyCache = new ByteCache();
+
+        File articleDir = new File(MainActivity.applicationContext.getFilesDir() + "/" + Integer.toString(getIssueID()) + "/", Integer.toString(getID()));
+        File cacheFile = new File(articleDir,"body.html");
+
+        bodyCache.addMethod(new MemoryByteCacheMethod());
+        bodyCache.addMethod(new FileByteCacheMethod(cacheFile));
+        bodyCache.addMethod(new URLByteCacheMethod(articleBodyURL));
+
+        new DownloadBodyTask().execute(bodyCache);
+
+        return "<html><body><p>Loading...</p></body></html>";
     }
 
     public Date getPublication() {
@@ -152,5 +180,55 @@ public class Article implements Parcelable {
     public void writeToParcel(Parcel dest, int flags) {
         int[] intArray = {this.getID(), this.getIssueID()};
         dest.writeIntArray(intArray);
+    }
+
+    // Download body async task
+    private class DownloadBodyTask extends AsyncTask<ByteCache, Integer, String> {
+
+        @Override
+        protected String doInBackground(ByteCache... caches) {
+
+            ByteCache bodyCache = caches[0];
+
+            ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bodyCache.read());
+            BufferedInputStream bufferedInputStream = new BufferedInputStream(byteArrayInputStream);
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(bufferedInputStream));
+            StringBuilder total = new StringBuilder();
+            String line;
+            try {
+                while ((line = bufferedReader.readLine()) != null) {
+                    total.append(line);
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            if (total.length() < 1) {
+                // Need to POST request for body
+                Log.i("ArticleBody", "TODO: Post request!");
+
+                URL articleBodyURL = null;
+                try {
+                    articleBodyURL = new URL(Helpers.getSiteURL() + "issues/" + Integer.toString(getIssueID()) + "/articles/" + Integer.toString(getID()) + "/body");
+                } catch (MalformedURLException e) {
+                    e.printStackTrace();
+                }
+
+                // TODO: Post to rails
+
+                return "TODO: Post request";
+
+            } else {
+                return total.toString();
+            }
+        }
+
+        @Override
+        protected void onPostExecute(String bodyHTML) {
+            super.onPostExecute(bodyHTML);
+
+            // Post body to listener
+            Publisher.INSTANCE.articleBodyDownloadCompleteListener.onArticleBodyDownloadComplete(bodyHTML);
+        }
     }
 }

@@ -66,6 +66,10 @@ public enum Publisher {
         void onArticlesDownloadComplete(JsonArray articles);
     }
 
+    public interface ArticleBodyDownloadCompleteListener {
+        void onArticleBodyDownloadComplete(String bodyHTML);
+    }
+
 
     public void setOnDownloadCompleteListener(UpdateListener listener) {
         // Store the listener object
@@ -87,6 +91,13 @@ public enum Publisher {
     public void setOnArticlesDownloadCompleteListener(ArticlesDownloadCompleteListener listener) {
         // Store the listener object
         articleListeners.add(listener);
+    }
+
+    ArticleBodyDownloadCompleteListener articleBodyDownloadCompleteListener;
+
+    public void setOnArticleBodyDownloadCompleteListener(ArticleBodyDownloadCompleteListener listener) {
+        // Store the listener object
+        articleBodyDownloadCompleteListener = listener;
     }
 
     public int numberOfIssues() {
