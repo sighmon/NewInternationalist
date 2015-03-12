@@ -10,16 +10,28 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.protocol.ClientContext;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.protocol.BasicHttpContext;
+import org.apache.http.protocol.HttpContext;
+import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Writer;
 import java.lang.reflect.Array;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -95,18 +107,40 @@ public class Article implements Parcelable {
             e.printStackTrace();
         }
 
-        ByteCache bodyCache = new ByteCache();
-
         File articleDir = new File(MainActivity.applicationContext.getFilesDir() + "/" + Integer.toString(getIssueID()) + "/", Integer.toString(getID()));
         File cacheFile = new File(articleDir,"body.html");
 
-        bodyCache.addMethod(new MemoryByteCacheMethod());
-        bodyCache.addMethod(new FileByteCacheMethod(cacheFile));
-        bodyCache.addMethod(new URLByteCacheMethod(articleBodyURL));
+        String bodyHTML = wrapInHTML("<p>Loading...</p>");
 
-        new DownloadBodyTask().execute(bodyCache);
+        if (cacheFile.exists()) {
+            // Already have the body, so return it's contents as a string
+            Log.i("ArticleBody", "Filesystem hit! Returning from file.");
+            try {
+                FileInputStream inputStream = new FileInputStream(cacheFile);
+                InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
+                BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+                String receiveString = "";
+                StringBuilder stringBuilder = new StringBuilder();
 
-        return "<html><body><p>Loading...</p></body></html>";
+                while ( (receiveString = bufferedReader.readLine()) != null ) {
+                    stringBuilder.append(receiveString);
+                }
+
+                inputStream.close();
+                bodyHTML = wrapInHTML(stringBuilder.toString());
+            }
+            catch (FileNotFoundException e) {
+                Log.e("ArticleBody", "File not found: " + e.toString());
+                bodyHTML = wrapInHTML("ERROR: File not found.");
+            } catch (IOException e) {
+                Log.e("ArticleBody", "Cannot read file: " + e.toString());
+                bodyHTML = wrapInHTML("ERROR: Cannot read file.");
+            }
+        } else {
+            // Download the body
+            new DownloadBodyTask().execute(articleBodyURL);
+        }
+        return bodyHTML;
     }
 
     public Date getPublication() {
@@ -183,43 +217,95 @@ public class Article implements Parcelable {
     }
 
     // Download body async task
-    private class DownloadBodyTask extends AsyncTask<ByteCache, Integer, String> {
+    private class DownloadBodyTask extends AsyncTask<Object, Integer, String> {
 
         @Override
-        protected String doInBackground(ByteCache... caches) {
+        protected String doInBackground(Object... objects) {
 
-            ByteCache bodyCache = caches[0];
+            URL articleBodyURL = (URL) objects[0];
+            String bodyHTML = "";
 
-            ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bodyCache.read());
-            BufferedInputStream bufferedInputStream = new BufferedInputStream(byteArrayInputStream);
-            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(bufferedInputStream));
-            StringBuilder total = new StringBuilder();
-            String line;
+            // Try logging into Rails for authentication.
+            DefaultHttpClient httpclient = new DefaultHttpClient();
+
+            // Try to connect
+            HttpContext ctx = new BasicHttpContext();
+            ctx.setAttribute(ClientContext.COOKIE_STORE, Publisher.INSTANCE.cookieStore);
+            HttpPost post = new HttpPost(articleBodyURL.toString());
+            post.setHeader("Content-Type", "application/x-www-form-urlencoded");
+            HttpResponse response = null;
+
             try {
-                while ((line = bufferedReader.readLine()) != null) {
-                    total.append(line);
-                }
+                // Execute HTTP Post Request
+                response = httpclient.execute(post, ctx);
+
+            } catch (ClientProtocolException e) {
+                Log.i("ArticleBody", "ClientProtocolException: " + e);
             } catch (IOException e) {
-                e.printStackTrace();
+                Log.i("ArticleBody", "IOException: " + e);
             }
 
-            if (total.length() < 1) {
-                // Need to POST request for body
-                Log.i("ArticleBody", "TODO: Post request!");
+            int responseStatusCode;
+            boolean success = false;
 
-                URL articleBodyURL = null;
-                try {
-                    articleBodyURL = new URL(Helpers.getSiteURL() + "issues/" + Integer.toString(getIssueID()) + "/articles/" + Integer.toString(getID()) + "/body");
-                } catch (MalformedURLException e) {
-                    e.printStackTrace();
+            if (response != null) {
+                responseStatusCode = response.getStatusLine().getStatusCode();
+
+                if (responseStatusCode >= 200 && responseStatusCode < 300) {
+                    // We have the article Body
+                    success = true;
+
+                } else if (responseStatusCode > 400 && responseStatusCode < 500) {
+                    // Article request failed
+                    Log.i("ArticleBody", "Failed with code: " + responseStatusCode);
+                    bodyHTML = wrapInHTML("Sorry, doesn't look like you're logged in or perhaps you don't have a current subscription.");
+                    // TODO: alert and intent to login.
+
+                } else {
+                    // Server error.
+                    Log.i("ArticleBody", "Failed with code: " + responseStatusCode + " and response: " + response.getStatusLine());
+                    bodyHTML = wrapInHTML("Uh oh, sorry! Our server seems to be down, try again in a few minutes.");
                 }
 
-                // TODO: Post to rails
+            } else {
+                // Error getting article body
+                Log.i("ArticleBody", "Failed! Response is null");
+                bodyHTML = wrapInHTML("Uh oh, sorry! No response from the server.. try again soon.");
+            }
 
-                return "TODO: Post request";
+            if (success) {
+                try {
+                    // Save to filesystem
+
+                    bodyHTML = wrapInHTML(EntityUtils.toString(response.getEntity(), "UTF-8"));
+
+                    File dir = new File(MainActivity.applicationContext.getFilesDir() + "/" + Integer.toString(getIssueID()) + "/", Integer.toString(getID()));
+
+                    dir.mkdirs();
+
+                    File file = new File(dir, "body.html");
+
+                    try {
+                        Writer w = new FileWriter(file);
+                        w.write(bodyHTML);
+                        w.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        Log.e("ArticleBody", "Error writing body to filesystem.");
+                        bodyHTML = wrapInHTML("Error writing body to filesystem.");
+                    }
+
+                    // Return the body html string
+                    return bodyHTML;
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    bodyHTML = wrapInHTML("Error parsing response!");
+                    return bodyHTML;
+                }
 
             } else {
-                return total.toString();
+                return bodyHTML;
             }
         }
 
@@ -230,5 +316,10 @@ public class Article implements Parcelable {
             // Post body to listener
             Publisher.INSTANCE.articleBodyDownloadCompleteListener.onArticleBodyDownloadComplete(bodyHTML);
         }
+    }
+
+    private String wrapInHTML(String htmlToWrap) {
+        // TODO: Load CSS from file and throw it in the HTML returned
+        return "<html><body style='margin: 0; padding: 0;'>" + htmlToWrap + "</body></html>";
     }
 }

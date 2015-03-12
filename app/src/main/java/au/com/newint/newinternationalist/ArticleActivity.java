@@ -112,8 +112,7 @@ public class ArticleActivity extends ActionBarActivity {
 
             // Article body html
 //            articleBody.getSettings().setJavaScriptEnabled(true);
-//            articleBody.loadDataWithBaseURL("", article.getBody(), "text/html", "UTF-8", "");
-            articleBody.loadData(article.getBody(),"text/html", "UTF-8");
+            articleBody.loadDataWithBaseURL(null, article.getBody(), "text/html", "utf-8", null);
 
             // Register for ArticleBodyDownloadComplete listener
             Publisher.ArticleBodyDownloadCompleteListener listener = new Publisher.ArticleBodyDownloadCompleteListener() {
@@ -122,7 +121,7 @@ public class ArticleActivity extends ActionBarActivity {
                 public void onArticleBodyDownloadComplete(String bodyHTML) {
                     Log.i("ArticleBody", "Received listener, refreshing article body.");
                     // Refresh WebView
-                    articleBody.loadData(bodyHTML, "text/html", "UTF-8");
+                    articleBody.loadDataWithBaseURL(null, bodyHTML, "text/html", "utf-8", null);
                     Publisher.INSTANCE.articleBodyDownloadCompleteListener = null;
                 }
             };
