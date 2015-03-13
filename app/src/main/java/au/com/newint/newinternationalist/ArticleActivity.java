@@ -89,9 +89,8 @@ public class ArticleActivity extends ActionBarActivity {
         @Override
         public void onResume() {
             super.onResume();
-            Log.i("onResume", "****CALLED****");
             if (rootView != null) {
-                Log.i("onResume", "****LOADING BODY****");
+//                Log.i("onResume", "****LOADING BODY****");
                 WebView articleBody = (WebView) rootView.findViewById(R.id.article_body);
                 articleBody.loadDataWithBaseURL(null, article.getBody(), "text/html", "utf-8", null);
             }
