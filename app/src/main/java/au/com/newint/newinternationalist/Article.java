@@ -310,7 +310,10 @@ public class Article implements Parcelable {
             super.onPostExecute(responseList);
 
             // Post body to listener
-            Publisher.INSTANCE.articleBodyDownloadCompleteListener.onArticleBodyDownloadComplete(responseList);
+            Publisher.ArticleBodyDownloadCompleteListener listener = Publisher.INSTANCE.articleBodyDownloadCompleteListener;
+            if (listener != null) {
+                listener.onArticleBodyDownloadComplete(responseList);
+            }
         }
     }
 }

@@ -84,6 +84,19 @@ public class ArticleActivity extends ActionBarActivity {
         public ArticleFragment() {
         }
 
+        View rootView;
+
+        @Override
+        public void onResume() {
+            super.onResume();
+            Log.i("onResume", "****CALLED****");
+            if (rootView != null) {
+                Log.i("onResume", "****LOADING BODY****");
+                WebView articleBody = (WebView) rootView.findViewById(R.id.article_body);
+                articleBody.loadDataWithBaseURL(null, article.getBody(), "text/html", "utf-8", null);
+            }
+        }
+
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
@@ -94,7 +107,7 @@ public class ArticleActivity extends ActionBarActivity {
             // Clone the inflater using the ContextThemeWrapper to apply the theme
             LayoutInflater localInflater = inflater.cloneInContext(contextThemeWrapper);
 
-            final View rootView = localInflater.inflate(R.layout.fragment_article, container, false);
+            rootView = localInflater.inflate(R.layout.fragment_article, container, false);
 
             TextView articleTitle = (TextView) rootView.findViewById(R.id.article_title);
             TextView articleTeaser = (TextView) rootView.findViewById(R.id.article_teaser);
@@ -114,9 +127,9 @@ public class ArticleActivity extends ActionBarActivity {
             }
             articleCategories.setText(categoriesTemporaryString);
 
-            // Article body html
+            // Article body html (Doing this in onResume now)
 //            articleBody.getSettings().setJavaScriptEnabled(true);
-            articleBody.loadDataWithBaseURL(null, article.getBody(), "text/html", "utf-8", null);
+//            articleBody.loadDataWithBaseURL(null, article.getBody(), "text/html", "utf-8", null);
 
             // Register for ArticleBodyDownloadComplete listener
             Publisher.ArticleBodyDownloadCompleteListener listener = new Publisher.ArticleBodyDownloadCompleteListener() {
@@ -147,7 +160,6 @@ public class ArticleActivity extends ActionBarActivity {
                                     // User clicked OK button
                                     Intent loginIntent = new Intent(rootView.getContext(), LoginActivity.class);
                                     startActivity(loginIntent);
-                                    // TODO: Reload Article activity when done.
                                 }
                             });
                             builder.setNegativeButton(R.string.login_dialog_cancel_button, new DialogInterface.OnClickListener() {
@@ -169,9 +181,8 @@ public class ArticleActivity extends ActionBarActivity {
                         Log.i("ArticleBody", "Failed! Response is null");
                     }
 
-
                     articleBody.loadDataWithBaseURL(null, bodyHTML, "text/html", "utf-8", null);
-                    Publisher.INSTANCE.articleBodyDownloadCompleteListener = null;
+//                    Publisher.INSTANCE.articleBodyDownloadCompleteListener = null;
                 }
             };
             Publisher.INSTANCE.setOnArticleBodyDownloadCompleteListener(listener);
