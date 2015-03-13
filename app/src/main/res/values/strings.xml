@@ -9,6 +9,7 @@
     <string name="home_cover">Cover of the latest edition of New Internationalist magazine</string>
     <string name="home_subscribe">Subscribe</string>
     <string name="home_magazine_archive">Magazine archive</string>
+    <string name="home_login">Login</string>
 
     <!-- Settings -->
     <string name="action_settings">Settings</string>
@@ -27,14 +28,33 @@
     <string name="title_activity_magazine_archive">Magazine Archive</string>
 
     <!-- Table of Contents -->
-    <string name="title_activity_table_of_contents">Table of Contents</string>
-    <string name="article_title">Article title</string>
-    <string name="article_teaser">Article teaser</string>
-    <string name="article_categories">Category, Category</string>
+    <string name="toc_activity_title">Table of Contents</string>
+    <string name="toc_article_title">Article title</string>
+    <string name="toc_article_teaser">Article teaser</string>
+    <string name="toc_article_categories">Category, Category</string>
     <string name="toc_issue_number_date">000 - Date, Year</string>
     <string name="toc_cover_description">Magazine cover image</string>
     <string name="toc_editor_image_description">Photo of the editor of this magazine</string>
     <string name="toc_editors_letter">Editors letter.</string>
     <string name="toc_editors_name">Edited by:\\nEditor\'s name</string>
+
+    <!-- Login -->
+    <string name="title_activity_login">Login</string>
+    <string name="prompt_email">Email or username</string>
+    <string name="prompt_password">Password</string>
+    <string name="action_sign_in">Login</string>
+    <string name="action_sign_in_short">Login</string>
+    <string name="error_incorrect_password">Sorry, your username/email or password is incorrect.</string>
+    <string name="error_field_required">This field is required</string>
+    <string name="title_activity_article">ArticleActivity</string>
+
+    <!-- Article -->
+    <string name="article_title">Article title</string>
+    <string name="article_teaser">Article teaser</string>
+    <string name="article_categories">Category, category</string>
+    <string name="login_dialog_title_article_body">Subscribe?</string>
+    <string name="login_dialog_message_article_body">It doesn\'t look like you\'re a subscriber or if you are, perhaps you haven\'t logged in yet. What would you like to do?</string>
+    <string name="login_dialog_ok_button">Login</string>
+    <string name="login_dialog_cancel_button">Cancel</string>
 
 </resources>

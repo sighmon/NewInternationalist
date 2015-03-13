@@ -18,21 +18,22 @@
         android:contentDescription="@string/home_cover"
         android:elevation="2dp"/>
 
-    <!--<TextView-->
-        <!--android:text="@string/home_magazine_archive"-->
-        <!--android:layout_width="wrap_content"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:textSize="20sp"-->
-        <!--android:layout_below="@+id/home_cover"-->
-        <!--android:layout_centerHorizontal="true" />-->
-
     <Button
         android:id="@+id/home_magazine_archive"
         android:text="@string/home_magazine_archive"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="20sp"
+        android:textSize="@dimen/home_button_font_size"
         android:layout_below="@+id/home_cover"
+        android:layout_centerHorizontal="true"/>
+
+    <Button
+        android:id="@+id/home_login"
+        android:text="@string/home_login"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="@dimen/home_button_font_size"
+        android:layout_below="@id/home_magazine_archive"
         android:layout_centerHorizontal="true"/>
 
 </RelativeLayout>

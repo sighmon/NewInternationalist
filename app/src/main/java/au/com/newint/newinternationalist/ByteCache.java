@@ -26,6 +26,10 @@ public class ByteCache extends AsyncTask<Object,Integer,byte[]> {
         return read(null,null,new Date(Long.MAX_VALUE));
     }
 
+    public byte[] read(String startingAt) {
+        return read(startingAt,null,new Date(Long.MAX_VALUE));
+    }
+
     // TODO: the returned byte array should really be immutable
     public byte[] read(String startingAt, String stoppingAt, Date expiryDate) {
 

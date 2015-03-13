@@ -9,6 +9,9 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+import org.apache.http.HttpResponse;
+import org.apache.http.impl.client.BasicCookieStore;
+
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -37,13 +40,35 @@ public enum Publisher {
 
     ArrayList <UpdateListener> listeners = new ArrayList <UpdateListener> ();
 
+    ArrayList <LoginListener> loginListeners = new ArrayList<>();
+
+    boolean loggedIn;
+
+    BasicCookieStore cookieStore;
+
+    Publisher() {
+        deleteCookieStore();
+    }
+
+    public void deleteCookieStore() {
+        cookieStore = new BasicCookieStore();
+    }
+
     public interface UpdateListener {
+        void onUpdate(Object object);
+    }
+
+    public interface LoginListener {
         void onUpdate(Object object);
     }
 
     //TODO: shouldn't this be in Issue?
     public interface ArticlesDownloadCompleteListener {
         void onArticlesDownloadComplete(JsonArray articles);
+    }
+
+    public interface ArticleBodyDownloadCompleteListener {
+        void onArticleBodyDownloadComplete(ArrayList responseList);
     }
 
 
@@ -57,11 +82,23 @@ public enum Publisher {
         listeners.remove(listener);
     }
 
+    public void setLoggedInListener(LoginListener listener) {
+        // Store the listener object
+        loginListeners.add(listener);
+    }
+
     static ArrayList <ArticlesDownloadCompleteListener> articleListeners = new ArrayList <ArticlesDownloadCompleteListener> ();
 
     public void setOnArticlesDownloadCompleteListener(ArticlesDownloadCompleteListener listener) {
         // Store the listener object
         articleListeners.add(listener);
+    }
+
+    ArticleBodyDownloadCompleteListener articleBodyDownloadCompleteListener;
+
+    public void setOnArticleBodyDownloadCompleteListener(ArticleBodyDownloadCompleteListener listener) {
+        // Store the listener object
+        articleBodyDownloadCompleteListener = listener;
     }
 
     public int numberOfIssues() {
@@ -135,10 +172,28 @@ public enum Publisher {
 
         if (issueJson.exists()) {
             // Return parsed issue.json as JsonObject
-            return parseIssueJson(issueJson);
+            return parseJsonFile(issueJson);
         } else {
             // We don't have the issue.json, something went wrong with the initial download. HELP!
             // TODO: Download issues.json and re-save to filesystem
+            return null;
+        }
+    }
+
+    public static JsonObject getArticleJsonForId(int id, int issueID) {
+        // Return article.json for id handed in
+        File articleJson;
+
+        File dir = new File(MainActivity.applicationContext.getFilesDir(), Integer.toString(issueID) + "/" + Integer.toString(id));
+
+        articleJson = new File(dir,"article.json");
+
+        if (articleJson.exists()) {
+            // Return parsed issue.json as JsonObject
+            return parseJsonFile(articleJson);
+        } else {
+            // We don't have the issue.json, something went wrong with the initial download. HELP!
+            // TODO: Download article.json and re-save to filesystem
             return null;
         }
     }
@@ -166,10 +221,10 @@ public enum Publisher {
         return newestIssue;
     }
 
-    public static JsonObject parseIssueJson(Object issueJson) {
+    public static JsonObject parseJsonFile(Object jsonFile) {
         JsonElement root = null;
         try {
-            root = new JsonParser().parse(new FileReader((File) issueJson));
+            root = new JsonParser().parse(new FileReader((File) jsonFile));
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
@@ -193,10 +248,6 @@ public enum Publisher {
         }
         return releaseDate;
     }
-
-
-
-
 
     // ARTICLES download task for Issue issue
     public static class DownloadArticlesJSONTask extends AsyncTask<Object, Integer, JsonArray> {
@@ -259,5 +310,22 @@ public enum Publisher {
                 listener.onArticlesDownloadComplete(articles);
             }
         }
+    }
+
+    // DEBUG FUNCTIONS
+
+    public boolean deleteDirectory(Issue issue) {
+        File dir = new File(MainActivity.applicationContext.getFilesDir().getPath() + "/" + issue.getID());
+
+        boolean success = false;
+
+        if (dir.isDirectory()) {
+            String[] children = dir.list();
+            for (String aChildren : children) {
+                success = new File(dir, aChildren).delete();
+            }
+        }
+
+        return success;
     }
 }

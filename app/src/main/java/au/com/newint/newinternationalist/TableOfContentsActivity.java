@@ -3,14 +3,9 @@ package au.com.newint.newinternationalist;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.os.Parcel;
-import android.os.Parcelable;
-import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
-import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
-import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Html;
@@ -25,8 +20,6 @@ import android.widget.TextView;
 
 import com.google.gson.JsonArray;
 
-import org.w3c.dom.Text;
-
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -34,8 +27,6 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Objects;
 
 
 public class TableOfContentsActivity extends ActionBarActivity {
@@ -61,11 +52,11 @@ public class TableOfContentsActivity extends ActionBarActivity {
                     .commit();
         }
 
-        // Magazine title from Parcel issue
-        setTitle(issue.getTitle());
+        // Set title to Home screen
+        setTitle("Home");
 
         // Get SITE_URL
-        String siteURLString = (String) MainActivity.getVariableFromConfig(this, "SITE_URL");
+        String siteURLString = (String) Helpers.getSiteURL();
 
         // Get articles.json (actually issueID.json) and save/update our cache
         URL articlesURL = null;
@@ -326,7 +317,7 @@ public class TableOfContentsActivity extends ActionBarActivity {
             }
 
 
-            public class TableOfContentsViewHolder extends RecyclerView.ViewHolder {
+            public class TableOfContentsViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
                 public TextView articleTitleTextView;
                 public TextView articleTeaserTextView;
@@ -334,9 +325,20 @@ public class TableOfContentsActivity extends ActionBarActivity {
 
                 public TableOfContentsViewHolder(View itemView) {
                     super(itemView);
-                    articleTitleTextView = (TextView) itemView.findViewById(R.id.article_title);
-                    articleTeaserTextView = (TextView) itemView.findViewById(R.id.article_teaser);
-                    articleCategoriesTextView = (TextView) itemView.findViewById(R.id.article_categories);
+                    articleTitleTextView = (TextView) itemView.findViewById(R.id.toc_article_title);
+                    articleTeaserTextView = (TextView) itemView.findViewById(R.id.toc_article_teaser);
+                    articleCategoriesTextView = (TextView) itemView.findViewById(R.id.toc_article_categories);
+                    itemView.setOnClickListener(this);
+                }
+
+                @Override
+                public void onClick(View v) {
+//                    Toast.makeText(MainActivity.applicationContext, "View clicked at position: " + getPosition(), Toast.LENGTH_SHORT).show();
+                    Intent articleIntent = new Intent(MainActivity.applicationContext, ArticleActivity.class);
+                    // Pass issue through as a Parcel
+                    articleIntent.putExtra("article", issue.articles.get(getPosition() - 1));
+                    articleIntent.putExtra("issue", issue);
+                    startActivity(articleIntent);
                 }
             }
 

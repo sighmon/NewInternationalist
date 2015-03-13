@@ -50,7 +50,7 @@ public class Issue implements Parcelable {
 
     JsonObject issueJson;
 
-    HashMap<URL,Object> imageRequestsHashMap;
+    HashMap<URL,Integer> imageRequestsHashMap;
 
     CacheStreamFactory coverCacheStreamFactory;
 
@@ -65,7 +65,7 @@ public class Issue implements Parcelable {
 
         issueJson = root.getAsJsonObject();
 
-        articles = getArticles();
+//        articles = getArticles();
 
         URL coverURL = getCoverURL();
 
@@ -184,17 +184,23 @@ public class Issue implements Parcelable {
         if (imageFile.exists()) {
             // Return image from filesystem
             return imageFile;
-        } else if (imageRequestsHashMap != null && (int) imageRequestsHashMap.get(imageURL) == 1) {
-            // Image is already being requested
-            return null;
         } else {
-            // Download image
             if (imageRequestsHashMap == null) {
                 imageRequestsHashMap = new HashMap<>();
             }
-            imageRequestsHashMap.put(imageURL, 1);
-            new DownloadImage().execute(this, imageURL);
-            return null;
+            Integer isRequesting = imageRequestsHashMap.get(imageURL);
+            if (isRequesting != null && isRequesting == 1) {
+                // Image is already being requested
+                return null;
+            } else {
+                // Download image
+                if (imageRequestsHashMap == null) {
+                    imageRequestsHashMap = new HashMap<>();
+                }
+                imageRequestsHashMap.put(imageURL, 1);
+                new DownloadImage().execute(this, imageURL);
+                return null;
+            }
         }
     }
 

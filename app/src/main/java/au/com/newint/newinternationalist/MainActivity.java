@@ -2,7 +2,6 @@ package au.com.newint.newinternationalist;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -29,17 +28,18 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+import org.apache.http.cookie.Cookie;
+
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Writer;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Properties;
+import java.util.List;
 
 public class MainActivity extends ActionBarActivity {
 
@@ -56,7 +56,7 @@ public class MainActivity extends ActionBarActivity {
         setContentView(R.layout.activity_main);
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
-                    .add(R.id.container, new PlaceholderFragment())
+                    .add(R.id.container, new MainFragment())
                     .commit();
         }
 
@@ -67,7 +67,7 @@ public class MainActivity extends ActionBarActivity {
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
 
         // Get SITE_URL from config variables
-        String siteURLString = (String) getVariableFromConfig(this, "SITE_URL");
+        String siteURLString = Helpers.getSiteURL();
         Log.i("SITE_URL", siteURLString);
 
         // Get issues.json and save/update our cache
@@ -83,7 +83,6 @@ public class MainActivity extends ActionBarActivity {
         File cacheDir = getApplicationContext().getCacheDir();
         File cacheFile = new File(cacheDir,"issues.json");
 
-        // TODO: Aren't we always wanting to get from Net? Commented out other methods.
         //issuesJSONCache.addMethod(new MemoryByteCacheMethod());
         issuesJSONCache.addMethod(new FileByteCacheMethod(cacheFile));
         issuesJSONCache.addMethod(new URLByteCacheMethod(issuesURL));
@@ -125,18 +124,37 @@ public class MainActivity extends ActionBarActivity {
     /**
      * A placeholder fragment containing a simple view.
      */
-    public static class PlaceholderFragment extends Fragment {
+    public static class MainFragment extends Fragment {
 
-        public PlaceholderFragment() {
+        public MainFragment() {
         }
 
         Issue latestIssueOnFile;
         Publisher.UpdateListener listener;
+        Publisher.LoginListener loginListener;
 
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
             final View rootView = inflater.inflate(R.layout.fragment_main, container, false);
+
+            // Check if we're logged in
+            if (Publisher.INSTANCE.loggedIn) {
+                // Set login text to Logged in
+                Button loginButton = (Button) rootView.findViewById(R.id.home_login);
+                loginButton.setText("Logged in");
+            }
+
+            // Add listener for login successful!
+            loginListener = new Publisher.LoginListener() {
+
+                @Override
+                public void onUpdate(Object object) {
+                    Button loginButton = (Button) rootView.findViewById(R.id.home_login);
+                    loginButton.setText("Logged in");
+                }
+            };
+            Publisher.INSTANCE.setLoggedInListener(loginListener);
 
             // Register for DownloadComplete listener
             listener = new Publisher.UpdateListener() {
@@ -222,6 +240,16 @@ public class MainActivity extends ActionBarActivity {
                 }
             });
 
+            // Set a listener for Login taps
+            Button login = (Button) rootView.findViewById(R.id.home_login);
+            login.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent loginIntent = new Intent(rootView.getContext(), LoginActivity.class);
+                    startActivity(loginIntent);
+                }
+            });
+
             return rootView;
         }
 
@@ -229,20 +257,6 @@ public class MainActivity extends ActionBarActivity {
         public void onPause() {
             super.onPause();
             Publisher.INSTANCE.removeDownloadCompleteListener(listener);
-        }
-    }
-
-    public static String getVariableFromConfig(Context context, String string) {
-        Resources resources = context.getResources();
-        AssetManager assetManager = resources.getAssets();
-        try {
-            InputStream inputStream = assetManager.open("config.properties");
-            Properties properties = new Properties();
-            properties.load(inputStream);
-            return properties.getProperty(string);
-        } catch (IOException e) {
-            Log.e("Properties","Failed to open config property file");
-            return null;
         }
     }
 
@@ -255,7 +269,7 @@ public class MainActivity extends ActionBarActivity {
 
             ByteCache issuesJSONCache = caches[0];
 
-            ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(issuesJSONCache.read());
+            ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(issuesJSONCache.read("net"));
             BufferedInputStream bufferedInputStream = new BufferedInputStream(byteArrayInputStream);
             InputStreamReader inputStreamReader = new InputStreamReader(bufferedInputStream);
             JsonElement root = new JsonParser().parse(inputStreamReader);
@@ -325,8 +339,7 @@ public class MainActivity extends ActionBarActivity {
         protected void onPostExecute(JsonArray magazines) {
             super.onPostExecute(magazines);
 
-            // Check for new issues.
-
+            // ...
 
         }
     }
