@@ -154,8 +154,8 @@ public class Issue implements Parcelable {
         return articles;
     }
 
-    public File getCover() {
-        return getImage(getCoverURL());
+    public InputStream getCoverInputStream() {
+        return coverCacheStreamFactory.createInputStream();
     }
 
     public File getCoverForSize(int width, int height) {
@@ -218,51 +218,37 @@ public class Issue implements Parcelable {
             // Return imageForSize from filesystem
             return imageForSize;
         } else {
-            File fullsizeImage = getImage(imageURL);
-            if (fullsizeImage != null && fullsizeImage.exists()) {
-                // Scale image for size requested
-                Bitmap fullsizeImageBitmap = BitmapFactory.decodeFile(fullsizeImage.getPath());
-                if (fullsizeImageBitmap != null) {
-                    // TODO: Work out why this creates jagged images. Is the image size wrong??
+            // Scale image for size requested
+            Bitmap fullsizeImageBitmap = BitmapFactory.decodeStream(coverCacheStreamFactory.createCacheInputStream());
+            if (fullsizeImageBitmap != null) {
+                // TODO: Work out why this creates jagged images. Is the image size wrong??
 //                    Bitmap scaledCover = Bitmap.createScaledBitmap(fullsizeImageBitmap, width, height, true);
 
-                    // Scale image with fixed width and aspect ratio, crop if need be
-                    Bitmap scaledImage = Bitmap.createBitmap((int)width, (int)height, Bitmap.Config.ARGB_8888);
-                    float originalWidth = fullsizeImageBitmap.getWidth(), originalHeight = fullsizeImageBitmap.getHeight();
-                    Canvas canvas = new Canvas(scaledImage);
-                    float scale = width/originalWidth;
-                    float xTranslation = 0.0f, yTranslation = (height - originalHeight * scale)/2.0f;
-                    Matrix transformation = new Matrix();
-                    transformation.postTranslate(xTranslation, yTranslation);
-                    transformation.preScale(scale, scale);
-                    Paint paint = new Paint();
-                    paint.setFilterBitmap(true);
-                    canvas.drawBitmap(fullsizeImageBitmap, transformation, paint);
+                // Scale image with fixed width and aspect ratio, crop if need be
+                Bitmap scaledImage = Bitmap.createBitmap((int)width, (int)height, Bitmap.Config.ARGB_8888);
+                float originalWidth = fullsizeImageBitmap.getWidth(), originalHeight = fullsizeImageBitmap.getHeight();
+                Canvas canvas = new Canvas(scaledImage);
+                float scale = width/originalWidth;
+                float xTranslation = 0.0f, yTranslation = (height - originalHeight * scale)/2.0f;
+                Matrix transformation = new Matrix();
+                transformation.postTranslate(xTranslation, yTranslation);
+                transformation.preScale(scale, scale);
+                Paint paint = new Paint();
+                paint.setFilterBitmap(true);
+                canvas.drawBitmap(fullsizeImageBitmap, transformation, paint);
 
-                    // Save to filesystem
-                    FileOutputStream fileOutputStream = null;
-                    try {
-                        fileOutputStream = new FileOutputStream(imageForSize);
-                        scaledImage.compress(Bitmap.CompressFormat.JPEG, 100, fileOutputStream);
-                        fileOutputStream.close();
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                    return imageForSize;
-                } else {
-                    // The image file is corrupt!!
-                    if (fullsizeImage.delete()) {
-                        Log.i("Image", "This image " + imageURL.toString() + " was corrupt, but deleted successfully.");
-                    } else {
-                        Log.i("Image", "ERROR: Couldn't delete this cover..." + fullsizeImage);
-                    }
-                    return null;
+                // Save to filesystem
+                FileOutputStream fileOutputStream = null;
+                try {
+                    fileOutputStream = new FileOutputStream(imageForSize);
+                    scaledImage.compress(Bitmap.CompressFormat.JPEG, 100, fileOutputStream);
+                    fileOutputStream.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
-            } else {
-                // TODO: Get callback to re-run imageForSize
-                // At the moment the image only updates once downloaded when the user scrolls back onto it.
-                return null;
+                return imageForSize;
             }
+            return null;
         }
     }
 

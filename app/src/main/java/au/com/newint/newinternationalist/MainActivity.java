@@ -150,7 +150,7 @@ public class MainActivity extends ActionBarActivity {
                     // Show cover
                     ImageButton home_cover = (ImageButton) rootView.findViewById(R.id.home_cover);
                     if (home_cover != null) {
-                        Bitmap coverBitmap = BitmapFactory.decodeStream(issue.coverCacheStreamFactory.createInputStream());
+                        Bitmap coverBitmap = BitmapFactory.decodeStream(issue.getCoverInputStream());
                         home_cover.setImageBitmap(coverBitmap);
                         home_cover.setScaleType(ImageView.ScaleType.FIT_CENTER);
                     }
@@ -158,23 +158,24 @@ public class MainActivity extends ActionBarActivity {
                     latestIssueOnFile = issue;
                 }
             };
+
             Publisher.INSTANCE.setOnDownloadCompleteListener(listener);
 
-            // Display latest cover if available on filesystem
-            latestIssueOnFile = Publisher.INSTANCE.latestIssue();
-            if (latestIssueOnFile != null) {
-                File coverFile = latestIssueOnFile.getCover();
-
-                if (coverFile != null && coverFile.exists()) {
-                    // Show cover
-                    ImageButton home_cover = (ImageButton) rootView.findViewById(R.id.home_cover);
-                    if (home_cover != null) {
-                        Bitmap coverBitmap = BitmapFactory.decodeFile(coverFile.getPath());
-                        home_cover.setImageBitmap(coverBitmap);
-                        home_cover.setScaleType(ImageView.ScaleType.FIT_CENTER);
-                    }
-                }
-            }
+//            // Display latest cover if available on filesystem
+//            latestIssueOnFile = Publisher.INSTANCE.latestIssue();
+//            if (latestIssueOnFile != null) {
+//                File coverFile = latestIssueOnFile.getCover();
+//
+//                if (coverFile != null && coverFile.exists()) {
+//                    // Show cover
+//                    ImageButton home_cover = (ImageButton) rootView.findViewById(R.id.home_cover);
+//                    if (home_cover != null) {
+//                        Bitmap coverBitmap = BitmapFactory.decodeFile(coverFile.getPath());
+//                        home_cover.setImageBitmap(coverBitmap);
+//                        home_cover.setScaleType(ImageView.ScaleType.FIT_CENTER);
+//                    }
+//                }
+//            }
 
             // Set a listener for home_cover taps
             final ImageButton home_cover = (ImageButton) rootView.findViewById(R.id.home_cover);
