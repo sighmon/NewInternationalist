@@ -130,7 +130,6 @@ public class MainActivity extends ActionBarActivity {
         public MainFragment() {
         }
 
-        Issue latestIssueOnFile;
         Publisher.UpdateListener listener;
         Publisher.LoginListener loginListener;
 
@@ -157,25 +156,8 @@ public class MainActivity extends ActionBarActivity {
             };
             Publisher.INSTANCE.setLoggedInListener(loginListener);
 
-            // Register for DownloadComplete listener
 
 
-
-
-            //latestIssueOnFile = Publisher.INSTANCE.latestIssue();
-
-
-
-//
-//            final ImageButton home_cover = (ImageButton) rootView.findViewById(R.id.home_cover);
-//            if (home_cover != null && latestIssueOnFile != null) {
-//                InputStream coverInputStream = latestIssueOnFile.getCoverInputStreamFromFile();
-//                if(coverInputStream!=null) {
-//                    Bitmap coverBitmap = BitmapFactory.decodeStream(coverInputStream);
-//                    home_cover.setImageBitmap(coverBitmap);
-//                    home_cover.setScaleType(ImageView.ScaleType.FIT_CENTER);
-//                }
-//            }
 
             // Set a listener for home_cover taps
             final ImageButton home_cover = (ImageButton) rootView.findViewById(R.id.home_cover);
@@ -184,6 +166,7 @@ public class MainActivity extends ActionBarActivity {
                 public void onClick(View view) {
                     // Cover tapped
                     Log.i("Cover", "Cover was tapped!");
+                    Issue latestIssueOnFile = Publisher.INSTANCE.latestIssue();
                     if(latestIssueOnFile!=null) {
                         Intent tableOfContentsIntent = new Intent(rootView.getContext(), TableOfContentsActivity.class);
                         // Pass issue through as a Parcel
