@@ -9,6 +9,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+import org.apache.http.HttpResponse;
 import org.apache.http.impl.client.BasicCookieStore;
 
 import java.io.BufferedInputStream;
@@ -67,7 +68,7 @@ public enum Publisher {
     }
 
     public interface ArticleBodyDownloadCompleteListener {
-        void onArticleBodyDownloadComplete(String bodyHTML);
+        void onArticleBodyDownloadComplete(ArrayList responseList);
     }
 
 

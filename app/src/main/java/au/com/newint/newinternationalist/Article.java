@@ -1,5 +1,7 @@
 package au.com.newint.newinternationalist;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.os.AsyncTask;
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -110,7 +112,7 @@ public class Article implements Parcelable {
         File articleDir = new File(MainActivity.applicationContext.getFilesDir() + "/" + Integer.toString(getIssueID()) + "/", Integer.toString(getID()));
         File cacheFile = new File(articleDir,"body.html");
 
-        String bodyHTML = wrapInHTML("<p>Loading...</p>");
+        String bodyHTML = Helpers.wrapInHTML("<p>Loading...</p>");
 
         if (cacheFile.exists()) {
             // Already have the body, so return it's contents as a string
@@ -127,14 +129,15 @@ public class Article implements Parcelable {
                 }
 
                 inputStream.close();
-                bodyHTML = wrapInHTML(stringBuilder.toString());
+                bodyHTML = Helpers.wrapInHTML(stringBuilder.toString());
             }
             catch (FileNotFoundException e) {
                 Log.e("ArticleBody", "File not found: " + e.toString());
-                bodyHTML = wrapInHTML("ERROR: File not found.");
+                bodyHTML = Helpers.wrapInHTML("ERROR: File not found.");
             } catch (IOException e) {
                 Log.e("ArticleBody", "Cannot read file: " + e.toString());
-                bodyHTML = wrapInHTML("ERROR: Cannot read file.");
+                bodyHTML = Helpers.wrapInHTML("ERROR: Cannot read file.");
+                cacheFile.delete();
             }
         } else {
             // Download the body
@@ -217,10 +220,10 @@ public class Article implements Parcelable {
     }
 
     // Download body async task
-    private class DownloadBodyTask extends AsyncTask<Object, Integer, String> {
+    private class DownloadBodyTask extends AsyncTask<Object, Integer, ArrayList> {
 
         @Override
-        protected String doInBackground(Object... objects) {
+        protected ArrayList doInBackground(Object... objects) {
 
             URL articleBodyURL = (URL) objects[0];
             String bodyHTML = "";
@@ -258,26 +261,22 @@ public class Article implements Parcelable {
                 } else if (responseStatusCode > 400 && responseStatusCode < 500) {
                     // Article request failed
                     Log.i("ArticleBody", "Failed with code: " + responseStatusCode);
-                    bodyHTML = wrapInHTML("Sorry, doesn't look like you're logged in or perhaps you don't have a current subscription.");
-                    // TODO: alert and intent to login.
 
                 } else {
                     // Server error.
                     Log.i("ArticleBody", "Failed with code: " + responseStatusCode + " and response: " + response.getStatusLine());
-                    bodyHTML = wrapInHTML("Uh oh, sorry! Our server seems to be down, try again in a few minutes.");
                 }
 
             } else {
                 // Error getting article body
                 Log.i("ArticleBody", "Failed! Response is null");
-                bodyHTML = wrapInHTML("Uh oh, sorry! No response from the server.. try again soon.");
             }
 
             if (success) {
                 try {
                     // Save to filesystem
 
-                    bodyHTML = wrapInHTML(EntityUtils.toString(response.getEntity(), "UTF-8"));
+                    bodyHTML = Helpers.wrapInHTML(EntityUtils.toString(response.getEntity(), "UTF-8"));
 
                     File dir = new File(MainActivity.applicationContext.getFilesDir() + "/" + Integer.toString(getIssueID()) + "/", Integer.toString(getID()));
 
@@ -292,34 +291,26 @@ public class Article implements Parcelable {
                     } catch (IOException e) {
                         e.printStackTrace();
                         Log.e("ArticleBody", "Error writing body to filesystem.");
-                        bodyHTML = wrapInHTML("Error writing body to filesystem.");
                     }
-
-                    // Return the body html string
-                    return bodyHTML;
 
                 } catch (IOException e) {
                     e.printStackTrace();
-                    bodyHTML = wrapInHTML("Error parsing response!");
-                    return bodyHTML;
                 }
-
-            } else {
-                return bodyHTML;
             }
+
+            ArrayList<Object> responseList = new ArrayList<>();
+            responseList.add(response);
+            responseList.add(bodyHTML);
+
+            return responseList;
         }
 
         @Override
-        protected void onPostExecute(String bodyHTML) {
-            super.onPostExecute(bodyHTML);
+        protected void onPostExecute(ArrayList responseList) {
+            super.onPostExecute(responseList);
 
             // Post body to listener
-            Publisher.INSTANCE.articleBodyDownloadCompleteListener.onArticleBodyDownloadComplete(bodyHTML);
+            Publisher.INSTANCE.articleBodyDownloadCompleteListener.onArticleBodyDownloadComplete(responseList);
         }
-    }
-
-    private String wrapInHTML(String htmlToWrap) {
-        // TODO: Load CSS from file and throw it in the HTML returned
-        return "<html><body style='margin: 0; padding: 0;'>" + htmlToWrap + "</body></html>";
     }
 }

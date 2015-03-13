@@ -52,5 +52,9 @@
     <string name="article_title">Article title</string>
     <string name="article_teaser">Article teaser</string>
     <string name="article_categories">Category, category</string>
+    <string name="login_dialog_title_article_body">Subscribe?</string>
+    <string name="login_dialog_message_article_body">It doesn\'t look like you\'re a subscriber or if you are, perhaps you haven\'t logged in yet. What would you like to do?</string>
+    <string name="login_dialog_ok_button">Login</string>
+    <string name="login_dialog_cancel_button">Cancel</string>
 
 </resources>

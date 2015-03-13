@@ -1,6 +1,8 @@
 package au.com.newint.newinternationalist;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.ActionBarActivity;
@@ -17,8 +19,11 @@ import android.view.ViewGroup;
 import android.webkit.WebView;
 import android.widget.TextView;
 
+import org.apache.http.HttpResponse;
+import org.apache.http.util.EntityUtils;
 import org.w3c.dom.Text;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -43,7 +48,6 @@ public class ArticleActivity extends ActionBarActivity {
 
         setTitle(issue.getTitle());
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -90,7 +94,7 @@ public class ArticleActivity extends ActionBarActivity {
             // Clone the inflater using the ContextThemeWrapper to apply the theme
             LayoutInflater localInflater = inflater.cloneInContext(contextThemeWrapper);
 
-            View rootView = localInflater.inflate(R.layout.fragment_article, container, false);
+            final View rootView = localInflater.inflate(R.layout.fragment_article, container, false);
 
             TextView articleTitle = (TextView) rootView.findViewById(R.id.article_title);
             TextView articleTeaser = (TextView) rootView.findViewById(R.id.article_teaser);
@@ -118,9 +122,54 @@ public class ArticleActivity extends ActionBarActivity {
             Publisher.ArticleBodyDownloadCompleteListener listener = new Publisher.ArticleBodyDownloadCompleteListener() {
 
                 @Override
-                public void onArticleBodyDownloadComplete(String bodyHTML) {
+                public void onArticleBodyDownloadComplete(ArrayList responseList) {
                     Log.i("ArticleBody", "Received listener, refreshing article body.");
-                    // Refresh WebView
+                    // Check response, and respond with dialog or refresh body
+                    HttpResponse response = (HttpResponse) responseList.get(0);
+                    String bodyHTML = "";
+                    int responseStatusCode;
+
+                    if (response != null) {
+                        responseStatusCode = response.getStatusLine().getStatusCode();
+
+                        if (responseStatusCode >= 200 && responseStatusCode < 300) {
+                            // We have the article Body
+                            bodyHTML = (String) responseList.get(1);
+
+                        } else if (responseStatusCode > 400 && responseStatusCode < 500) {
+                            // Article request failed
+                            Log.i("ArticleBody", "Failed with code: " + responseStatusCode);
+                            // Alert and intent to login.
+                            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                            builder.setMessage(R.string.login_dialog_message_article_body).setTitle(R.string.login_dialog_title_article_body);
+                            builder.setPositiveButton(R.string.login_dialog_ok_button, new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                    // User clicked OK button
+                                    Intent loginIntent = new Intent(rootView.getContext(), LoginActivity.class);
+                                    startActivity(loginIntent);
+                                    // TODO: Reload Article activity when done.
+                                }
+                            });
+                            builder.setNegativeButton(R.string.login_dialog_cancel_button, new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                    // User cancelled the dialog
+                                    getActivity().finish();
+                                }
+                            });
+                            AlertDialog dialog = builder.create();
+                            dialog.show();
+
+                        } else {
+                            // Server error.
+                            Log.i("ArticleBody", "Failed with code: " + responseStatusCode + " and response: " + response.getStatusLine());
+                        }
+
+                    } else {
+                        // Error getting article body
+                        Log.i("ArticleBody", "Failed! Response is null");
+                    }
+
+
                     articleBody.loadDataWithBaseURL(null, bodyHTML, "text/html", "utf-8", null);
                     Publisher.INSTANCE.articleBodyDownloadCompleteListener = null;
                 }
