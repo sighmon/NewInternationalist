@@ -35,6 +35,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Writer;
 import java.net.MalformedURLException;
@@ -157,41 +158,22 @@ public class MainActivity extends ActionBarActivity {
             Publisher.INSTANCE.setLoggedInListener(loginListener);
 
             // Register for DownloadComplete listener
-            listener = new Publisher.UpdateListener() {
-                @Override
-                public void onUpdate(Object object) {
 
-                    Issue issue = (Issue) object;
 
-                    Log.i("DownloadComplete", "Received listener, showing cover.");
 
-                    // Show cover
-                    ImageButton home_cover = (ImageButton) rootView.findViewById(R.id.home_cover);
-                    if (home_cover != null) {
-                        Bitmap coverBitmap = BitmapFactory.decodeStream(issue.getCoverInputStream());
-                        home_cover.setImageBitmap(coverBitmap);
-                        home_cover.setScaleType(ImageView.ScaleType.FIT_CENTER);
-                    }
 
-                    latestIssueOnFile = issue;
-                }
-            };
+            //latestIssueOnFile = Publisher.INSTANCE.latestIssue();
 
-            Publisher.INSTANCE.setOnDownloadCompleteListener(listener);
 
-//            // Display latest cover if available on filesystem
-//            latestIssueOnFile = Publisher.INSTANCE.latestIssue();
-//            if (latestIssueOnFile != null) {
-//                File coverFile = latestIssueOnFile.getCover();
+
 //
-//                if (coverFile != null && coverFile.exists()) {
-//                    // Show cover
-//                    ImageButton home_cover = (ImageButton) rootView.findViewById(R.id.home_cover);
-//                    if (home_cover != null) {
-//                        Bitmap coverBitmap = BitmapFactory.decodeFile(coverFile.getPath());
-//                        home_cover.setImageBitmap(coverBitmap);
-//                        home_cover.setScaleType(ImageView.ScaleType.FIT_CENTER);
-//                    }
+//            final ImageButton home_cover = (ImageButton) rootView.findViewById(R.id.home_cover);
+//            if (home_cover != null && latestIssueOnFile != null) {
+//                InputStream coverInputStream = latestIssueOnFile.getCoverInputStreamFromFile();
+//                if(coverInputStream!=null) {
+//                    Bitmap coverBitmap = BitmapFactory.decodeStream(coverInputStream);
+//                    home_cover.setImageBitmap(coverBitmap);
+//                    home_cover.setScaleType(ImageView.ScaleType.FIT_CENTER);
 //                }
 //            }
 
@@ -327,6 +309,8 @@ public class MainActivity extends ActionBarActivity {
                     //TODO: this should be done in main activity in response to a listener
                     Publisher.INSTANCE.issuesList = null;
                     latestIssue = Publisher.INSTANCE.latestIssue();
+
+
                     //if (latestIssue!=null) latestIssue.getCover();
 
                 }
@@ -339,7 +323,25 @@ public class MainActivity extends ActionBarActivity {
         protected void onPostExecute(JsonArray magazines) {
             super.onPostExecute(magazines);
 
-            // ...
+            Issue latestIssueOnFile = Publisher.INSTANCE.latestIssue();
+
+            latestIssueOnFile.coverCacheStreamFactory.preload(new CacheStreamFactory.CachePreloadCallback() {
+
+                @Override
+                public void onLoad(InputStream streamCache) {
+
+                    Log.i("DownloadComplete", "Received listener, showing cover.");
+
+                    // Show cover
+                    ImageButton home_cover = (ImageButton) MainActivity.this.findViewById(R.id.home_cover);
+                    if (home_cover != null) {
+                        Bitmap coverBitmap = BitmapFactory.decodeStream(streamCache);
+                        home_cover.setImageBitmap(coverBitmap);
+                        home_cover.setScaleType(ImageView.ScaleType.FIT_CENTER);
+                    }
+
+                }
+            });
 
         }
     }

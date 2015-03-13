@@ -158,6 +158,10 @@ public class Issue implements Parcelable {
         return coverCacheStreamFactory.createInputStream();
     }
 
+    public InputStream getCoverInputStreamFromFile() {
+        return coverCacheStreamFactory.createInputStream(null,"file");
+    }
+
     public File getCoverForSize(int width, int height) {
         return getImageForSize(getCoverURL(), width, height);
     }
@@ -203,6 +207,7 @@ public class Issue implements Parcelable {
             }
         }
     }
+
 
     public File getImageForSize(URL imageURL, int width, int height) {
 

@@ -1,8 +1,11 @@
 package au.com.newint.newinternationalist;
 
+import android.os.AsyncTask;
 import android.util.Log;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.io.input.NullInputStream;
+import org.apache.commons.io.output.NullOutputStream;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -19,6 +22,50 @@ public abstract class CacheStreamFactory {
     CacheStreamFactory(CacheStreamFactory fallback, String name) {
         this.fallback = fallback;
         this.name = name;
+    }
+
+    interface CachePreloadCallback {
+        void onLoad(InputStream streamCache);
+    }
+
+    class PreloadTask extends AsyncTask<String,Integer,Boolean> {
+
+        CachePreloadCallback callback;
+
+        @Override
+        protected Boolean doInBackground(String... params) {
+            String startingAt = null;
+            String stoppingAt = null;
+            if(params.length>0) startingAt = params[0];
+            if(params.length>1) startingAt = params[1];
+            InputStream inputStream = createInputStream(startingAt,stoppingAt);
+            try {
+                IOUtils.copy(inputStream, new NullOutputStream());
+                return Boolean.TRUE;
+            } catch (IOException e) {
+                //e.printStackTrace();
+            }
+            return Boolean.FALSE;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean aBoolean) {
+            super.onPostExecute(aBoolean);
+            if(aBoolean.equals(Boolean.TRUE)) {
+                InputStream inputStream = createInputStream();
+                if (inputStream != null && callback != null) {
+
+                    callback.onLoad(inputStream);
+
+                }
+            }
+        }
+    }
+
+    void preload(CachePreloadCallback callback) {
+        PreloadTask preloadTask = new PreloadTask();
+        preloadTask.callback = callback;
+        preloadTask.execute();
     }
 
     InputStream createInputStream() {
