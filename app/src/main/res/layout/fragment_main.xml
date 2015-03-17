@@ -25,7 +25,8 @@
         android:layout_height="wrap_content"
         android:textSize="@dimen/home_button_font_size"
         android:layout_below="@+id/home_cover"
-        android:layout_centerHorizontal="true"/>
+        android:layout_centerHorizontal="true"
+        android:textAllCaps="false"/>
 
     <Button
         android:id="@+id/home_login"
@@ -34,6 +35,7 @@
         android:layout_height="wrap_content"
         android:textSize="@dimen/home_button_font_size"
         android:layout_below="@id/home_magazine_archive"
-        android:layout_centerHorizontal="true"/>
+        android:layout_centerHorizontal="true"
+        android:textAllCaps="false"/>
 
 </RelativeLayout>
