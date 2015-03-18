@@ -3,6 +3,7 @@ package au.com.newint.newinternationalist;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
@@ -16,6 +17,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.ShareActionProvider;
 import android.widget.TextView;
 
 import com.google.gson.JsonArray;
@@ -78,11 +80,11 @@ public class TableOfContentsActivity extends ActionBarActivity {
         new Publisher.DownloadArticlesJSONTask().execute(articlesJSONCache, issue);
     }
 
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_table_of_contents, menu);
+
         return true;
     }
 
@@ -102,6 +104,14 @@ public class TableOfContentsActivity extends ActionBarActivity {
             case android.R.id.home:
                 // Handles a back/up button press and returns to previous Activity
                 finish();
+                return true;
+            case R.id.menu_item_share:
+                Intent sendIntent = new Intent();
+                sendIntent.setAction(Intent.ACTION_SEND);
+                // TODO: Send issue share information here...
+                sendIntent.putExtra(Intent.EXTRA_TEXT, "TODO: This is my text to send.");
+                sendIntent.setType("text/plain");
+                startActivity(Intent.createChooser(sendIntent, getResources().getText(R.string.action_share_toc)));
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
