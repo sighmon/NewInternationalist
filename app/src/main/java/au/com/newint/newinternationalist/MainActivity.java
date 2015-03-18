@@ -18,6 +18,8 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -155,9 +157,6 @@ public class MainActivity extends ActionBarActivity {
                 }
             };
             Publisher.INSTANCE.setLoggedInListener(loginListener);
-
-
-
 
             // Set a listener for home_cover taps
             final ImageButton home_cover = (ImageButton) rootView.findViewById(R.id.home_cover);
@@ -316,11 +315,32 @@ public class MainActivity extends ActionBarActivity {
                     Log.i("DownloadComplete", "Received listener, showing cover.");
 
                     // Show cover
-                    ImageButton home_cover = (ImageButton) MainActivity.this.findViewById(R.id.home_cover);
+                    final ImageButton home_cover = (ImageButton) MainActivity.this.findViewById(R.id.home_cover);
                     if (home_cover != null) {
-                        Bitmap coverBitmap = BitmapFactory.decodeStream(streamCache);
-                        home_cover.setImageBitmap(coverBitmap);
-                        home_cover.setScaleType(ImageView.ScaleType.FIT_CENTER);
+                        final Bitmap coverBitmap = BitmapFactory.decodeStream(streamCache);
+                        Animation fadeOutAnimation = new AlphaAnimation(1.0f, 0.0f);
+                        final Animation fadeInAnimation = new AlphaAnimation(0.0f, 1.0f);
+                        fadeOutAnimation.setDuration(300);
+                        fadeInAnimation.setDuration(300);
+                        fadeOutAnimation.setAnimationListener(new Animation.AnimationListener() {
+                            @Override
+                            public void onAnimationStart(Animation animation) {
+
+                            }
+
+                            @Override
+                            public void onAnimationEnd(Animation animation) {
+                                home_cover.setImageBitmap(coverBitmap);
+                                home_cover.setScaleType(ImageView.ScaleType.FIT_CENTER);
+                                home_cover.startAnimation(fadeInAnimation);
+                            }
+
+                            @Override
+                            public void onAnimationRepeat(Animation animation) {
+
+                            }
+                        });
+                        home_cover.startAnimation(fadeOutAnimation);
                     }
 
                 }
