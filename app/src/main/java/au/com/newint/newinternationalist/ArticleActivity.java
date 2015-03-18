@@ -92,7 +92,7 @@ public class ArticleActivity extends ActionBarActivity {
             if (rootView != null) {
 //                Log.i("onResume", "****LOADING BODY****");
                 WebView articleBody = (WebView) rootView.findViewById(R.id.article_body);
-                articleBody.loadDataWithBaseURL(null, article.getBody(), "text/html", "utf-8", null);
+                articleBody.loadDataWithBaseURL("file:///android_asset/", article.getBody(), "text/html", "utf-8", null);
             }
         }
 
@@ -180,7 +180,7 @@ public class ArticleActivity extends ActionBarActivity {
                         Log.i("ArticleBody", "Failed! Response is null");
                     }
 
-                    articleBody.loadDataWithBaseURL(null, bodyHTML, "text/html", "utf-8", null);
+                    articleBody.loadDataWithBaseURL("file:///android_asset/", bodyHTML, "text/html", "utf-8", null);
 //                    Publisher.INSTANCE.articleBodyDownloadCompleteListener = null;
                 }
             };

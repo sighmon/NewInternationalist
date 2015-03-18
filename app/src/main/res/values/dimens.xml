@@ -23,4 +23,5 @@
     <dimen name="article_teaser_margin_top">10dp</dimen>
     <dimen name="article_categories_margin_top">10dp</dimen>
     <dimen name="article_body_margin_top">15dp</dimen>
+    <dimen name="article_margin_left_right">20dp</dimen>
 </resources>

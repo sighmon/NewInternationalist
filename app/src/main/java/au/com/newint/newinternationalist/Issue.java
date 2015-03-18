@@ -71,12 +71,11 @@ public class Issue implements Parcelable {
 
         File issueDir =  new File(MainActivity.applicationContext.getFilesDir(), Integer.toString(getID()));
         String[] pathComponents = coverURL.getPath().split("/");
-        String filename = pathComponents[pathComponents.length - 1];
+        String coverFilename = pathComponents[pathComponents.length - 1];
 
-        File imageFile = new File(issueDir,filename);
+        File coverFile = new File(issueDir,coverFilename);
 
-        coverCacheStreamFactory = new FileCacheStreamFactory(imageFile,
-                new URLCacheStreamFactory(coverURL));
+        coverCacheStreamFactory = new FileCacheStreamFactory(coverFile, new URLCacheStreamFactory(coverURL));
 
         /*
         title = getTitle();

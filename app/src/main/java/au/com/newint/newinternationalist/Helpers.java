@@ -133,6 +133,6 @@ public class Helpers {
 
     public static String wrapInHTML(String htmlToWrap) {
         // TODO: Load CSS from file and throw it in the HTML returned
-        return "<html><body style='margin: 0; padding: 0;'>" + htmlToWrap + "</body></html>";
+        return "<html><head><link href='article-body.css' type='text/css' rel='stylesheet'/></head><body>" + htmlToWrap + "</body></html>";
     }
 }
