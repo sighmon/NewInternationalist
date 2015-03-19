@@ -73,7 +73,8 @@ public class ArticleActivity extends ActionBarActivity {
         } else if (id == R.id.menu_item_share) {
             Intent shareIntent = new Intent();
             shareIntent.setAction(Intent.ACTION_SEND);
-            // Send issue share information here...
+            // Send article share information here...
+            // TODO: Check for a login to generate a guest pass...
             DateFormat dateFormat = new SimpleDateFormat("MMMM yyyy");
             String articleInformation = article.getTitle()
                     + " - New Internationalist magazine "
