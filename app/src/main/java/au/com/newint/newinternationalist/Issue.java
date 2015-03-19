@@ -5,6 +5,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.Paint;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -67,15 +68,9 @@ public class Issue implements Parcelable {
 
 //        articles = getArticles();
 
-        URL coverURL = getCoverURL();
+        File coverFile = getCoverLocationOnFilesystem();
 
-        File issueDir =  new File(MainActivity.applicationContext.getFilesDir(), Integer.toString(getID()));
-        String[] pathComponents = coverURL.getPath().split("/");
-        String coverFilename = pathComponents[pathComponents.length - 1];
-
-        File coverFile = new File(issueDir,coverFilename);
-
-        coverCacheStreamFactory = new FileCacheStreamFactory(coverFile, new URLCacheStreamFactory(coverURL));
+        coverCacheStreamFactory = new FileCacheStreamFactory(coverFile, new URLCacheStreamFactory(getCoverURL()));
 
         /*
         title = getTitle();
@@ -135,6 +130,35 @@ public class Issue implements Parcelable {
         } catch (MalformedURLException e) {
             return null;
         }
+    }
+
+    public URL getWebURL() {
+        try {
+            return new URL(Helpers.getSiteURL() + "issues/" + getID());
+        } catch (MalformedURLException e) {
+            return null;
+        }
+    }
+
+    public File getCoverLocationOnFilesystem() {
+
+        File issueDir =  new File(MainActivity.applicationContext.getFilesDir(), Integer.toString(getID()));
+        String[] pathComponents = getCoverURL().getPath().split("/");
+        String coverFilename = pathComponents[pathComponents.length - 1];
+
+        return new File(issueDir, coverFilename);
+    }
+
+    public Uri getCoverUriOnFilesystem() {
+
+        String issueDir =  MainActivity.applicationContext.getFilesDir() + Integer.toString(getID());
+        String[] pathComponents = getCoverURL().getPath().split("/");
+        String coverFilename = pathComponents[pathComponents.length - 1];
+        Uri.Builder uri = new Uri.Builder();
+        uri.appendPath(issueDir);
+        uri.appendPath(coverFilename);
+
+        return uri.build();
     }
 
     public ArrayList<Article> getArticles() {
