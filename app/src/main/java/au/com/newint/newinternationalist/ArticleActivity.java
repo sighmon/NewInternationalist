@@ -114,7 +114,13 @@ public class ArticleActivity extends ActionBarActivity {
             final WebView articleBody = (WebView) rootView.findViewById(R.id.article_body);
 
             articleTitle.setText(article.getTitle());
-            articleTeaser.setText(Html.fromHtml(article.getTeaser()));
+            String teaserString = article.getTeaser();
+            if (teaserString != null && !teaserString.isEmpty()) {
+                articleTeaser.setVisibility(View.VISIBLE);
+                articleTeaser.setText(Html.fromHtml(teaserString));
+            } else {
+                articleTeaser.setVisibility(View.GONE);
+            }
 
             String categoriesTemporaryString = "";
             String separator = "";
@@ -178,6 +184,16 @@ public class ArticleActivity extends ActionBarActivity {
                     } else {
                         // Error getting article body
                         Log.i("ArticleBody", "Failed! Response is null");
+                        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                        builder.setMessage(R.string.no_internet_dialog_message_article_body).setTitle(R.string.no_internet_dialog_title_article_body);
+                        builder.setNegativeButton(R.string.no_internet_dialog_ok_button, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                // User cancelled the dialog
+                                getActivity().finish();
+                            }
+                        });
+                        AlertDialog dialog = builder.create();
+                        dialog.show();
                     }
 
                     articleBody.loadDataWithBaseURL("file:///android_asset/", bodyHTML, "text/html", "utf-8", null);

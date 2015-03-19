@@ -17,7 +17,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewManager;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.ShareActionProvider;
 import android.widget.TextView;
 
@@ -298,7 +300,15 @@ public class TableOfContentsActivity extends ActionBarActivity {
                     // Article
                     Article article = getArticle(position);
                     ((TableOfContentsViewHolder) holder).articleTitleTextView.setText(article.getTitle());
-                    ((TableOfContentsViewHolder) holder).articleTeaserTextView.setText(Html.fromHtml(article.getTeaser()));
+                    String articleTeaser = article.getTeaser();
+                    TableOfContentsViewHolder tableOfContentsViewHolder = ((TableOfContentsViewHolder) holder);
+                    if (articleTeaser != null && !articleTeaser.isEmpty()) {
+                        tableOfContentsViewHolder.articleTeaserTextView.setVisibility(View.VISIBLE);
+                        tableOfContentsViewHolder.articleTeaserTextView.setText(Html.fromHtml(articleTeaser));
+                    } else {
+                        // Remove teaser view.
+                        tableOfContentsViewHolder.articleTeaserTextView.setVisibility(View.GONE);
+                    }
 
                     String categoriesTemporaryString = "";
                     String separator = "";

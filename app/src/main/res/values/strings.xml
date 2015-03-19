@@ -57,5 +57,8 @@
     <string name="login_dialog_ok_button">Login</string>
     <string name="login_dialog_cancel_button">Cancel</string>
     <string name="action_share_toc">Share this issue</string>
+    <string name="no_internet_dialog_title_article_body">No internet?</string>
+    <string name="no_internet_dialog_message_article_body">The app doesn\'t seem to be able to connect to our server, do you have internet access there?</string>
+    <string name="no_internet_dialog_ok_button">Ok</string>
 
 </resources>
