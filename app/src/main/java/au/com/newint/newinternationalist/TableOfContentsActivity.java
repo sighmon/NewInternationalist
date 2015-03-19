@@ -22,6 +22,7 @@ import android.widget.TextView;
 
 import com.google.gson.JsonArray;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -277,7 +278,7 @@ public class TableOfContentsActivity extends ActionBarActivity {
                         issue.getCoverCacheStreamFactoryForSize(coverWidth).preload(new CacheStreamFactory.CachePreloadCallback() {
                             @Override
                             public void onLoad(InputStream streamCache) {
-                                Bitmap coverBitmap = BitmapFactory.decodeStream(streamCache);
+                                Bitmap coverBitmap = BitmapFactory.decodeStream(new BufferedInputStream(streamCache));
                                 coverImageView.setImageBitmap(coverBitmap);
 
                             }

@@ -7,6 +7,7 @@ import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.util.Log;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -43,12 +44,15 @@ public class ThumbnailCacheStreamFactory extends CacheStreamFactory {
     }
 
     @Override
-    InputStream createCacheInputStream() {
+    protected InputStream createCacheInputStream() {
         // does the cache file exist?
         // if no, make it
+        Log.i("ThumbnailCSF", "createCacheInputStream ["+cacheFile.getName()+"]");
         if(!cacheFile.exists()) {
+            Log.i("ThumbnailCSF", "cache miss, creating thumbnail");
             // Scale image for size requested
-            Bitmap fullsizeImageBitmap = BitmapFactory.decodeStream(source.createInputStream());
+            Bitmap fullsizeImageBitmap = BitmapFactory.decodeStream(new BufferedInputStream(source.createInputStream()));
+            Log.i("ThumbnailCSF", "bitmap decoded");
             if (fullsizeImageBitmap != null) {
                 // TODO: Work out why this creates jagged images. Is the image size wrong??
                 //                    Bitmap scaledCover = Bitmap.createScaledBitmap(fullsizeImageBitmap, width, height, true);
@@ -82,26 +86,34 @@ public class ThumbnailCacheStreamFactory extends CacheStreamFactory {
                 }
             } else {
                 // The image file is corrups!
-                Log.e("ThumbnailCacheStreamFactory", "source stream is corrupt!");
+                Log.e("ThumbnailCSF", "source stream is corrupt!");
                 //TODO: do something like this
-                //source.invalidate();
+                source.invalidate();
                 return null;
             }
 
-
+            Log.i("ThumbnailCSF", "thumbnail created");
+        } else {
+            Log.i("ThumbnailCSF", "cache hit");
         }
+
         // try to serve up fileinputstream
         try {
             return new FileInputStream(cacheFile);
         } catch (FileNotFoundException e) {
-            Log.e("ThumbnailCacheStreamFactory", "Thumbnail generation completed but no file created");
+            Log.e("ThumbnailCSF", "Thumbnail generation completed but no file created");
             e.printStackTrace();
         }
         return null;
     }
 
     @Override
-    OutputStream createCacheOutputStream() {
+    protected OutputStream createCacheOutputStream() {
         return null;
+    }
+
+    @Override
+    protected void invalidateCache() {
+        cacheFile.delete();
     }
 }

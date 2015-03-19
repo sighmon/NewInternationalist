@@ -25,6 +25,7 @@ import com.google.gson.JsonObject;
 
 import org.json.JSONObject;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -154,7 +155,7 @@ public class MagazineArchiveActivity extends ActionBarActivity {
                     issue.getCoverCacheStreamFactoryForSize(coverWidth).preload(new CacheStreamFactory.CachePreloadCallback() {
                         @Override
                         public void onLoad(InputStream streamCache) {
-                            Bitmap coverBitmap = BitmapFactory.decodeStream(streamCache);
+                            Bitmap coverBitmap = BitmapFactory.decodeStream(new BufferedInputStream(streamCache));
                             imageView.setImageBitmap(coverBitmap);
                         }
                     });

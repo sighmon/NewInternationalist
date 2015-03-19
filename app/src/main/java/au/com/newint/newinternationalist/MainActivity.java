@@ -317,7 +317,7 @@ public class MainActivity extends ActionBarActivity {
                     // Show cover
                     final ImageButton home_cover = (ImageButton) MainActivity.this.findViewById(R.id.home_cover);
                     if (home_cover != null) {
-                        final Bitmap coverBitmap = BitmapFactory.decodeStream(streamCache);
+                        final Bitmap coverBitmap = BitmapFactory.decodeStream(new BufferedInputStream(streamCache));
                         Animation fadeOutAnimation = new AlphaAnimation(1.0f, 0.0f);
                         final Animation fadeInAnimation = new AlphaAnimation(0.0f, 1.0f);
                         fadeOutAnimation.setDuration(300);
