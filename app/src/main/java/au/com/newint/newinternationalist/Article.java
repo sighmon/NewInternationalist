@@ -189,6 +189,14 @@ public class Article implements Parcelable {
         return categories;
     }
 
+    public URL getWebURL() {
+        try {
+            return new URL(Helpers.getSiteURL() + "issues/" + getIssueID() + "/articles/" + getID());
+        } catch (MalformedURLException e) {
+            return null;
+        }
+    }
+
     // PARCELABLE delegate methods
 
     private Article(Parcel in) {

@@ -24,6 +24,8 @@ import org.apache.http.util.EntityUtils;
 import org.w3c.dom.Text;
 
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -67,6 +69,29 @@ public class ArticleActivity extends ActionBarActivity {
         if (id == R.id.action_settings) {
             Intent settingsIntent = new Intent(this, SettingsActivity.class);
             startActivity(settingsIntent);
+            return true;
+        } else if (id == R.id.menu_item_share) {
+            Intent shareIntent = new Intent();
+            shareIntent.setAction(Intent.ACTION_SEND);
+            // Send issue share information here...
+            DateFormat dateFormat = new SimpleDateFormat("MMMM yyyy");
+            String articleInformation = article.getTitle()
+                    + " - New Internationalist magazine "
+                    + dateFormat.format(article.getPublication());
+            shareIntent.putExtra(Intent.EXTRA_TEXT, "I'm reading "
+                    + articleInformation
+                    + ".\n\n"
+                    + "Article link:\n"
+                    + article.getWebURL()
+                    + "\n\nMagazine link:\n"
+                    + issue.getWebURL()
+            );
+            shareIntent.setType("text/plain");
+            // TODO: When time permits, save the image to externalStorage and then share.
+//                shareIntent.putExtra(Intent.EXTRA_STREAM, issue.getCoverUriOnFilesystem());
+//                shareIntent.setType("image/jpeg");
+            shareIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, "New Internationalist magazine, " + dateFormat.format(issue.getRelease()));
+            startActivity(Intent.createChooser(shareIntent, getResources().getText(R.string.action_share_toc)));
             return true;
         } else if (id == android.R.id.home) {
             finish();
