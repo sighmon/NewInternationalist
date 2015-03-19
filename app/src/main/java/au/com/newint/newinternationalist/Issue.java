@@ -65,17 +65,8 @@ public class Issue implements Parcelable {
 
         issueJson = root.getAsJsonObject();
 
-//        articles = getArticles();
 
-        URL coverURL = getCoverURL();
-
-        File issueDir =  new File(MainActivity.applicationContext.getFilesDir(), Integer.toString(getID()));
-        String[] pathComponents = coverURL.getPath().split("/");
-        String coverFilename = pathComponents[pathComponents.length - 1];
-
-        File coverFile = new File(issueDir,coverFilename);
-
-        coverCacheStreamFactory = new FileCacheStreamFactory(coverFile, new URLCacheStreamFactory(coverURL));
+        coverCacheStreamFactory = new FileCacheStreamFactory(getCoverFile(), new URLCacheStreamFactory(getCoverURL()));
 
         /*
         title = getTitle();
@@ -96,6 +87,13 @@ public class Issue implements Parcelable {
         articles = getArticles();
     }
 
+    private File getCoverFile() {
+        File issueDir =  new File(MainActivity.applicationContext.getFilesDir(), Integer.toString(getID()));
+        String[] pathComponents = getCoverURL().getPath().split("/");
+        String coverFilename = pathComponents[pathComponents.length - 1];
+
+        return new File(issueDir,coverFilename);
+    }
 
     public String getTitle() {
         return issueJson.get("title").getAsString();
@@ -129,7 +127,7 @@ public class Issue implements Parcelable {
         }
     }
 
-    public URL getCoverURL() {
+    private URL getCoverURL() {
         try {
             return new URL(issueJson.get("cover").getAsJsonObject().get("url").getAsString());
         } catch (MalformedURLException e) {
@@ -153,12 +151,11 @@ public class Issue implements Parcelable {
         return articles;
     }
 
-    public InputStream getCoverInputStream() {
-        return coverCacheStreamFactory.createInputStream();
-    }
+    public ThumbnailCacheStreamFactory getCoverCacheStreamFactoryForSize(int width) {
 
-    public InputStream getCoverInputStreamFromFile() {
-        return coverCacheStreamFactory.createInputStream(null, "file");
+        File cacheFile;
+        return new ThumbnailCacheStreamFactory(width, getCoverFile(), coverCacheStreamFactory);
+
     }
 
     public File getCoverForSize(int width, int height) {

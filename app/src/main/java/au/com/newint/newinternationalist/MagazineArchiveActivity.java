@@ -26,6 +26,7 @@ import com.google.gson.JsonObject;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.io.InputStream;
 import java.util.ArrayList;
 
 
@@ -132,7 +133,7 @@ public class MagazineArchiveActivity extends ActionBarActivity {
 
             // create a new ImageView for each item referenced by the Adapter
             public View getView(int position, View convertView, ViewGroup parent) {
-                ImageView imageView;
+                final ImageView imageView;
                 if (convertView == null) {  // if it's not recycled, initialize some attributes
                     imageView = new ImageView(mContext);
                     imageView.setLayoutParams(new GridView.LayoutParams(coverWidth, coverHeight));
@@ -145,17 +146,19 @@ public class MagazineArchiveActivity extends ActionBarActivity {
                 // Get/set the cover for this view.
                 if (magazines != null) {
                     Issue issue = magazines.get(position);
+
+                    // Set default loading cover...
+                    Bitmap defaultCoverBitmap = BitmapFactory.decodeResource(mContext.getResources(), R.drawable.home_cover);
+                    imageView.setImageBitmap(defaultCoverBitmap);
                     // TODO: Get cover thumb from cache
-                    File coverFile = issue.getCoverForSize(coverWidth, coverHeight);
-                    if (coverFile != null && coverFile.exists()) {
-                        Bitmap coverBitmap = BitmapFactory.decodeFile(coverFile.getPath());
-                        imageView.setImageBitmap(coverBitmap);
-//                        imageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
-                    } else {
-                        // Set default loading cover...
-                        Bitmap defaultCoverBitmap = BitmapFactory.decodeResource(mContext.getResources(), R.drawable.home_cover);
-                        imageView.setImageBitmap(defaultCoverBitmap);
-                    }
+                    issue.getCoverCacheStreamFactoryForSize(coverWidth).preload(new CacheStreamFactory.CachePreloadCallback() {
+                        @Override
+                        public void onLoad(InputStream streamCache) {
+                            Bitmap coverBitmap = BitmapFactory.decodeStream(streamCache);
+                            imageView.setImageBitmap(coverBitmap);
+                        }
+                    });
+
                 }
 
                 return imageView;
