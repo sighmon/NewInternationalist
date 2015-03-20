@@ -119,6 +119,9 @@ public class MainActivity extends ActionBarActivity {
                 Intent aboutIntent = new Intent(this, AboutActivity.class);
                 startActivity(aboutIntent);
                 return true;
+            case R.id.action_search:
+                Log.i("Search", "Search tapped on Home view.");
+                onSearchRequested();
             default:
                 return super.onOptionsItemSelected(item);
         }

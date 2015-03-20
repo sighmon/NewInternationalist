@@ -60,5 +60,9 @@
     <string name="no_internet_dialog_title_article_body">No internet?</string>
     <string name="no_internet_dialog_message_article_body">The app doesn\'t seem to be able to connect to our server, do you have internet access there?</string>
     <string name="no_internet_dialog_ok_button">Ok</string>
+    <string name="search_hint">Search for an article</string>
+    <string name="title_activity_search">SearchActivity</string>
+    <string name="action_search">Search</string>
+    <string name="search_term_temporary">Search term...</string>
 
 </resources>
