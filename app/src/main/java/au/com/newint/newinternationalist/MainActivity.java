@@ -1,5 +1,6 @@
 package au.com.newint.newinternationalist;
 
+import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
@@ -23,6 +24,7 @@ import android.view.animation.Animation;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.SearchView;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -91,12 +93,27 @@ public class MainActivity extends ActionBarActivity {
         issuesJSONCache.addMethod(new URLByteCacheMethod(issuesURL));
 
         new DownloadIssuesJSONTask().execute(issuesJSONCache);
+
+        // Search intent
+        Intent intent = getIntent();
+        if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
+            String query = intent.getStringExtra(SearchManager.QUERY);
+            Log.i("Search","Searching for: " + query);
+        }
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_main, menu);
+
+        // Get the SearchView and set the searchable configuration
+        SearchManager searchManager = (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+        android.support.v7.widget.SearchView searchView = (android.support.v7.widget.SearchView) menu.findItem(R.id.action_search).getActionView();
+        // Assumes current activity is the searchable activity
+        searchView.setSearchableInfo(searchManager.getSearchableInfo(getComponentName()));
+        searchView.setIconifiedByDefault(false); // Do not iconify the widget; expand it by default
+
         return true;
     }
 
@@ -121,7 +138,7 @@ public class MainActivity extends ActionBarActivity {
                 return true;
             case R.id.action_search:
                 Log.i("Search", "Search tapped on Home view.");
-                onSearchRequested();
+//                onSearchRequested();
             default:
                 return super.onOptionsItemSelected(item);
         }
