@@ -56,6 +56,13 @@
     <string name="login_dialog_message_article_body">It doesn\'t look like you\'re a subscriber or if you are, perhaps you haven\'t logged in yet. What would you like to do?</string>
     <string name="login_dialog_ok_button">Login</string>
     <string name="login_dialog_cancel_button">Cancel</string>
-    <string name="action_share_toc">Share</string>
+    <string name="action_share_toc">Share this issue</string>
+    <string name="no_internet_dialog_title_article_body">No internet?</string>
+    <string name="no_internet_dialog_message_article_body">The app doesn\'t seem to be able to connect to our server, do you have internet access there?</string>
+    <string name="no_internet_dialog_ok_button">Ok</string>
+    <string name="search_hint">Search for an article</string>
+    <string name="title_activity_search">SearchActivity</string>
+    <string name="action_search">Search</string>
+    <string name="search_term_temporary">Search term...</string>
 
 </resources>

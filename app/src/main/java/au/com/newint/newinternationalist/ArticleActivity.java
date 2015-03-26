@@ -24,6 +24,8 @@ import org.apache.http.util.EntityUtils;
 import org.w3c.dom.Text;
 
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -67,6 +69,30 @@ public class ArticleActivity extends ActionBarActivity {
         if (id == R.id.action_settings) {
             Intent settingsIntent = new Intent(this, SettingsActivity.class);
             startActivity(settingsIntent);
+            return true;
+        } else if (id == R.id.menu_item_share) {
+            Intent shareIntent = new Intent();
+            shareIntent.setAction(Intent.ACTION_SEND);
+            // Send article share information here...
+            // TODO: Check for a login to generate a guest pass...
+            DateFormat dateFormat = new SimpleDateFormat("MMMM yyyy");
+            String articleInformation = article.getTitle()
+                    + " - New Internationalist magazine "
+                    + dateFormat.format(article.getPublication());
+            shareIntent.putExtra(Intent.EXTRA_TEXT, "I'm reading "
+                    + articleInformation
+                    + ".\n\n"
+                    + "Article link:\n"
+                    + article.getWebURL()
+                    + "\n\nMagazine link:\n"
+                    + issue.getWebURL()
+            );
+            shareIntent.setType("text/plain");
+            // TODO: When time permits, save the image to externalStorage and then share.
+//                shareIntent.putExtra(Intent.EXTRA_STREAM, issue.getCoverUriOnFilesystem());
+//                shareIntent.setType("image/jpeg");
+            shareIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, "New Internationalist magazine, " + dateFormat.format(issue.getRelease()));
+            startActivity(Intent.createChooser(shareIntent, getResources().getText(R.string.action_share_toc)));
             return true;
         } else if (id == android.R.id.home) {
             finish();
@@ -114,7 +140,13 @@ public class ArticleActivity extends ActionBarActivity {
             final WebView articleBody = (WebView) rootView.findViewById(R.id.article_body);
 
             articleTitle.setText(article.getTitle());
-            articleTeaser.setText(Html.fromHtml(article.getTeaser()));
+            String teaserString = article.getTeaser();
+            if (teaserString != null && !teaserString.isEmpty()) {
+                articleTeaser.setVisibility(View.VISIBLE);
+                articleTeaser.setText(Html.fromHtml(teaserString));
+            } else {
+                articleTeaser.setVisibility(View.GONE);
+            }
 
             String categoriesTemporaryString = "";
             String separator = "";
@@ -178,6 +210,16 @@ public class ArticleActivity extends ActionBarActivity {
                     } else {
                         // Error getting article body
                         Log.i("ArticleBody", "Failed! Response is null");
+                        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                        builder.setMessage(R.string.no_internet_dialog_message_article_body).setTitle(R.string.no_internet_dialog_title_article_body);
+                        builder.setNegativeButton(R.string.no_internet_dialog_ok_button, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                // User cancelled the dialog
+                                getActivity().finish();
+                            }
+                        });
+                        AlertDialog dialog = builder.create();
+                        dialog.show();
                     }
 
                     articleBody.loadDataWithBaseURL("file:///android_asset/", bodyHTML, "text/html", "utf-8", null);

@@ -3,6 +3,7 @@ package au.com.newint.newinternationalist;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.media.MediaScannerConnection;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v4.app.Fragment;
@@ -16,7 +17,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewManager;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.ShareActionProvider;
 import android.widget.TextView;
 
@@ -36,6 +39,7 @@ import java.util.HashMap;
 public class TableOfContentsActivity extends ActionBarActivity {
 
     ByteCache articlesJSONCache;
+    Issue issue;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,7 +47,7 @@ public class TableOfContentsActivity extends ActionBarActivity {
         setContentView(R.layout.activity_table_of_contents);
         Fragment tableOfContentsFragment = new TableOfContentsFragment();
 
-        Issue issue = getIntent().getParcelableExtra("issue");
+        issue = getIntent().getParcelableExtra("issue");
 
         // Send issue to fragment
         Bundle bundle = new Bundle();
@@ -108,12 +112,24 @@ public class TableOfContentsActivity extends ActionBarActivity {
                 finish();
                 return true;
             case R.id.menu_item_share:
-                Intent sendIntent = new Intent();
-                sendIntent.setAction(Intent.ACTION_SEND);
-                // TODO: Send issue share information here...
-                sendIntent.putExtra(Intent.EXTRA_TEXT, "TODO: This is my text to send.");
-                sendIntent.setType("text/plain");
-                startActivity(Intent.createChooser(sendIntent, getResources().getText(R.string.action_share_toc)));
+                Intent shareIntent = new Intent();
+                shareIntent.setAction(Intent.ACTION_SEND);
+                // Send issue share information here...
+                DateFormat dateFormat = new SimpleDateFormat("MMMM yyyy");
+                String magazineInformation = issue.getTitle()
+                        + " - New Internationalist magazine "
+                        + dateFormat.format(issue.getRelease());
+                shareIntent.putExtra(Intent.EXTRA_TEXT, "I'm reading "
+                                + magazineInformation
+                                + ".\n\n"
+                                + issue.getWebURL()
+                );
+                shareIntent.setType("text/plain");
+                // TODO: When time permits, save the image to externalStorage and then share.
+//                shareIntent.putExtra(Intent.EXTRA_STREAM, issue.getCoverUriOnFilesystem());
+//                shareIntent.setType("image/jpeg");
+                shareIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, "New Internationalist magazine, " + dateFormat.format(issue.getRelease()));
+                startActivity(Intent.createChooser(shareIntent, getResources().getText(R.string.action_share_toc)));
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -290,7 +306,15 @@ public class TableOfContentsActivity extends ActionBarActivity {
                     // Article
                     Article article = getArticle(position);
                     ((TableOfContentsViewHolder) holder).articleTitleTextView.setText(article.getTitle());
-                    ((TableOfContentsViewHolder) holder).articleTeaserTextView.setText(Html.fromHtml(article.getTeaser()));
+                    String articleTeaser = article.getTeaser();
+                    TableOfContentsViewHolder tableOfContentsViewHolder = ((TableOfContentsViewHolder) holder);
+                    if (articleTeaser != null && !articleTeaser.isEmpty()) {
+                        tableOfContentsViewHolder.articleTeaserTextView.setVisibility(View.VISIBLE);
+                        tableOfContentsViewHolder.articleTeaserTextView.setText(Html.fromHtml(articleTeaser));
+                    } else {
+                        // Remove teaser view.
+                        tableOfContentsViewHolder.articleTeaserTextView.setVisibility(View.GONE);
+                    }
 
                     String categoriesTemporaryString = "";
                     String separator = "";
