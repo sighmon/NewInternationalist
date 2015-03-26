@@ -189,10 +189,10 @@ public class SearchActivity extends ActionBarActivity {
                     ((SearchHeaderViewHolder) holder).searchResultsHeader.setText(issueHeaderString);
 
                     // Set cover image
-                    ImageView coverImageView = ((SearchHeaderViewHolder) holder).issueCoverImageView;
+                    final ImageView coverImageView = ((SearchHeaderViewHolder) holder).issueCoverImageView;
+                    // TODO: Fix the XML layout so I don't need to set height here at all.
                     int coverWidth = 200;
                     int coverHeight = 288;
-                    File coverFile = issue.getCoverForSize(coverWidth, coverHeight);
 
                     // Expand the image to the right size
                     ViewGroup.LayoutParams params = coverImageView.getLayoutParams();
@@ -200,14 +200,16 @@ public class SearchActivity extends ActionBarActivity {
                     params.height = coverHeight;
                     coverImageView.setLayoutParams(params);
 
-                    if (coverFile != null && coverFile.exists()) {
-                        Bitmap coverBitmap = BitmapFactory.decodeFile(coverFile.getPath());
-                        coverImageView.setImageBitmap(coverBitmap);
-                    } else {
-                        // Set default loading cover...
-                        Bitmap defaultCoverBitmap = BitmapFactory.decodeResource(MainActivity.applicationContext.getResources(), R.drawable.home_cover);
-                        coverImageView.setImageBitmap(defaultCoverBitmap);
-                    }
+                    Bitmap defaultCoverBitmap = BitmapFactory.decodeResource(MainActivity.applicationContext.getResources(), R.drawable.home_cover);
+                    coverImageView.setImageBitmap(defaultCoverBitmap);
+                    issue.getCoverCacheStreamFactoryForSize(coverWidth).preload(new CacheStreamFactory.CachePreloadCallback() {
+                        @Override
+                        public void onLoad(CacheStreamFactory streamCache) {
+                            Bitmap coverBitmap = BitmapFactory.decodeStream(streamCache.createInputStream(null,"net"));
+                            coverImageView.setImageBitmap(coverBitmap);
+
+                        }
+                    });
 
                 } else if (holder instanceof SearchArticleViewHolder) {
                     // Article
