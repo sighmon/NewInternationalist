@@ -68,9 +68,7 @@ public class Issue implements Parcelable {
 
 
 
-        File coverFile = getCoverLocationOnFilesystem();
-
-        coverCacheStreamFactory = new FileCacheStreamFactory(coverFile, new URLCacheStreamFactory(getCoverURL()));
+        coverCacheStreamFactory = new FileCacheStreamFactory(getCoverLocationOnFilesystem(), new URLCacheStreamFactory(getCoverURL()));
 
         /*
         title = getTitle();
@@ -87,8 +85,11 @@ public class Issue implements Parcelable {
     }
 
     public Issue(int issueID) {
+        //TODO: dry up Issue(File), Issue(int) and Issue(Parcel)
         issueJson = Publisher.getIssueJsonForId(issueID);
         articles = getArticles();
+        coverCacheStreamFactory = new FileCacheStreamFactory(getCoverLocationOnFilesystem(), new URLCacheStreamFactory(getCoverURL()));
+
     }
 
     public String getTitle() {
@@ -301,6 +302,8 @@ public class Issue implements Parcelable {
     private Issue(Parcel in) {
         issueJson = Publisher.getIssueJsonForId(in.readInt());
         articles = getArticles();
+        coverCacheStreamFactory = new FileCacheStreamFactory(getCoverLocationOnFilesystem(), new URLCacheStreamFactory(getCoverURL()));
+
     }
 
     @Override
