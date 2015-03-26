@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -14,10 +15,16 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import java.util.ArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 
 public class SearchActivity extends ActionBarActivity {
 
     static String searchQuery;
+    static ArrayList<Issue> issuesArray;
+    static ArrayList<ArrayList<Article>> filteredIssueArticlesArray;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,13 +36,16 @@ public class SearchActivity extends ActionBarActivity {
                     .commit();
         }
 
+        // Build up the issuesArray
+        issuesArray = Publisher.INSTANCE.getIssuesFromFilesystem();
+
         // Get the intent, verify the action and get the query
         Intent intent = getIntent();
         if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
             searchQuery = intent.getStringExtra(SearchManager.QUERY);
 
             // TODO: Perform the search
-            performSearch(searchQuery);
+            filterArticlesForSearchQuery(searchQuery);
         }
     }
 
@@ -85,13 +95,51 @@ public class SearchActivity extends ActionBarActivity {
 
             // TODO: Setup a list view
             TextView searchTermTextView = (TextView) rootView.findViewById(R.id.search_term_temporary);
-            searchTermTextView.setText(searchQuery);
+            ArrayList<String> results = new ArrayList<String>();
+            int matches = 0;
+            if (filteredIssueArticlesArray != null && filteredIssueArticlesArray.size() > 0) {
+                for (ArrayList<Article> articleList : filteredIssueArticlesArray) {
+                    for (Article article : articleList) {
+                        matches++;
+                        results.add(article.getTitle());
+                    }
+                }
+            }
+            searchTermTextView.setText(Integer.toString(matches) + ": " + TextUtils.join(", ",results));
 
             return rootView;
         }
     }
 
-    public void performSearch(String query) {
-        Log.i("Search", "TODO: Search for " + query);
+    public void filterArticlesForSearchQuery(String query) {
+        Log.i("Search", "Search for " + query);
+
+        filteredIssueArticlesArray = new ArrayList<>();
+        // Create a pattern to match
+        Pattern pattern = Pattern.compile(query, Pattern.CASE_INSENSITIVE);
+
+        for (Issue issue : issuesArray) {
+            ArrayList <Article> articlesArray = issue.getArticles();
+            ArrayList <Article> filteredArticlesArray = new ArrayList<Article>();
+
+            for (Article article : articlesArray) {
+                // Search title
+                Matcher titleMatcher = pattern.matcher(article.getTitle());
+                if (titleMatcher.find()) {
+                    filteredArticlesArray.add(article);
+                } else {
+                    // Search teaser
+                    Matcher teaserMatcher = pattern.matcher(article.getTeaser());
+                    if (teaserMatcher.find()) {
+                        filteredArticlesArray.add(article);
+                    }
+                }
+            }
+
+            if (filteredArticlesArray.size() > 0) {
+                filteredIssueArticlesArray.add(filteredArticlesArray);
+            }
+        }
+        Log.i("Search", "Filtered issue articles array: " + filteredIssueArticlesArray);
     }
 }
