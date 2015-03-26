@@ -124,7 +124,7 @@ public class Article implements Parcelable {
 
         if (cacheFile.exists()) {
             // Already have the body, so return it's contents as a string
-            Log.i("ArticleBody", "Filesystem hit! Returning from file.");
+//            Log.i("ArticleBody", "Filesystem hit! Returning from file.");
             try {
                 FileInputStream inputStream = new FileInputStream(cacheFile);
                 InputStreamReader inputStreamReader = new InputStreamReader(inputStream);

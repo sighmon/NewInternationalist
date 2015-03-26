@@ -114,9 +114,34 @@ public class SearchActivity extends ActionBarActivity {
     public void filterArticlesForSearchQuery(String query) {
         Log.i("Search", "Search for " + query);
 
+        // TODO: This is an OR search not an AND search.. TOFIX?
+
+        // Split the search terms so they can be searched without being in sequence
+        ArrayList<String> quotedTerms = new ArrayList<String>();
+        Pattern regex = Pattern.compile("[^\\s\"']+|\"([^\"]*)\"|'([^']*)'");
+        Matcher regexMatcher = regex.matcher(query);
+        while (regexMatcher.find()) {
+            if (regexMatcher.group(1) != null) {
+                // Add double-quoted string without the quotes
+                quotedTerms.add(Pattern.quote(regexMatcher.group(1)));
+            } else if (regexMatcher.group(2) != null) {
+                // Add single-quoted string without the quotes
+                quotedTerms.add(Pattern.quote(regexMatcher.group(2)));
+            } else {
+                // Add unquoted word
+                quotedTerms.add(Pattern.quote(regexMatcher.group()));
+            }
+        }
+
+        for (String term : query.split("\\s+")) {
+            quotedTerms.add(Pattern.quote(term));
+        }
+        String searchString = "(" + TextUtils.join("|", quotedTerms) + ")";
+
         filteredIssueArticlesArray = new ArrayList<>();
         // Create a pattern to match
-        Pattern pattern = Pattern.compile(query, Pattern.CASE_INSENSITIVE);
+        Pattern pattern = Pattern.compile(searchString, Pattern.CASE_INSENSITIVE);
+        Log.i("Search", pattern.toString());
 
         for (Issue issue : issuesArray) {
             ArrayList <Article> articlesArray = issue.getArticles();
