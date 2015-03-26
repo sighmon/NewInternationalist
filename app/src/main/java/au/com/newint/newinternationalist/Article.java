@@ -98,6 +98,15 @@ public class Article implements Parcelable {
         return articleJson.get("teaser").getAsString();
     }
 
+    public boolean isBodyOnFilesystem() {
+        return bodyCacheFile().exists();
+    }
+
+    private File bodyCacheFile() {
+        File articleDir = new File(MainActivity.applicationContext.getFilesDir() + "/" + Integer.toString(getIssueID()) + "/", Integer.toString(getID()));
+        return new File(articleDir,"body.html");
+    }
+
     public String getBody() {
 
         // POST request to rails.
@@ -109,8 +118,7 @@ public class Article implements Parcelable {
             e.printStackTrace();
         }
 
-        File articleDir = new File(MainActivity.applicationContext.getFilesDir() + "/" + Integer.toString(getIssueID()) + "/", Integer.toString(getID()));
-        File cacheFile = new File(articleDir,"body.html");
+        File cacheFile = bodyCacheFile();
 
         String bodyHTML = Helpers.wrapInHTML("<p>Loading...</p>");
 

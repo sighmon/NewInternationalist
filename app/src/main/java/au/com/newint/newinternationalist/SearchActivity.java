@@ -132,6 +132,14 @@ public class SearchActivity extends ActionBarActivity {
                     Matcher teaserMatcher = pattern.matcher(article.getTeaser());
                     if (teaserMatcher.find()) {
                         filteredArticlesArray.add(article);
+                    } else {
+                        // Search the body if it exists on file
+                        if (article.isBodyOnFilesystem()) {
+                            Matcher bodyMatcher = pattern.matcher(article.getBody());
+                            if (bodyMatcher.find()) {
+                                filteredArticlesArray.add(article);
+                            }
+                        }
                     }
                 }
             }
