@@ -151,11 +151,11 @@ public class MagazineArchiveActivity extends ActionBarActivity {
                     // Set default loading cover...
                     Bitmap defaultCoverBitmap = BitmapFactory.decodeResource(mContext.getResources(), R.drawable.home_cover);
                     imageView.setImageBitmap(defaultCoverBitmap);
-                    // TODO: Get cover thumb from cache
+
                     issue.getCoverCacheStreamFactoryForSize(coverWidth).preload(new CacheStreamFactory.CachePreloadCallback() {
                         @Override
                         public void onLoad(CacheStreamFactory streamCache) {
-                            Bitmap coverBitmap = BitmapFactory.decodeStream(streamCache.createInputStream());
+                            Bitmap coverBitmap = BitmapFactory.decodeStream(streamCache.createInputStream(null,"net"));
                             imageView.setImageBitmap(coverBitmap);
                         }
                     });

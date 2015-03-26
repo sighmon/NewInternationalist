@@ -343,7 +343,7 @@ public class MainActivity extends ActionBarActivity {
                         //byte[] byteArray = streamCache.read();
                         //Log.i("DlIssJSONTask.onPostEx","byteArray.length is "+byteArray.length);
                         //final Bitmap coverBitmap = BitmapFactory.decodeByteArray(byteArray,0,byteArray.length);
-                        final Bitmap coverBitmap = BitmapFactory.decodeStream(streamCache.createInputStream());
+                        final Bitmap coverBitmap = BitmapFactory.decodeStream(streamCache.createInputStream(null,"net"));
                         Log.i("DlIssJSONTask.onPostEx", "decodeStream returned");
                         Animation fadeOutAnimation = new AlphaAnimation(1.0f, 0.0f);
                         final Animation fadeInAnimation = new AlphaAnimation(0.0f, 1.0f);
