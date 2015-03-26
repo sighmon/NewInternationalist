@@ -26,6 +26,11 @@ public class URLCacheStreamFactory extends CacheStreamFactory {
     }
 
     @Override
+    public String toString() {
+        return "URLCacheStreamFactory["+sourceURL.getPath()+"]";
+    }
+
+    @Override
     protected InputStream createCacheInputStream() {
         Log.i("URLCacheStreamFactory", "createCacheInputStream() ["+sourceURL+"]");
 
