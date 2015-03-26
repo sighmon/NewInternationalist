@@ -54,7 +54,7 @@ public abstract class CacheStreamFactory {
                     return null;
                 }
                 if (params.length > 2) startingAt = (String) params[2];
-                if (params.length > 3) startingAt = (String) params[3];
+                if (params.length > 3) stoppingAt = (String) params[3];
                 InputStream inputStream = createInputStream(startingAt, stoppingAt);
                 if (inputStream == null) {
                     return null;
