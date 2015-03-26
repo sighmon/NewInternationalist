@@ -2,7 +2,6 @@ package au.com.newint.newinternationalist;
 
 import android.util.Log;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -27,7 +26,13 @@ public class URLCacheStreamFactory extends CacheStreamFactory {
     }
 
     @Override
-    InputStream createCacheInputStream() {
+    public String toString() {
+        return "URLCacheStreamFactory["+sourceURL.getPath()+"]";
+    }
+
+    @Override
+    protected InputStream createCacheInputStream() {
+        Log.i("URLCacheStreamFactory", "createCacheInputStream() ["+sourceURL+"]");
 
         HttpURLConnection urlConnection = null;
 
@@ -42,8 +47,12 @@ public class URLCacheStreamFactory extends CacheStreamFactory {
     }
 
     @Override
-    OutputStream createCacheOutputStream() {
+    protected OutputStream createCacheOutputStream() {
         return null;
+    }
+
+    @Override
+    protected void invalidateCache() {
     }
 
 }

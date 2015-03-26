@@ -41,6 +41,8 @@ public class FileByteCacheMethod extends ByteCacheMethod {
             }
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream((int)length);
             IOUtils.copy(fileInputStream,byteArrayOutputStream);
+            fileInputStream.close();
+            byteArrayOutputStream.close();
 
             Log.i("FileByteCacheMethod", "creating ByteCacheHit");
             return new ByteCacheHit(byteArrayOutputStream.toByteArray(), new Date(cacheFile.lastModified()));

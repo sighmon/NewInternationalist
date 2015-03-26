@@ -66,11 +66,9 @@ public class Issue implements Parcelable {
 
         issueJson = root.getAsJsonObject();
 
-//        articles = getArticles();
 
-        File coverFile = getCoverLocationOnFilesystem();
 
-        coverCacheStreamFactory = new FileCacheStreamFactory(coverFile, new URLCacheStreamFactory(getCoverURL()));
+        coverCacheStreamFactory = new FileCacheStreamFactory(getCoverLocationOnFilesystem(), new URLCacheStreamFactory(getCoverURL()));
 
         /*
         title = getTitle();
@@ -87,10 +85,12 @@ public class Issue implements Parcelable {
     }
 
     public Issue(int issueID) {
+        //TODO: dry up Issue(File), Issue(int) and Issue(Parcel)
         issueJson = Publisher.getIssueJsonForId(issueID);
         articles = getArticles();
-    }
+        coverCacheStreamFactory = new FileCacheStreamFactory(getCoverLocationOnFilesystem(), new URLCacheStreamFactory(getCoverURL()));
 
+    }
 
     public String getTitle() {
         return issueJson.get("title").getAsString();
@@ -124,7 +124,7 @@ public class Issue implements Parcelable {
         }
     }
 
-    public URL getCoverURL() {
+    private URL getCoverURL() {
         try {
             return new URL(issueJson.get("cover").getAsJsonObject().get("url").getAsString());
         } catch (MalformedURLException e) {
@@ -177,12 +177,11 @@ public class Issue implements Parcelable {
         return articles;
     }
 
-    public InputStream getCoverInputStream() {
-        return coverCacheStreamFactory.createInputStream();
-    }
+    public ThumbnailCacheStreamFactory getCoverCacheStreamFactoryForSize(int width) {
 
-    public InputStream getCoverInputStreamFromFile() {
-        return coverCacheStreamFactory.createInputStream(null, "file");
+        File cacheFile;
+        return new ThumbnailCacheStreamFactory(width, getCoverLocationOnFilesystem(), coverCacheStreamFactory);
+
     }
 
     public File getCoverForSize(int width, int height) {
@@ -303,6 +302,8 @@ public class Issue implements Parcelable {
     private Issue(Parcel in) {
         issueJson = Publisher.getIssueJsonForId(in.readInt());
         articles = getArticles();
+        coverCacheStreamFactory = new FileCacheStreamFactory(getCoverLocationOnFilesystem(), new URLCacheStreamFactory(getCoverURL()));
+
     }
 
     @Override
@@ -360,6 +361,7 @@ public class Issue implements Parcelable {
                 FileOutputStream fos = new FileOutputStream(imageFile);
 
                 IOUtils.copy(urlConnectionInputStream, fos);
+                urlConnectionInputStream.close();
 
                 fos.close();
             }

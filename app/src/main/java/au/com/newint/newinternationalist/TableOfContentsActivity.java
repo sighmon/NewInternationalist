@@ -25,7 +25,9 @@ import android.widget.TextView;
 
 import com.google.gson.JsonArray;
 
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.DateFormat;
@@ -273,12 +275,12 @@ public class TableOfContentsActivity extends ActionBarActivity {
                     String issueNumberDate = Integer.toString(issue.getNumber()) + " - " + dateFormat.format(issue.getRelease());
                     ((TableOfContentsHeaderViewHolder) holder).issueNumberDateTextView.setText(issueNumberDate);
 
-                    ImageView coverImageView = ((TableOfContentsHeaderViewHolder) holder).issueCoverImageView;
+                    final ImageView coverImageView = ((TableOfContentsHeaderViewHolder) holder).issueCoverImageView;
                     if (coverImageView.getLayoutParams().width < 1) {
 
                         int coverWidth = 400;
                         int coverHeight = 576;
-                        File coverFile = issue.getCoverForSize(coverWidth, coverHeight);
+                        final File coverFile = issue.getCoverForSize(coverWidth, coverHeight);
 
                         // Expand the image to the right size
                         ViewGroup.LayoutParams params = coverImageView.getLayoutParams();
@@ -286,14 +288,18 @@ public class TableOfContentsActivity extends ActionBarActivity {
                         params.height = coverHeight;
                         coverImageView.setLayoutParams(params);
 
-                        if (coverFile != null && coverFile.exists()) {
-                            Bitmap coverBitmap = BitmapFactory.decodeFile(coverFile.getPath());
-                            coverImageView.setImageBitmap(coverBitmap);
-                        } else {
-                            // Set default loading cover...
-                            Bitmap defaultCoverBitmap = BitmapFactory.decodeResource(MainActivity.applicationContext.getResources(), R.drawable.home_cover);
-                            coverImageView.setImageBitmap(defaultCoverBitmap);
-                        }
+                        // Set default loading cover...
+                        Bitmap defaultCoverBitmap = BitmapFactory.decodeResource(MainActivity.applicationContext.getResources(), R.drawable.home_cover);
+                        coverImageView.setImageBitmap(defaultCoverBitmap);
+                        issue.getCoverCacheStreamFactoryForSize(coverWidth).preload(new CacheStreamFactory.CachePreloadCallback() {
+                            @Override
+                            public void onLoad(CacheStreamFactory streamCache) {
+                                Bitmap coverBitmap = BitmapFactory.decodeStream(streamCache.createInputStream(null,"net"));
+                                coverImageView.setImageBitmap(coverBitmap);
+
+                            }
+                        });
+
                     }
 
                 } else if (holder instanceof TableOfContentsViewHolder) {

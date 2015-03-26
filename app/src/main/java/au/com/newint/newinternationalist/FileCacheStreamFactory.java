@@ -6,7 +6,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
@@ -28,20 +27,29 @@ public class FileCacheStreamFactory extends CacheStreamFactory{
     }
 
     @Override
-    InputStream createCacheInputStream() {
-        if (cacheFile.exists()) {
+    public String toString() {
+        return "FileCacheStreamFactory["+cacheFile.getName()+(cacheFile.exists()?":"+cacheFile.length():":missing")+"]";
+    }
+
+    @Override
+    protected InputStream createCacheInputStream() {
+        if (cacheFile.exists() && cacheFile.length()>0) {
+            Log.i("FileCacheStreamFactory("+cacheFile.getName()+")", "createInputStream() cache hit "+cacheFile.length()+" bytes");
             try {
                 return new FileInputStream(cacheFile);
             } catch (FileNotFoundException e) {
                 Log.i("FileCacheStreamFactory", "no cache file yet");
             }
         }
+        Log.i("FileCacheStreamFactory("+cacheFile.getName()+")", "createInputStream() cache miss");
         return null;
     }
 
 
     @Override
-    OutputStream createCacheOutputStream() {
+    protected OutputStream createCacheOutputStream() {
+        Log.i("FileCacheStreamFactory("+cacheFile.getName()+")", "createCacheOutputStream()");
+
         try {
             return new FileOutputStream(cacheFile);
         } catch (FileNotFoundException e) {
@@ -49,6 +57,12 @@ public class FileCacheStreamFactory extends CacheStreamFactory{
         }
         return null;
     }
+
+    @Override
+    protected void invalidateCache() {
+        cacheFile.delete();
+    }
+
 
 
 }
