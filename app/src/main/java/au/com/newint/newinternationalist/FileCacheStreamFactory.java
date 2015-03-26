@@ -28,8 +28,8 @@ public class FileCacheStreamFactory extends CacheStreamFactory{
 
     @Override
     protected InputStream createCacheInputStream() {
-        if (cacheFile.exists()) {
-            Log.i("FileCacheStreamFactory("+cacheFile.getName()+")", "createInputStream() cache hit");
+        if (cacheFile.exists() && cacheFile.length()>0) {
+            Log.i("FileCacheStreamFactory("+cacheFile.getName()+")", "createInputStream() cache hit "+cacheFile.length()+" bytes");
             try {
                 return new FileInputStream(cacheFile);
             } catch (FileNotFoundException e) {

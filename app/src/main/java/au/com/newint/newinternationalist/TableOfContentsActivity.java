@@ -277,8 +277,8 @@ public class TableOfContentsActivity extends ActionBarActivity {
                         coverImageView.setImageBitmap(defaultCoverBitmap);
                         issue.getCoverCacheStreamFactoryForSize(coverWidth).preload(new CacheStreamFactory.CachePreloadCallback() {
                             @Override
-                            public void onLoad(InputStream streamCache) {
-                                Bitmap coverBitmap = BitmapFactory.decodeStream(new BufferedInputStream(streamCache));
+                            public void onLoad(CacheStreamFactory streamCache) {
+                                Bitmap coverBitmap = BitmapFactory.decodeStream(streamCache.createInputStream());
                                 coverImageView.setImageBitmap(coverBitmap);
 
                             }

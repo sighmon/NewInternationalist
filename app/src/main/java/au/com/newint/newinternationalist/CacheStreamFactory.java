@@ -30,7 +30,7 @@ public abstract class CacheStreamFactory {
     }
 
     interface CachePreloadCallback {
-        void onLoad(InputStream streamCache);
+        void onLoad(CacheStreamFactory streamCache);
     }
 
     class PreloadTask extends AsyncTask<Object,Integer,CachePreloadCallback> {
@@ -61,7 +61,7 @@ public abstract class CacheStreamFactory {
                 }
                 try {
                     IOUtils.copy(inputStream, new NullOutputStream());
-
+                    inputStream.close();
                 } catch (IOException e) {
                     //e.printStackTrace();
                 }
@@ -74,12 +74,7 @@ public abstract class CacheStreamFactory {
             super.onPostExecute(callback);
             Log.i(this.getClass().getSimpleName(), "onPostExecute("+((callback==null)?"null":"not-null")+")");
             if(callback!=null) {
-                InputStream inputStream = createInputStream();
-                if (inputStream != null) {
-
-                    callback.onLoad(inputStream);
-
-                }
+                callback.onLoad(CacheStreamFactory.this);
             }
         }
     }
@@ -98,11 +93,13 @@ public abstract class CacheStreamFactory {
     InputStream createInputStream(String startingAt, String stoppingAt) {
         Log.i(this.getClass().getSimpleName(),"createInputStream("+startingAt+","+stoppingAt+")");
         if (stoppingAt != null && stoppingAt.equals(name)) {
+            Log.e("CacheStreamFactory", "stoppingAt hit, returning null");
             return null;
         }
         if (startingAt == null || startingAt.equals(name)) {
             InputStream cis = createCacheInputStream();
             if (cis != null) {
+                Log.i(this.getClass().getSimpleName(),"cis!=null");
                 return cis;
             } else {
                 return wrappedFallbackStream(null,stoppingAt);
@@ -126,34 +123,67 @@ public abstract class CacheStreamFactory {
     }
 
     private InputStream wrappedFallbackStream(String startingAt, String stoppingAt) {
+        Log.i(this.getClass().getSimpleName(), "wrappedFallbackStream("+startingAt+", "+stoppingAt+")");
         if (fallback==null) {
             return null;
         }
+
+        //final InputStream fallbackInputStream = new BufferedInputStream(fallback.createInputStream(startingAt, stoppingAt));
+        //final OutputStream cacheOutputStream = new BufferedOutputStream(createCacheOutputStream());
+
         final InputStream fallbackInputStream = new BufferedInputStream(fallback.createInputStream(startingAt, stoppingAt));
         final OutputStream cacheOutputStream = new BufferedOutputStream(createCacheOutputStream());
 
-        return new InputStream() {
+
+        InputStream writeThroughStream = new InputStream() {
 
             @Override
             public int read() throws IOException {
-                int b = fallbackInputStream.read();
-                cacheOutputStream.write(b);
+                //Log.i("writeThroughStream","read() called");
+                int b = -1;
+                try {
+                    b = fallbackInputStream.read();
+                    if(b>=0) {
+                       cacheOutputStream.write(b);
+                       //cacheOutputStream.flush();
+                    } else {
+                        Log.e("writeThroughStream","fallbackInputStream.read() got "+b);
+                    }
+                }
+                catch (IOException e) {
+                    Log.e("writeThroughStream", "a wrapped stream got an exception");
+                    e.printStackTrace();
+                }
                 return b;
             }
 
             @Override
             public long skip(long n) throws IOException {
-                long toSkip = n;
-                while (toSkip > 0) {
-                    int b = read();
-                    if(b<0) break;
-                    toSkip--;
+                long skipped;
+                Log.i("writeThroughStream","skip("+n+") called");
+                for(skipped = 0;skipped < n; skipped++) {
+                    try {
+                        read();
+                    }
+                    catch (IOException e) {
+                        Log.e("writeThroughStream", "exception during read");
+                        e.printStackTrace();
+                    }
                 }
+                return skipped;
+            }
 
-                return n-toSkip;
+            @Override
+            public void close() throws IOException {
+                fallbackInputStream.close();
+                cacheOutputStream.close();
             }
 
         };
+
+
+        return writeThroughStream;
+
     }
 
     byte[] read() {
@@ -162,12 +192,15 @@ public abstract class CacheStreamFactory {
 
     // convenience method to mimick old ByteCache
     byte[] read(String startingAt, String stoppingAt) {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         try {
-            IOUtils.copy(this.createInputStream(startingAt, stoppingAt), baos);
+            InputStream inputStream = this.createInputStream(startingAt, stoppingAt);
+            long c = IOUtils.copy(inputStream, byteArrayOutputStream);
+            inputStream.close();
+            Log.i(this.getClass().getSimpleName(), "IOUtils.copy processes "+c+" bytes");
+            return byteArrayOutputStream.toByteArray();
         } catch (IOException e) {
             Log.e(this.getClass().getSimpleName(), "IOException while reading stream to byte array");
-            return baos.toByteArray();
         }
         return null;
     }

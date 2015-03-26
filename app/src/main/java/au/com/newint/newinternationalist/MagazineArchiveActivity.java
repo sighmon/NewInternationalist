@@ -154,8 +154,8 @@ public class MagazineArchiveActivity extends ActionBarActivity {
                     // TODO: Get cover thumb from cache
                     issue.getCoverCacheStreamFactoryForSize(coverWidth).preload(new CacheStreamFactory.CachePreloadCallback() {
                         @Override
-                        public void onLoad(InputStream streamCache) {
-                            Bitmap coverBitmap = BitmapFactory.decodeStream(new BufferedInputStream(streamCache));
+                        public void onLoad(CacheStreamFactory streamCache) {
+                            Bitmap coverBitmap = BitmapFactory.decodeStream(streamCache.createInputStream());
                             imageView.setImageBitmap(coverBitmap);
                         }
                     });

@@ -333,6 +333,7 @@ public class Issue implements Parcelable {
                 FileOutputStream fos = new FileOutputStream(imageFile);
 
                 IOUtils.copy(urlConnectionInputStream, fos);
+                urlConnectionInputStream.close();
 
                 fos.close();
             }

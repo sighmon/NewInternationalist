@@ -30,10 +30,12 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.http.cookie.Cookie;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -310,14 +312,19 @@ public class MainActivity extends ActionBarActivity {
             latestIssueOnFile.coverCacheStreamFactory.preload(new CacheStreamFactory.CachePreloadCallback() {
 
                 @Override
-                public void onLoad(InputStream streamCache) {
+                public void onLoad(CacheStreamFactory streamCache) {
 
-                    Log.i("DownloadComplete", "Received listener, showing cover.");
+                    Log.i("DlIssJSONTask.onPostEx", "Received listener, showing cover.");
 
                     // Show cover
                     final ImageButton home_cover = (ImageButton) MainActivity.this.findViewById(R.id.home_cover);
                     if (home_cover != null) {
-                        final Bitmap coverBitmap = BitmapFactory.decodeStream(new BufferedInputStream(streamCache));
+                        Log.i("DlIssJSONTask.onPostEx", "calling decodeStream");
+                        //byte[] byteArray = streamCache.read();
+                        //Log.i("DlIssJSONTask.onPostEx","byteArray.length is "+byteArray.length);
+                        //final Bitmap coverBitmap = BitmapFactory.decodeByteArray(byteArray,0,byteArray.length);
+                        final Bitmap coverBitmap = BitmapFactory.decodeStream(streamCache.createInputStream());
+                        Log.i("DlIssJSONTask.onPostEx", "decodeStream returned");
                         Animation fadeOutAnimation = new AlphaAnimation(1.0f, 0.0f);
                         final Animation fadeInAnimation = new AlphaAnimation(0.0f, 1.0f);
                         fadeOutAnimation.setDuration(300);

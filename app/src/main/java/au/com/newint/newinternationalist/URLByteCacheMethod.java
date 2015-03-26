@@ -38,15 +38,18 @@ public class URLByteCacheMethod extends ByteCacheMethod {
             int payloadLength = urlConnection.getContentLength();
 
             if (payloadLength<=0) payloadLength=1024;
-            ByteArrayOutputStream baos = new ByteArrayOutputStream(payloadLength);
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream(payloadLength);
 
-            IOUtils.copy(urlConnectionInputStream, baos);
+            IOUtils.copy(urlConnectionInputStream, byteArrayOutputStream);
+            urlConnectionInputStream.close();
+            byteArrayOutputStream.close();
+
 
             // make a date object, to turn it into a long, only to be converted back into a date *sigh*
             Date timestamp = new Date(urlConnection.getHeaderFieldDate("Last-modified",new Date().getTime()));
 
             Log.i("URLByteCacheMethod", "creating ByteCacheHit");
-            return new ByteCacheHit(baos.toByteArray(), timestamp);
+            return new ByteCacheHit(byteArrayOutputStream.toByteArray(), timestamp);
 
         } catch (IOException e) {
             e.printStackTrace();

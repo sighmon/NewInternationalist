@@ -51,7 +51,7 @@ public class ThumbnailCacheStreamFactory extends CacheStreamFactory {
         if(!cacheFile.exists()) {
             Log.i("ThumbnailCSF", "cache miss, creating thumbnail");
             // Scale image for size requested
-            Bitmap fullsizeImageBitmap = BitmapFactory.decodeStream(new BufferedInputStream(source.createInputStream()));
+            Bitmap fullsizeImageBitmap = BitmapFactory.decodeStream(source.createInputStream());
             Log.i("ThumbnailCSF", "bitmap decoded");
             if (fullsizeImageBitmap != null) {
                 // TODO: Work out why this creates jagged images. Is the image size wrong??
