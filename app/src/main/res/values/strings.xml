@@ -64,5 +64,10 @@
     <string name="title_activity_search">SearchActivity</string>
     <string name="action_search">Search</string>
     <string name="search_term_temporary">Search term...</string>
+    <string name="search_results_header">xxx - Magazine title</string>
+    <string name="search_article_title">Article title</string>
+    <string name="search_article_teaser">Teaser</string>
+    <string name="search_article_categories">Categories</string>
+    <string name="search_cover_description">An image of the magazine cover that the search results below belong to.</string>
 
 </resources>

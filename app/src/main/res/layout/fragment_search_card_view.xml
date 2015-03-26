@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- CardView -->
+<android.support.v7.widget.CardView
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/card_view"
+    android:layout_gravity="center"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="@dimen/search_margin"
+    card_view:cardCornerRadius="@dimen/card_corner_radius">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <TextView
+            android:text="@string/search_article_title"
+            android:id="@+id/search_article_title"
+            android:textSize="@dimen/search_article_font_size_title"
+            android:textColor="@color/primary_text_default_material_light"
+            android:paddingTop="@dimen/search_article_padding_container_top_bottom"
+            android:paddingBottom="@dimen/search_article_padding_top_bottom"
+            android:paddingLeft="@dimen/search_article_padding_left_right"
+            android:paddingRight="@dimen/search_article_padding_left_right"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:text="@string/search_article_teaser"
+            android:id="@+id/search_article_teaser"
+            android:textColor="@color/bright_foreground_disabled_material_light"
+            android:paddingTop="0dp"
+            android:paddingRight="@dimen/search_article_padding_left_right"
+            android:paddingBottom="@dimen/search_article_padding_top_bottom"
+            android:paddingLeft="@dimen/search_article_padding_left_right"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/search_article_title" />
+
+        <TextView
+            android:text="@string/search_article_categories"
+            android:id="@+id/search_article_categories"
+            android:textColor="@color/button_material_light"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingTop="0dp"
+            android:paddingRight="@dimen/search_article_padding_left_right"
+            android:paddingBottom="@dimen/search_article_padding_container_top_bottom"
+            android:paddingLeft="@dimen/search_article_padding_left_right"
+            android:layout_below="@id/search_article_teaser" />
+
+    </RelativeLayout>
+
+</android.support.v7.widget.CardView>

@@ -3,9 +3,14 @@ package au.com.newint.newinternationalist;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.text.Html;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -13,9 +18,12 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -44,7 +52,10 @@ public class SearchActivity extends ActionBarActivity {
         if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
             searchQuery = intent.getStringExtra(SearchManager.QUERY);
 
-            // TODO: Perform the search
+            // Set the activity title
+            setTitle("Results for: " + searchQuery);
+
+            // Perform the search
             filterArticlesForSearchQuery(searchQuery);
         }
     }
@@ -93,26 +104,187 @@ public class SearchActivity extends ActionBarActivity {
                                  Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_search, container, false);
 
-            // TODO: Setup a list view
-            TextView searchTermTextView = (TextView) rootView.findViewById(R.id.search_term_temporary);
-            ArrayList<String> results = new ArrayList<String>();
-            int matches = 0;
-            if (filteredIssueArticlesArray != null && filteredIssueArticlesArray.size() > 0) {
-                for (ArrayList<Article> articleList : filteredIssueArticlesArray) {
-                    for (Article article : articleList) {
-                        matches++;
-                        results.add(article.getTitle());
-                    }
-                }
-            }
-            searchTermTextView.setText(Integer.toString(matches) + ": " + TextUtils.join(", ",results));
+            // Recycler view search results as cards and headers
+            final RecyclerView recList = (RecyclerView) rootView.findViewById(R.id.search_results_card_list);
+            recList.setHasFixedSize(true);
+            LinearLayoutManager llm = new LinearLayoutManager(rootView.getContext());
+            llm.setOrientation(LinearLayoutManager.VERTICAL);
+            recList.setLayoutManager(llm);
+
+            final SearchAdapter adapter = new SearchAdapter();
+            recList.setAdapter(adapter);
 
             return rootView;
         }
+
+        // Adapter for CardView
+        public class SearchAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+
+            public ArrayList<Object> listElements;
+            public Issue issue;
+            private static final int TYPE_HEADER = 0;
+            private static final int TYPE_ARTICLE = 1;
+
+            public SearchAdapter() {
+                listElements = new ArrayList<>();
+                for (ArrayList<Article> articleList : filteredIssueArticlesArray) {
+                    if (articleList.size() <= 0) {
+                        continue;
+                    }
+                    Issue issue = new Issue(articleList.get(0).getIssueID());
+                    listElements.add(issue);
+                    for (Article article : articleList) {
+                        listElements.add(article);
+                    }
+                }
+            }
+
+            @Override
+            public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+                View itemView = null;
+                if (viewType == 0) {
+                    // Header
+                    itemView = LayoutInflater.
+                            from(parent.getContext()).
+                            inflate(R.layout.fragment_search_header, parent, false);
+                    return new SearchHeaderViewHolder(itemView);
+
+                } else if (viewType == 1) {
+                    // Article
+                    itemView = LayoutInflater.
+                            from(parent.getContext()).
+                            inflate(R.layout.fragment_search_card_view, parent, false);
+                    return new SearchArticleViewHolder(itemView);
+
+                } else {
+                    // Uh oh... didn't match view type.
+                    return null;
+                }
+            }
+
+            @Override
+            public int getItemCount() {
+                return listElements.size();
+            }
+
+            @Override
+            public int getItemViewType(int position) {
+                if (isPositionHeader(position)) {
+                    return TYPE_HEADER;
+                }
+                return TYPE_ARTICLE;
+            }
+
+            private boolean isPositionHeader(int position) {
+                return listElements.get(position) instanceof Issue;
+            }
+
+            @Override
+            public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
+
+                if (holder instanceof SearchHeaderViewHolder) {
+                    // Header
+                    issue = (Issue) listElements.get(position);
+                    String issueHeaderString = Integer.toString(issue.getNumber()) + " - " + issue.getTitle();
+                    ((SearchHeaderViewHolder) holder).searchResultsHeader.setText(issueHeaderString);
+
+                    // Set cover image
+                    ImageView coverImageView = ((SearchHeaderViewHolder) holder).issueCoverImageView;
+                    int coverWidth = 200;
+                    int coverHeight = 288;
+                    File coverFile = issue.getCoverForSize(coverWidth, coverHeight);
+
+                    // Expand the image to the right size
+                    ViewGroup.LayoutParams params = coverImageView.getLayoutParams();
+                    params.width = coverWidth;
+                    params.height = coverHeight;
+                    coverImageView.setLayoutParams(params);
+
+                    if (coverFile != null && coverFile.exists()) {
+                        Bitmap coverBitmap = BitmapFactory.decodeFile(coverFile.getPath());
+                        coverImageView.setImageBitmap(coverBitmap);
+                    } else {
+                        // Set default loading cover...
+                        Bitmap defaultCoverBitmap = BitmapFactory.decodeResource(MainActivity.applicationContext.getResources(), R.drawable.home_cover);
+                        coverImageView.setImageBitmap(defaultCoverBitmap);
+                    }
+
+                } else if (holder instanceof SearchArticleViewHolder) {
+                    // Article
+                    Article article = (Article) listElements.get(position);
+                    ((SearchArticleViewHolder) holder).articleTitleTextView.setText(article.getTitle());
+                    String articleTeaser = article.getTeaser();
+                    SearchArticleViewHolder searchArticleViewHolder = ((SearchArticleViewHolder) holder);
+                    if (articleTeaser != null && !articleTeaser.isEmpty()) {
+                        searchArticleViewHolder.articleTeaserTextView.setVisibility(View.VISIBLE);
+                        searchArticleViewHolder.articleTeaserTextView.setText(Html.fromHtml(articleTeaser));
+                    } else {
+                        // Remove teaser view.
+                        searchArticleViewHolder.articleTeaserTextView.setVisibility(View.GONE);
+                    }
+
+                    String categoriesTemporaryString = "";
+                    String separator = "";
+                    ArrayList<HashMap<String,Object>> categories = article.getCategories();
+                    for (HashMap<String,Object> category : categories) {
+                        categoriesTemporaryString += separator;
+                        categoriesTemporaryString += category.get("name");
+                        separator = "\n";
+                    }
+
+                    ((SearchArticleViewHolder) holder).articleCategoriesTextView.setText(categoriesTemporaryString);
+
+                }
+            }
+
+
+            public class SearchArticleViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+
+                public TextView articleTitleTextView;
+                public TextView articleTeaserTextView;
+                public TextView articleCategoriesTextView;
+
+                public SearchArticleViewHolder(View itemView) {
+                    super(itemView);
+                    articleTitleTextView = (TextView) itemView.findViewById(R.id.search_article_title);
+                    articleTeaserTextView = (TextView) itemView.findViewById(R.id.search_article_teaser);
+                    articleCategoriesTextView = (TextView) itemView.findViewById(R.id.search_article_categories);
+                    itemView.setOnClickListener(this);
+                }
+
+                @Override
+                public void onClick(View v) {
+//                    Toast.makeText(MainActivity.applicationContext, "View clicked at position: " + getPosition(), Toast.LENGTH_SHORT).show();
+                    Intent articleIntent = new Intent(MainActivity.applicationContext, ArticleActivity.class);
+                    // Pass issue through as a Parcel
+                    if (listElements.get(getPosition()) instanceof Article) {
+                        Article articleTapped = (Article) listElements.get(getPosition());
+                        Issue articleTappedIssue = new Issue(articleTapped.getIssueID());
+                        articleIntent.putExtra("article", articleTapped);
+                        articleIntent.putExtra("issue", articleTappedIssue);
+                    }
+                    startActivity(articleIntent);
+                }
+            }
+
+            public class SearchHeaderViewHolder extends RecyclerView.ViewHolder {
+
+                public ImageView issueCoverImageView;
+                public TextView searchResultsHeader;
+
+                public SearchHeaderViewHolder(View itemView) {
+                    super(itemView);
+                    issueCoverImageView = (ImageView) itemView.findViewById(R.id.search_results_cover);
+                    searchResultsHeader = (TextView) itemView.findViewById(R.id.search_results_header);
+                }
+            }
+        }
     }
 
+    // Search logic
+
     public void filterArticlesForSearchQuery(String query) {
-        Log.i("Search", "Search for " + query);
+//        Log.i("Search", "Search for " + query);
 
         // TODO: This is an OR search not an AND search.. TOFIX?
 
@@ -141,7 +313,7 @@ public class SearchActivity extends ActionBarActivity {
         filteredIssueArticlesArray = new ArrayList<>();
         // Create a pattern to match
         Pattern pattern = Pattern.compile(searchString, Pattern.CASE_INSENSITIVE);
-        Log.i("Search", pattern.toString());
+//        Log.i("Search", pattern.toString());
 
         for (Issue issue : issuesArray) {
             ArrayList <Article> articlesArray = issue.getArticles();
@@ -173,6 +345,6 @@ public class SearchActivity extends ActionBarActivity {
                 filteredIssueArticlesArray.add(filteredArticlesArray);
             }
         }
-        Log.i("Search", "Filtered issue articles array: " + filteredIssueArticlesArray);
+//        Log.i("Search", "Filtered issue articles array: " + filteredIssueArticlesArray);
     }
 }
