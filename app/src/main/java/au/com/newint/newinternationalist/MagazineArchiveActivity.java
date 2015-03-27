@@ -14,6 +14,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.GridView;
@@ -29,6 +31,7 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 
 public class MagazineArchiveActivity extends ActionBarActivity {
@@ -89,7 +92,7 @@ public class MagazineArchiveActivity extends ActionBarActivity {
 
             // Setup the GridView
             GridView gridview = (GridView) rootView.findViewById(R.id.magazineArchiveGridView);
-            gridview.setAdapter(new ImageAdapter(rootView.getContext()));
+            gridview.setAdapter(new ImageAdapter(rootView.getContext(), new HashMap<Integer, Bitmap>()));
 
             gridview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
@@ -106,9 +109,11 @@ public class MagazineArchiveActivity extends ActionBarActivity {
 
         public class ImageAdapter extends BaseAdapter {
             private Context mContext;
+            private HashMap<Integer,Bitmap> mCovers;
 
-            public ImageAdapter(Context c) {
+            public ImageAdapter(Context c, HashMap<Integer,Bitmap> covers) {
                 mContext = c;
+                mCovers = covers;
             }
 
             public int getCount() {
@@ -133,12 +138,12 @@ public class MagazineArchiveActivity extends ActionBarActivity {
                     (float) 141, getResources().getDisplayMetrics());
 
             // create a new ImageView for each item referenced by the Adapter
-            public View getView(int position, View convertView, ViewGroup parent) {
+            public View getView(final int position, View convertView, ViewGroup parent) {
                 final ImageView imageView;
                 if (convertView == null) {  // if it's not recycled, initialize some attributes
                     imageView = new ImageView(mContext);
                     imageView.setLayoutParams(new GridView.LayoutParams(coverWidth, coverHeight));
-                    imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
+//                    imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
                     imageView.setPadding(0, 0, 0, 0);
                 } else {
                     imageView = (ImageView) convertView;
@@ -152,13 +157,42 @@ public class MagazineArchiveActivity extends ActionBarActivity {
                     Bitmap defaultCoverBitmap = BitmapFactory.decodeResource(mContext.getResources(), R.drawable.home_cover);
                     imageView.setImageBitmap(defaultCoverBitmap);
 
-                    issue.getCoverCacheStreamFactoryForSize(coverWidth).preload(new CacheStreamFactory.CachePreloadCallback() {
-                        @Override
-                        public void onLoad(CacheStreamFactory streamCache) {
-                            Bitmap coverBitmap = BitmapFactory.decodeStream(streamCache.createInputStream(null,"net"));
-                            imageView.setImageBitmap(coverBitmap);
-                        }
-                    });
+                    Bitmap cachedCover = mCovers.get(position);
+                    if (cachedCover != null) {
+                        imageView.setImageBitmap(cachedCover);
+                    } else {
+                        issue.getCoverCacheStreamFactoryForSize(coverWidth).preload(new CacheStreamFactory.CachePreloadCallback() {
+                            @Override
+                            public void onLoad(CacheStreamFactory streamCache) {
+                                final Bitmap coverBitmap = BitmapFactory.decodeStream(streamCache.createInputStream(null, "net"));
+                                mCovers.put(position, coverBitmap);
+
+                                Animation fadeOutAnimation = new AlphaAnimation(1.0f, 0.0f);
+                                final Animation fadeInAnimation = new AlphaAnimation(0.0f, 1.0f);
+                                fadeOutAnimation.setDuration(300);
+                                fadeInAnimation.setDuration(300);
+                                fadeOutAnimation.setAnimationListener(new Animation.AnimationListener() {
+                                    @Override
+                                    public void onAnimationStart(Animation animation) {
+
+                                    }
+
+                                    @Override
+                                    public void onAnimationEnd(Animation animation) {
+                                        imageView.setImageBitmap(coverBitmap);
+                                        imageView.startAnimation(fadeInAnimation);
+                                    }
+
+                                    @Override
+                                    public void onAnimationRepeat(Animation animation) {
+
+                                    }
+                                });
+                                imageView.startAnimation(fadeOutAnimation);
+                            }
+                        });
+                    }
+
 
                 }
 
