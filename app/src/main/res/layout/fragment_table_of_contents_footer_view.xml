@@ -6,8 +6,9 @@
 
     <ImageView
         android:id="@+id/toc_editor_image"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
+        android:layout_width="@dimen/toc_editors_image_width"
+        android:layout_height="@dimen/toc_editors_image_height"
+        android:src="@drawable/editors_photo"
         android:paddingTop="@dimen/toc_editor_image_padding_top"
         android:paddingBottom="@dimen/toc_editor_image_padding_bottom"
         android:layout_centerHorizontal="true"

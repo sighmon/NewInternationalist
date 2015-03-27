@@ -48,12 +48,10 @@ public class Issue implements Parcelable {
     URL cover;
     */
     ArrayList<Article> articles;
-
     JsonObject issueJson;
-
     HashMap<URL,Integer> imageRequestsHashMap;
-
     CacheStreamFactory coverCacheStreamFactory;
+    CacheStreamFactory editorsImageCacheStreamFactory;
 
     public Issue(File jsonFile) {
         JsonElement root = null;
@@ -65,10 +63,8 @@ public class Issue implements Parcelable {
         }
 
         issueJson = root.getAsJsonObject();
-
-
-
         coverCacheStreamFactory = new FileCacheStreamFactory(getCoverLocationOnFilesystem(), new URLCacheStreamFactory(getCoverURL()));
+        editorsImageCacheStreamFactory = new FileCacheStreamFactory(getEditorsLetterLocationOnFilesystem(), new URLCacheStreamFactory(getEditorsPhotoURL()));
 
         /*
         title = getTitle();
@@ -89,7 +85,7 @@ public class Issue implements Parcelable {
         issueJson = Publisher.getIssueJsonForId(issueID);
         articles = getArticles();
         coverCacheStreamFactory = new FileCacheStreamFactory(getCoverLocationOnFilesystem(), new URLCacheStreamFactory(getCoverURL()));
-
+        editorsImageCacheStreamFactory = new FileCacheStreamFactory(getEditorsLetterLocationOnFilesystem(), new URLCacheStreamFactory(getEditorsPhotoURL()));
     }
 
     public String getTitle() {
@@ -149,6 +145,15 @@ public class Issue implements Parcelable {
         return new File(issueDir, coverFilename);
     }
 
+    public File getEditorsLetterLocationOnFilesystem() {
+
+        File issueDir =  new File(MainActivity.applicationContext.getFilesDir(), Integer.toString(getID()));
+        String[] pathComponents = getEditorsPhotoURL().getPath().split("/");
+        String editorsPhotoFilename = pathComponents[pathComponents.length - 1];
+
+        return new File(issueDir, editorsPhotoFilename);
+    }
+
     public Uri getCoverUriOnFilesystem() {
 
         String issueDir =  MainActivity.applicationContext.getFilesDir() + Integer.toString(getID());
@@ -179,13 +184,12 @@ public class Issue implements Parcelable {
 
     public ThumbnailCacheStreamFactory getCoverCacheStreamFactoryForSize(int width) {
 
-        File cacheFile;
         return new ThumbnailCacheStreamFactory(width, getCoverLocationOnFilesystem(), coverCacheStreamFactory);
-
     }
 
-    public File getCoverForSize(int width, int height) {
-        return getImageForSize(getCoverURL(), width, height);
+    public ThumbnailCacheStreamFactory getEditorsImageCacheStreamFactoryForSize(int width) {
+
+        return new ThumbnailCacheStreamFactory(width, getEditorsLetterLocationOnFilesystem(), editorsImageCacheStreamFactory);
     }
 
     public File getEditorsImage() {
@@ -303,7 +307,7 @@ public class Issue implements Parcelable {
         issueJson = Publisher.getIssueJsonForId(in.readInt());
         articles = getArticles();
         coverCacheStreamFactory = new FileCacheStreamFactory(getCoverLocationOnFilesystem(), new URLCacheStreamFactory(getCoverURL()));
-
+        editorsImageCacheStreamFactory = new FileCacheStreamFactory(getEditorsLetterLocationOnFilesystem(), new URLCacheStreamFactory(getEditorsPhotoURL()));
     }
 
     @Override

@@ -144,9 +144,6 @@ public class TableOfContentsActivity extends ActionBarActivity {
         public TableOfContentsFragment() {
         }
 
-        int editorsImageWidth = 400;
-        int editorsImageHeight = 400;
-
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
@@ -276,11 +273,6 @@ public class TableOfContentsActivity extends ActionBarActivity {
                     ((TableOfContentsHeaderViewHolder) holder).issueNumberDateTextView.setText(issueNumberDate);
 
                     final ImageView coverImageView = ((TableOfContentsHeaderViewHolder) holder).issueCoverImageView;
-
-//                    // Set the loading cover for recycled views
-//                    Bitmap defaultCoverBitmap = BitmapFactory.decodeResource(MainActivity.applicationContext.getResources(), R.drawable.home_cover);
-//                    coverImageView.setImageBitmap(defaultCoverBitmap);
-
                     issue.getCoverCacheStreamFactoryForSize((int) getResources().getDimension(R.dimen.toc_cover_width)).preload(new CacheStreamFactory.CachePreloadCallback() {
                         @Override
                         public void onLoad(CacheStreamFactory streamCache) {
@@ -318,25 +310,17 @@ public class TableOfContentsActivity extends ActionBarActivity {
                 } else if (holder instanceof TableOfContentsFooterViewHolder) {
                     // Footer
                     // Get editor image.
-                    ImageView editorImageView = ((TableOfContentsFooterViewHolder) holder).editorImageView;
+                    final ImageView editorImageView = ((TableOfContentsFooterViewHolder) holder).editorImageView;
                     if (editorImageView != null) {
 
-                        File imageFile = issue.getEditorsImageForSize(editorsImageWidth, editorsImageHeight);
-
-                        // Expand the imageView to the right size
-                        ViewGroup.LayoutParams params = editorImageView.getLayoutParams();
-                        params.width = editorsImageWidth;
-                        params.height = editorsImageHeight;
-                        editorImageView.setLayoutParams(params);
-
-                        if (imageFile != null && imageFile.exists()) {
-                            Bitmap imageBitmap = BitmapFactory.decodeFile(imageFile.getPath());
-                            editorImageView.setImageDrawable(Helpers.roundDrawableFromBitmap(imageBitmap));
-                        } else {
-                            // Set default loading image...
-                            Bitmap defaultImageBitmap = BitmapFactory.decodeResource(MainActivity.applicationContext.getResources(), R.drawable.editors_photo);
-                            editorImageView.setImageDrawable(Helpers.roundDrawableFromBitmap(defaultImageBitmap));
-                        }
+                        issue.getEditorsImageCacheStreamFactoryForSize((int) getResources().getDimension(R.dimen.toc_editors_image_width)).preload(new CacheStreamFactory.CachePreloadCallback() {
+                            @Override
+                            public void onLoad(CacheStreamFactory streamCache) {
+                                Bitmap editorsImageBitmap = BitmapFactory.decodeStream(streamCache.createInputStream(null,"net"));
+                                editorImageView.setImageDrawable(Helpers.roundDrawableFromBitmap(editorsImageBitmap));
+                                // TODO: Work out why it's not a circle now...
+                            }
+                        });
                     }
 
                     ((TableOfContentsFooterViewHolder) holder).editorsLetterTextView.setText(Html.fromHtml(issue.getEditorsLetterHtml()));
