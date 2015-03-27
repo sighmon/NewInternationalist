@@ -22,6 +22,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.io.File;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.regex.Matcher;
@@ -185,24 +187,18 @@ public class SearchActivity extends ActionBarActivity {
                 if (holder instanceof SearchHeaderViewHolder) {
                     // Header
                     issue = (Issue) listElements.get(position);
-                    String issueHeaderString = Integer.toString(issue.getNumber()) + " - " + issue.getTitle();
+                    DateFormat dateFormat = new SimpleDateFormat("MMMM, yyyy");
+                    String issueHeaderString = Integer.toString(issue.getNumber()) + " - " + issue.getTitle() + "\n\n" + dateFormat.format(issue.getRelease());
                     ((SearchHeaderViewHolder) holder).searchResultsHeader.setText(issueHeaderString);
 
                     // Set cover image
                     final ImageView coverImageView = ((SearchHeaderViewHolder) holder).issueCoverImageView;
-                    // TODO: Fix the XML layout so I don't need to set height here at all.
-                    int coverWidth = 200;
-                    int coverHeight = 288;
 
-                    // Expand the image to the right size
-                    ViewGroup.LayoutParams params = coverImageView.getLayoutParams();
-                    params.width = coverWidth;
-                    params.height = coverHeight;
-                    coverImageView.setLayoutParams(params);
+                    // Set the loading cover for recycled views
+//                    Bitmap defaultCoverBitmap = BitmapFactory.decodeResource(MainActivity.applicationContext.getResources(), R.drawable.home_cover);
+//                    coverImageView.setImageBitmap(defaultCoverBitmap);
 
-                    Bitmap defaultCoverBitmap = BitmapFactory.decodeResource(MainActivity.applicationContext.getResources(), R.drawable.home_cover);
-                    coverImageView.setImageBitmap(defaultCoverBitmap);
-                    issue.getCoverCacheStreamFactoryForSize(coverWidth).preload(new CacheStreamFactory.CachePreloadCallback() {
+                    issue.getCoverCacheStreamFactoryForSize((int) getResources().getDimension(R.dimen.search_results_cover_width)).preload(new CacheStreamFactory.CachePreloadCallback() {
                         @Override
                         public void onLoad(CacheStreamFactory streamCache) {
                             Bitmap coverBitmap = BitmapFactory.decodeStream(streamCache.createInputStream(null,"net"));

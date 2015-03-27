@@ -276,31 +276,19 @@ public class TableOfContentsActivity extends ActionBarActivity {
                     ((TableOfContentsHeaderViewHolder) holder).issueNumberDateTextView.setText(issueNumberDate);
 
                     final ImageView coverImageView = ((TableOfContentsHeaderViewHolder) holder).issueCoverImageView;
-                    if (coverImageView.getLayoutParams().width < 1) {
 
-                        int coverWidth = 400;
-                        int coverHeight = 576;
-                        final File coverFile = issue.getCoverForSize(coverWidth, coverHeight);
+//                    // Set the loading cover for recycled views
+//                    Bitmap defaultCoverBitmap = BitmapFactory.decodeResource(MainActivity.applicationContext.getResources(), R.drawable.home_cover);
+//                    coverImageView.setImageBitmap(defaultCoverBitmap);
 
-                        // Expand the image to the right size
-                        ViewGroup.LayoutParams params = coverImageView.getLayoutParams();
-                        params.width = coverWidth;
-                        params.height = coverHeight;
-                        coverImageView.setLayoutParams(params);
+                    issue.getCoverCacheStreamFactoryForSize((int) getResources().getDimension(R.dimen.toc_cover_width)).preload(new CacheStreamFactory.CachePreloadCallback() {
+                        @Override
+                        public void onLoad(CacheStreamFactory streamCache) {
+                            Bitmap coverBitmap = BitmapFactory.decodeStream(streamCache.createInputStream(null,"net"));
+                            coverImageView.setImageBitmap(coverBitmap);
 
-                        // Set default loading cover...
-                        Bitmap defaultCoverBitmap = BitmapFactory.decodeResource(MainActivity.applicationContext.getResources(), R.drawable.home_cover);
-                        coverImageView.setImageBitmap(defaultCoverBitmap);
-                        issue.getCoverCacheStreamFactoryForSize(coverWidth).preload(new CacheStreamFactory.CachePreloadCallback() {
-                            @Override
-                            public void onLoad(CacheStreamFactory streamCache) {
-                                Bitmap coverBitmap = BitmapFactory.decodeStream(streamCache.createInputStream(null,"net"));
-                                coverImageView.setImageBitmap(coverBitmap);
-
-                            }
-                        });
-
-                    }
+                        }
+                    });
 
                 } else if (holder instanceof TableOfContentsViewHolder) {
                     // Article

@@ -6,8 +6,9 @@
 
     <ImageView
         android:id="@+id/toc_cover"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
+        android:layout_width="@dimen/toc_cover_width"
+        android:layout_height="@dimen/toc_cover_height"
+        android:src="@drawable/home_cover"
         android:paddingTop="@dimen/toc_cover_padding"
         android:paddingBottom="@dimen/toc_cover_padding"
         android:layout_centerHorizontal="true"

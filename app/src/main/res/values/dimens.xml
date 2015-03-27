@@ -11,8 +11,8 @@
     <dimen name="archive_cover_width">100dp</dimen>
     <dimen name="card_corner_radius">4dp</dimen>
     <dimen name="toc_margin">16dp</dimen>
-    <dimen name="toc_cover_width">100dp</dimen>
-    <dimen name="toc_cover_height">144dp</dimen>
+    <dimen name="toc_cover_width">200dp</dimen>
+    <dimen name="toc_cover_height">283dp</dimen>
     <dimen name="toc_article_font_size_title">20sp</dimen>
     <dimen name="toc_cover_padding">5dp</dimen>
     <dimen name="toc_editor_image_padding_top">20dp</dimen>
@@ -34,4 +34,6 @@
     <dimen name="search_article_padding_left_right">16dp</dimen>
     <dimen name="search_cover_padding">5dp</dimen>
     <dimen name="search_cover_padding_top">16dp</dimen>
+    <dimen name="search_results_cover_width">100dp</dimen>
+    <dimen name="search_results_cover_height">141dp</dimen>
 </resources>

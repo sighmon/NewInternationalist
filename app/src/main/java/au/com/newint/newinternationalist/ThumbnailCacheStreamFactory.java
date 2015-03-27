@@ -7,6 +7,8 @@ import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.util.Log;
 
+import org.apache.commons.io.FilenameUtils;
+
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -38,7 +40,7 @@ public class ThumbnailCacheStreamFactory extends CacheStreamFactory {
         } else {
             fileExtension = "";
         }
-        String imageForSizeFilename = baseImageFilename + "_" + width + "_" + fileExtension;
+        String imageForSizeFilename = FilenameUtils.removeExtension(baseImageFilename) + "_" + width + "_" + fileExtension;
         cacheFile = new File(CacheFileBase.getParent(),imageForSizeFilename);
 
     }
