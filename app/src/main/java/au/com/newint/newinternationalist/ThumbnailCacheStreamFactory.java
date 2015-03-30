@@ -25,6 +25,7 @@ public class ThumbnailCacheStreamFactory extends CacheStreamFactory {
     File cacheFile;
     CacheStreamFactory source;
     int width;
+    int height = -1;
 
     public ThumbnailCacheStreamFactory(int width, File CacheFileBase, CacheStreamFactory source) {
         super(null,"thumbnail");
@@ -43,6 +44,25 @@ public class ThumbnailCacheStreamFactory extends CacheStreamFactory {
         String imageForSizeFilename = FilenameUtils.removeExtension(baseImageFilename) + "_" + width + "_" + fileExtension;
         cacheFile = new File(CacheFileBase.getParent(),imageForSizeFilename);
 
+    }
+
+    public ThumbnailCacheStreamFactory(int width, int height, File CacheFileBase, CacheStreamFactory source) {
+        super(null,"thumbnail");
+
+        this.source = source;
+        this.width = width;
+        this.height = height;
+
+        String[] pathComponents = CacheFileBase.getPath().split("/");
+        String baseImageFilename = pathComponents[pathComponents.length -1];
+        String fileExtension = null;
+        if (baseImageFilename.contains(".")) {
+            fileExtension = baseImageFilename.substring(baseImageFilename.lastIndexOf("."));
+        } else {
+            fileExtension = "";
+        }
+        String imageForSizeFilename = FilenameUtils.removeExtension(baseImageFilename) + "_" + width + "x" + height + "_" + fileExtension;
+        cacheFile = new File(CacheFileBase.getParent(),imageForSizeFilename);
     }
 
     @Override
@@ -64,7 +84,13 @@ public class ThumbnailCacheStreamFactory extends CacheStreamFactory {
 
                 float originalWidth = fullsizeImageBitmap.getWidth(), originalHeight = fullsizeImageBitmap.getHeight();
                 float scale = width / originalWidth;
-                float height = fullsizeImageBitmap.getHeight()*scale;
+                float height;
+                if (this.height < 0) {
+                    height = fullsizeImageBitmap.getHeight()*scale;
+                } else {
+                    height = this.height;
+                }
+
 
                 float xTranslation = 0.0f, yTranslation = (height - originalHeight * scale) / 2.0f;
                 Matrix transformation = new Matrix();

@@ -26,6 +26,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -187,7 +188,7 @@ public class SearchActivity extends ActionBarActivity {
                 if (holder instanceof SearchHeaderViewHolder) {
                     // Header
                     issue = (Issue) listElements.get(position);
-                    DateFormat dateFormat = new SimpleDateFormat("MMMM, yyyy");
+                    DateFormat dateFormat = new SimpleDateFormat("MMMM, yyyy", Locale.getDefault());
                     String issueHeaderString = Integer.toString(issue.getNumber()) + " - " + issue.getTitle() + "\n\n" + dateFormat.format(issue.getRelease());
                     ((SearchHeaderViewHolder) holder).searchResultsHeader.setText(issueHeaderString);
 

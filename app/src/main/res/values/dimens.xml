@@ -36,6 +36,6 @@
     <dimen name="search_cover_padding_top">16dp</dimen>
     <dimen name="search_results_cover_width">100dp</dimen>
     <dimen name="search_results_cover_height">141dp</dimen>
-    <dimen name="toc_editors_image_width">300dp</dimen>
-    <dimen name="toc_editors_image_height">300dp</dimen>
+    <dimen name="toc_editors_image_width">200dp</dimen>
+    <dimen name="toc_editors_image_height">200dp</dimen>
 </resources>

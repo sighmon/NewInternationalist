@@ -28,6 +28,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Locale;
 
 
 public class ArticleActivity extends ActionBarActivity {
@@ -75,7 +76,7 @@ public class ArticleActivity extends ActionBarActivity {
             shareIntent.setAction(Intent.ACTION_SEND);
             // Send article share information here...
             // TODO: Check for a login to generate a guest pass...
-            DateFormat dateFormat = new SimpleDateFormat("MMMM yyyy");
+            DateFormat dateFormat = new SimpleDateFormat("MMMM yyyy", Locale.getDefault());
             String articleInformation = article.getTitle()
                     + " - New Internationalist magazine "
                     + dateFormat.format(article.getPublication());

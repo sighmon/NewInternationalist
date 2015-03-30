@@ -34,6 +34,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Locale;
 
 
 public class TableOfContentsActivity extends ActionBarActivity {
@@ -115,7 +116,7 @@ public class TableOfContentsActivity extends ActionBarActivity {
                 Intent shareIntent = new Intent();
                 shareIntent.setAction(Intent.ACTION_SEND);
                 // Send issue share information here...
-                DateFormat dateFormat = new SimpleDateFormat("MMMM yyyy");
+                DateFormat dateFormat = new SimpleDateFormat("MMMM yyyy", Locale.getDefault());
                 String magazineInformation = issue.getTitle()
                         + " - New Internationalist magazine "
                         + dateFormat.format(issue.getRelease());
@@ -268,7 +269,7 @@ public class TableOfContentsActivity extends ActionBarActivity {
 
                 if (holder instanceof TableOfContentsHeaderViewHolder) {
                     // Header
-                    DateFormat dateFormat = new SimpleDateFormat("MMMM, yyyy");
+                    DateFormat dateFormat = new SimpleDateFormat("MMMM, yyyy", Locale.getDefault());
                     String issueNumberDate = Integer.toString(issue.getNumber()) + " - " + dateFormat.format(issue.getRelease());
                     ((TableOfContentsHeaderViewHolder) holder).issueNumberDateTextView.setText(issueNumberDate);
 
@@ -313,12 +314,11 @@ public class TableOfContentsActivity extends ActionBarActivity {
                     final ImageView editorImageView = ((TableOfContentsFooterViewHolder) holder).editorImageView;
                     if (editorImageView != null) {
 
-                        issue.getEditorsImageCacheStreamFactoryForSize((int) getResources().getDimension(R.dimen.toc_editors_image_width)).preload(new CacheStreamFactory.CachePreloadCallback() {
+                        issue.getEditorsImageCacheStreamFactoryForSize((int) getResources().getDimension(R.dimen.toc_editors_image_width), (int) getResources().getDimension(R.dimen.toc_editors_image_height)).preload(new CacheStreamFactory.CachePreloadCallback() {
                             @Override
                             public void onLoad(CacheStreamFactory streamCache) {
                                 Bitmap editorsImageBitmap = BitmapFactory.decodeStream(streamCache.createInputStream(null,"net"));
                                 editorImageView.setImageDrawable(Helpers.roundDrawableFromBitmap(editorsImageBitmap));
-                                // TODO: Work out why it's not a circle now...
                             }
                         });
                     }

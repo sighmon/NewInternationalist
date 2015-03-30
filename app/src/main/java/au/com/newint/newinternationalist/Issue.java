@@ -187,9 +187,9 @@ public class Issue implements Parcelable {
         return new ThumbnailCacheStreamFactory(width, getCoverLocationOnFilesystem(), coverCacheStreamFactory);
     }
 
-    public ThumbnailCacheStreamFactory getEditorsImageCacheStreamFactoryForSize(int width) {
+    public ThumbnailCacheStreamFactory getEditorsImageCacheStreamFactoryForSize(int width, int height) {
 
-        return new ThumbnailCacheStreamFactory(width, getEditorsLetterLocationOnFilesystem(), editorsImageCacheStreamFactory);
+        return new ThumbnailCacheStreamFactory(width, height, getEditorsLetterLocationOnFilesystem(), editorsImageCacheStreamFactory);
     }
 
     public File getEditorsImage() {
