@@ -201,8 +201,8 @@ public class SearchActivity extends ActionBarActivity {
 
                     issue.getCoverCacheStreamFactoryForSize((int) getResources().getDimension(R.dimen.search_results_cover_width)).preload(new CacheStreamFactory.CachePreloadCallback() {
                         @Override
-                        public void onLoad(CacheStreamFactory streamCache) {
-                            Bitmap coverBitmap = BitmapFactory.decodeStream(streamCache.createInputStream(null,"net"));
+                        public void onLoad(byte[] payload) {
+                            Bitmap coverBitmap = BitmapFactory.decodeByteArray(payload,0,payload.length);
                             coverImageView.setImageBitmap(coverBitmap);
 
                         }

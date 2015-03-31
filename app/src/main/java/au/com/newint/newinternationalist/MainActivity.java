@@ -332,7 +332,7 @@ public class MainActivity extends ActionBarActivity {
             latestIssueOnFile.coverCacheStreamFactory.preload(new CacheStreamFactory.CachePreloadCallback() {
 
                 @Override
-                public void onLoad(CacheStreamFactory streamCache) {
+                public void onLoad(byte[] payload) {
 
                     Log.i("DlIssJSONTask.onPostEx", "Received listener, showing cover.");
 
@@ -343,7 +343,7 @@ public class MainActivity extends ActionBarActivity {
                         //byte[] byteArray = streamCache.read();
                         //Log.i("DlIssJSONTask.onPostEx","byteArray.length is "+byteArray.length);
                         //final Bitmap coverBitmap = BitmapFactory.decodeByteArray(byteArray,0,byteArray.length);
-                        final Bitmap coverBitmap = BitmapFactory.decodeStream(streamCache.createInputStream(null,"net"));
+                        final Bitmap coverBitmap = BitmapFactory.decodeByteArray(payload,0,payload.length);
                         Log.i("DlIssJSONTask.onPostEx", "decodeStream returned");
                         Animation fadeOutAnimation = new AlphaAnimation(1.0f, 0.0f);
                         final Animation fadeInAnimation = new AlphaAnimation(0.0f, 1.0f);

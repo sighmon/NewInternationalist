@@ -276,8 +276,8 @@ public class TableOfContentsActivity extends ActionBarActivity {
                     final ImageView coverImageView = ((TableOfContentsHeaderViewHolder) holder).issueCoverImageView;
                     issue.getCoverCacheStreamFactoryForSize((int) getResources().getDimension(R.dimen.toc_cover_width)).preload(new CacheStreamFactory.CachePreloadCallback() {
                         @Override
-                        public void onLoad(CacheStreamFactory streamCache) {
-                            Bitmap coverBitmap = BitmapFactory.decodeStream(streamCache.createInputStream(null,"net"));
+                        public void onLoad(byte[] payload) {
+                            Bitmap coverBitmap = BitmapFactory.decodeByteArray(payload,0,payload.length);
                             coverImageView.setImageBitmap(coverBitmap);
 
                         }
@@ -316,8 +316,8 @@ public class TableOfContentsActivity extends ActionBarActivity {
 
                         issue.getEditorsImageCacheStreamFactoryForSize((int) getResources().getDimension(R.dimen.toc_editors_image_width), (int) getResources().getDimension(R.dimen.toc_editors_image_height)).preload(new CacheStreamFactory.CachePreloadCallback() {
                             @Override
-                            public void onLoad(CacheStreamFactory streamCache) {
-                                Bitmap editorsImageBitmap = BitmapFactory.decodeStream(streamCache.createInputStream(null,"net"));
+                            public void onLoad(byte[] payload) {
+                                Bitmap editorsImageBitmap = BitmapFactory.decodeByteArray(payload,0,payload.length);
                                 editorImageView.setImageDrawable(Helpers.roundDrawableFromBitmap(editorsImageBitmap));
                             }
                         });

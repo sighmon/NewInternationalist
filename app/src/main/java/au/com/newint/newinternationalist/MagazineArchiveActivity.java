@@ -163,8 +163,8 @@ public class MagazineArchiveActivity extends ActionBarActivity {
                     } else {
                         issue.getCoverCacheStreamFactoryForSize(coverWidth).preload(new CacheStreamFactory.CachePreloadCallback() {
                             @Override
-                            public void onLoad(CacheStreamFactory streamCache) {
-                                final Bitmap coverBitmap = BitmapFactory.decodeStream(streamCache.createInputStream(null, "net"));
+                            public void onLoad(byte[] payload) {
+                                final Bitmap coverBitmap = BitmapFactory.decodeByteArray(payload,0,payload.length);
                                 mCovers.put(position, coverBitmap);
 
                                 Animation fadeOutAnimation = new AlphaAnimation(1.0f, 0.0f);

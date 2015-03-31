@@ -73,7 +73,13 @@ public class ThumbnailCacheStreamFactory extends CacheStreamFactory {
         if(!cacheFile.exists()) {
             Log.i("ThumbnailCSF", "cache miss, creating thumbnail");
             // Scale image for size requested
-            Bitmap fullsizeImageBitmap = BitmapFactory.decodeStream(source.createInputStream());
+            //Bitmap fullsizeImageBitmap = BitmapFactory.decodeStream(source.createInputStream());
+
+            // this will block if we haven't seen the full file yet
+            // we should be off the main thread here though.
+            byte[] data = source.read();
+            Bitmap fullsizeImageBitmap = BitmapFactory.decodeByteArray(data,0,data.length);
+
             Log.i("ThumbnailCSF", "bitmap decoded");
             if (fullsizeImageBitmap != null) {
                 // TODO: Work out why this creates jagged images. Is the image size wrong??
@@ -97,6 +103,8 @@ public class ThumbnailCacheStreamFactory extends CacheStreamFactory {
                 transformation.postTranslate(xTranslation, yTranslation);
                 transformation.preScale(scale, scale);
                 Paint paint = new Paint();
+                paint.setAntiAlias(true);
+                paint.setDither(true);
                 paint.setFilterBitmap(true);
                 Bitmap scaledImage = Bitmap.createBitmap((int) width, (int) height, Bitmap.Config.ARGB_8888);
                 Canvas canvas = new Canvas(scaledImage);
@@ -115,7 +123,6 @@ public class ThumbnailCacheStreamFactory extends CacheStreamFactory {
             } else {
                 // The image file is corrups!
                 Log.e("ThumbnailCSF", "source stream is corrupt!");
-                //TODO: do something like this
                 source.invalidate();
                 return null;
             }
