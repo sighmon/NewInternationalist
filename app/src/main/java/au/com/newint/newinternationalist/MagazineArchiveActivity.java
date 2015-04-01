@@ -172,8 +172,8 @@ public class MagazineArchiveActivity extends ActionBarActivity {
 
                                 Animation fadeOutAnimation = new AlphaAnimation(1.0f, 0.0f);
                                 final Animation fadeInAnimation = new AlphaAnimation(0.0f, 1.0f);
-                                fadeOutAnimation.setDuration(300);
-                                fadeInAnimation.setDuration(300);
+                                fadeOutAnimation.setDuration(100);
+                                fadeInAnimation.setDuration(200);
                                 fadeOutAnimation.setAnimationListener(new Animation.AnimationListener() {
                                     @Override
                                     public void onAnimationStart(Animation animation) {
