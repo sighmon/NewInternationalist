@@ -73,6 +73,7 @@ public abstract class CacheStreamFactory {
             if (params.length > 0) {
                 lock = params[0].lock;
             } else {
+                Log.e("CacheStreamFactory","params.length <= 0");
                 return null;
             }
             synchronized (lock) {
@@ -83,6 +84,7 @@ public abstract class CacheStreamFactory {
                 InputStream inputStream = createInputStream(startingAt, stoppingAt);
                 ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
                 if (inputStream == null) {
+                    Log.e("CacheStreamFactory","createInputStream returned null");
                     return null;
                 }
                 try {

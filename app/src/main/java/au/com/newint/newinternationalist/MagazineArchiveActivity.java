@@ -110,10 +110,14 @@ public class MagazineArchiveActivity extends ActionBarActivity {
         public class ImageAdapter extends BaseAdapter {
             private Context mContext;
             private HashMap<Integer,Bitmap> mCovers;
+            private Bitmap mDefaultCoverBitmap;
 
             public ImageAdapter(Context c, HashMap<Integer,Bitmap> covers) {
                 mContext = c;
                 mCovers = covers;
+
+                mDefaultCoverBitmap = BitmapFactory.decodeResource(mContext.getResources(), R.drawable.home_cover);
+
             }
 
             public int getCount() {
@@ -154,8 +158,7 @@ public class MagazineArchiveActivity extends ActionBarActivity {
                     Issue issue = magazines.get(position);
 
                     // Set default loading cover...
-                    Bitmap defaultCoverBitmap = BitmapFactory.decodeResource(mContext.getResources(), R.drawable.home_cover);
-                    imageView.setImageBitmap(defaultCoverBitmap);
+                    imageView.setImageBitmap(mDefaultCoverBitmap);
 
                     Bitmap cachedCover = mCovers.get(position);
                     if (cachedCover != null) {
