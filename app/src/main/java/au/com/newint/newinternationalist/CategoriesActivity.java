@@ -6,12 +6,20 @@ import android.content.Intent;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
+
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 
 
 public class CategoriesActivity extends ActionBarActivity {
@@ -87,11 +95,195 @@ public class CategoriesActivity extends ActionBarActivity {
         public CategoriesFragment() {
         }
 
+        public class Section {
+            public String name;
+            public ArrayList<Category> categories;
+
+            public Section(String sectionName) {
+                this.name = sectionName;
+                this.categories = new ArrayList<Category>();
+            }
+        }
+
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
             View rootView = inflater.inflate(R.layout.fragment_categories, container, false);
+
+            // RecyclerView setup
+            final RecyclerView recList = (RecyclerView) rootView.findViewById(R.id.categories_recycler_view);
+            recList.setHasFixedSize(false);
+            LinearLayoutManager llm = new LinearLayoutManager(rootView.getContext());
+            llm.setOrientation(LinearLayoutManager.VERTICAL);
+            recList.setLayoutManager(llm);
+
+            final CategoriesAdapter adapter = new CategoriesAdapter();
+            recList.setAdapter(adapter);
+
             return rootView;
+        }
+
+        // Adapter for Categories RecyclerView
+        public class CategoriesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+
+            public ArrayList<Section> sectionsList;
+            public ArrayList<Issue> issuesList;
+            private static final int TYPE_HEADER = 0;
+            private static final int TYPE_CATEGORY = 1;
+
+            public CategoriesAdapter() {
+                sectionsList = new ArrayList<>();
+                ArrayList<Category> unfilteredCategoriesList = new ArrayList<>();
+                // Add unsorted categories to this list
+                issuesList = Publisher.INSTANCE.getIssuesFromFilesystem();
+                for (Issue issue : issuesList) {
+                    ArrayList<Article> articlesList = issue.getArticles();
+                    for (Article article : articlesList) {
+                        ArrayList<Category> articleCategories = article.getCategories();
+                        for (Category category : articleCategories) {
+                            unfilteredCategoriesList.add(category);
+                        }
+                    }
+                }
+
+                // Sort by name
+                Collections.sort(unfilteredCategoriesList, new Comparator<Category>() {
+                    @Override
+                    public int compare(Category lhs, Category rhs) {
+                        return lhs.getName().compareTo(rhs.getName());
+                    }
+                });
+
+                // Add unique elements to categoriesList
+                Category lastCategory = null;
+                Section currentSection = null;
+                for (Category category : unfilteredCategoriesList) {
+                    if (lastCategory == null || !lastCategory.equals(category)) {
+                        // We have a new unique category
+                        String sectionName = category.getSectionName();
+                        if (currentSection == null || !currentSection.name.equals(sectionName)) {
+                            currentSection = new Section(sectionName);
+                            sectionsList.add(currentSection);
+                        }
+                        currentSection.categories.add(category);
+                    }
+                    lastCategory = category;
+                }
+            }
+
+            @Override
+            public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+                View itemView = null;
+                if (viewType == 0) {
+                    // Header
+                    itemView = LayoutInflater.
+                            from(parent.getContext()).
+                            inflate(R.layout.fragment_categories_header, parent, false);
+                    return new CategoryHeaderViewHolder(itemView);
+
+                } else if (viewType == 1) {
+                    // Article
+                    itemView = LayoutInflater.
+                            from(parent.getContext()).
+                            inflate(R.layout.fragment_categories_list_view, parent, false);
+                    return new CategoryViewHolder(itemView);
+
+                } else {
+                    // Uh oh... didn't match view type.
+                    return null;
+                }
+            }
+
+            @Override
+            public int getItemCount() {
+
+                int itemCount = 0;
+                for (Section section : sectionsList) {
+                    itemCount++;
+                    itemCount += section.categories.size();
+                }
+                return itemCount;
+            }
+
+            @Override
+            public int getItemViewType(int position) {
+                if (isPositionAHeader(position)) {
+                    return TYPE_HEADER;
+                }
+                return TYPE_CATEGORY;
+            }
+
+            private boolean isPositionAHeader(int position) {
+
+                return getSectionOrCategoryForPosition(position) instanceof Section;
+            }
+
+            @Override
+            public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
+
+                if (holder instanceof CategoryHeaderViewHolder) {
+                    // Section
+                    String sectionName = ((Section) getSectionOrCategoryForPosition(position)).name;
+                    ((CategoryHeaderViewHolder) holder).categoryHeader.setText(sectionName);
+
+                } else if (holder instanceof CategoryViewHolder) {
+                    // Category
+                    String categoryName = ((Category) getSectionOrCategoryForPosition(position)).getName();
+                    ((CategoryViewHolder) holder).categoryTitleTextView.setText(categoryName);
+                }
+            }
+
+            public Object getSectionOrCategoryForPosition(int position) {
+                int index = 0;
+                for (Section section : sectionsList) {
+                    if (index == position) {
+                        return section;
+                    }
+                    index++;
+                    for (Category sectionCategory : section.categories) {
+                        if (index == position) {
+                            return sectionCategory;
+                        }
+                        index++;
+                    }
+                }
+                return null;
+            }
+
+            public class CategoryViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+
+                public TextView categoryTitleTextView;
+
+                public CategoryViewHolder(View itemView) {
+                    super(itemView);
+                    categoryTitleTextView = (TextView) itemView.findViewById(R.id.category_name);
+                    itemView.setOnClickListener(this);
+                }
+
+                @Override
+                public void onClick(View v) {
+//                    Intent articleIntent = new Intent(MainActivity.applicationContext, ArticleActivity.class);
+//                    // Pass issue through as a Parcel
+//                    if (listElements.get(getPosition()) instanceof Article) {
+//                        Article articleTapped = (Article) listElements.get(getPosition());
+//                        Issue articleTappedIssue = new Issue(articleTapped.getIssueID());
+//                        articleIntent.putExtra("article", articleTapped);
+//                        articleIntent.putExtra("issue", articleTappedIssue);
+//                    }
+//                    startActivity(articleIntent);
+                    Log.i("Categories", "Category tapped!");
+                }
+            }
+
+            public class CategoryHeaderViewHolder extends RecyclerView.ViewHolder {
+
+                public TextView categoryHeader;
+
+                public CategoryHeaderViewHolder(View itemView) {
+                    super(itemView);
+                    categoryHeader = (TextView) itemView.findViewById(R.id.category_header);
+                }
+            }
         }
     }
 }

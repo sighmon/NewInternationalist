@@ -238,10 +238,10 @@ public class SearchActivity extends ActionBarActivity {
 
                     String categoriesTemporaryString = "";
                     String separator = "";
-                    ArrayList<HashMap<String,Object>> categories = article.getCategories();
-                    for (HashMap<String,Object> category : categories) {
+                    ArrayList<Category> categories = article.getCategories();
+                    for (Category category : categories) {
                         categoriesTemporaryString += separator;
-                        categoriesTemporaryString += category.get("name");
+                        categoriesTemporaryString += category.getName();
                         separator = "\n";
                     }
 

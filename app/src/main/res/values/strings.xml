@@ -75,5 +75,7 @@
     <!-- Categories -->
     <string name="home_categories">Categories</string>
     <string name="title_activity_categories">Categories</string>
+    <string name="category_header">Category header</string>
+    <string name="category_name">Category name</string>
 
 </resources>
