@@ -93,7 +93,7 @@ public class MagazineArchiveActivity extends ActionBarActivity {
 
             // Setup the GridView
             GridView gridview = (GridView) rootView.findViewById(R.id.magazineArchiveGridView);
-            gridview.setAdapter(new ImageAdapter(rootView.getContext(), new HashMap<Integer, Bitmap>()));
+            gridview.setAdapter(new ImageAdapter(rootView.getContext()));
 
             gridview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
@@ -128,12 +128,10 @@ public class MagazineArchiveActivity extends ActionBarActivity {
             }
 
             private Context mContext;
-            private HashMap<Integer,Bitmap> mCovers;
             private Bitmap mDefaultCoverBitmap;
 
-            public ImageAdapter(Context c, HashMap<Integer,Bitmap> covers) {
+            public ImageAdapter(Context c) {
                 mContext = c;
-                mCovers = covers;
 
                 mDefaultCoverBitmap = BitmapFactory.decodeResource(mContext.getResources(), R.drawable.home_cover);
 
@@ -180,25 +178,30 @@ public class MagazineArchiveActivity extends ActionBarActivity {
                     // Set default loading cover...
                     cachedImageView.setImageBitmap(mDefaultCoverBitmap);
 
-                    Bitmap cachedCover = mCovers.get(position);
-                    if (cachedCover != null) {
-                        cachedImageView.setImageBitmap(cachedCover);
-                    } else {
-                        final CacheStreamFactory cacheStreamFactory = issue.getCoverCacheStreamFactoryForSize(coverWidth);
-                        // tell the cached image view which CacheStreamFactory to expect a callback from
-                        cachedImageView.setCacheStreamFactory(cacheStreamFactory);
-                        cacheStreamFactory.preload(new CacheStreamFactory.CachePreloadCallback() {
-                            @Override
-                            public void onLoad(byte[] payload) {
-                                if (cachedImageView.hasCacheStreamFactory(cacheStreamFactory))
-                                    Log.i("MagazineArchiveActivity", "getView->preload->onLoad: expected callback");
-                                else {
-                                    Log.i("MagazineArchiveActivity", "getView->preload->onLoad: not expecting this callback");
-                                    return;
-                                }
+                    final CacheStreamFactory cacheStreamFactory = issue.getCoverCacheStreamFactoryForSize(coverWidth);
+                    // tell the cached image view which CacheStreamFactory to expect a callback from
+                    cachedImageView.setCacheStreamFactory(cacheStreamFactory);
+                    final long callTime = System.nanoTime();
+                    cacheStreamFactory.preload(new CacheStreamFactory.CachePreloadCallback() {
+                        @Override
+                        public void onLoad(byte[] payload) {
+                            if (cachedImageView.hasCacheStreamFactory(cacheStreamFactory))
+                                Log.i("MagazineArchiveActivity", "getView->preload->onLoad: expected callback");
+                            else {
+                                Log.i("MagazineArchiveActivity", "getView->preload->onLoad: not expecting this callback");
+                                return;
+                            }
 
-                                final Bitmap coverBitmap = BitmapFactory.decodeByteArray(payload, 0, payload.length);
-                                mCovers.put(position, coverBitmap);
+                            long returnTime = System.nanoTime();
+
+                            final Bitmap coverBitmap = BitmapFactory.decodeByteArray(payload, 0, payload.length);
+
+                            Log.i("MagazineArchiveActivity","onLoad delay: "+(returnTime - callTime));
+
+                            // only fade in if the callback took longer than 5 ms
+                            if((returnTime-callTime) < 5*1000*1000*1000) {
+                                cachedImageView.setImageBitmap(coverBitmap);
+                            } else {
 
                                 Animation fadeOutAnimation = new AlphaAnimation(1.0f, 0.0f);
                                 final Animation fadeInAnimation = new AlphaAnimation(0.0f, 1.0f);
@@ -223,8 +226,8 @@ public class MagazineArchiveActivity extends ActionBarActivity {
                                 });
                                 cachedImageView.startAnimation(fadeOutAnimation);
                             }
-                        });
-                    }
+                        }
+                    });
 
 
                 }
