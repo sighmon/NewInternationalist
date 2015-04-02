@@ -101,6 +101,7 @@ public abstract class CacheStreamFactory {
         protected void onPostExecute(PreloadReturn params) {
             super.onPostExecute(params);
             Log.i("CacheStreamFactory", CacheStreamFactory.this+"->preload()->onPostExecute("+((params==null)?"null":"not-null")+")");
+            // TODO: on network failure this can be legitimately null
             CachePreloadCallback callback = params.callback;
             byte[] payload = params.payload;
             //Log.i("CacheStreamFactory", CacheStreamFactory.this+"->preload()->onPostExecute("+((callback==null)?"null":"not-null")+")");
