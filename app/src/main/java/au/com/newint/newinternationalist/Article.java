@@ -59,6 +59,7 @@ public class Article implements Parcelable {
     ArrayList images; */
 
     JsonObject articleJson;
+    ArrayList<Category> categories;
     int issueID;
 
     // TODO: create Images class
@@ -174,21 +175,16 @@ public class Article implements Parcelable {
         return articleJson.get("featured_image_caption").getAsString();
     }
 
-    public ArrayList<HashMap<String,Object>> getCategories() {
+    public ArrayList<Category> getCategories() {
 
         JsonArray rootArray = articleJson.get("categories").getAsJsonArray();
-        ArrayList<HashMap<String,Object>> categories = new ArrayList<>();
+        ArrayList<Category> categories = new ArrayList<>();
 
         if (rootArray != null) {
             for (JsonElement aRootArray : rootArray) {
                 JsonObject jsonObject = aRootArray.getAsJsonObject();
                 if (jsonObject != null) {
-                    HashMap<String, Object> category = new HashMap<>();
-                    category.put("id", jsonObject.get("id").getAsInt());
-                    category.put("name", jsonObject.get("name").getAsString());
-                    if (jsonObject.get("colour") != null) {
-                        category.put("colour", jsonObject.get("colour").getAsInt());
-                    }
+                    Category category = new Category(jsonObject);
                     categories.add(category);
                 }
             }
