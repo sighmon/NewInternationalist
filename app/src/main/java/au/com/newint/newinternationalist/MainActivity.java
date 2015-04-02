@@ -226,6 +226,16 @@ public class MainActivity extends ActionBarActivity {
                 }
             });
 
+            // Set a listener for Categories taps
+            Button categoriesButton = (Button) rootView.findViewById(R.id.home_categories);
+            categoriesButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent categoriesIntent = new Intent(rootView.getContext(), CategoriesActivity.class);
+                    startActivity(categoriesIntent);
+                }
+            });
+
             // Set a listener for Login taps
             Button login = (Button) rootView.findViewById(R.id.home_login);
             login.setOnClickListener(new View.OnClickListener() {
