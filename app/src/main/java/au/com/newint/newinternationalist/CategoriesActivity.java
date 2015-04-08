@@ -228,7 +228,7 @@ public class CategoriesActivity extends ActionBarActivity {
 
                 } else if (holder instanceof CategoryViewHolder) {
                     // Category
-                    String categoryName = ((Category) getSectionOrCategoryForPosition(position)).getName();
+                    String categoryName = ((Category) getSectionOrCategoryForPosition(position)).getDisplayName();
                     ((CategoryViewHolder) holder).categoryTitleTextView.setText(categoryName);
                 }
             }
