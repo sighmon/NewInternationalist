@@ -39,6 +39,7 @@ public class Category {
 
     public String getDisplayName() {
 
+        // Remove the slashes
         String fullName = getName();
         String[] nameComponents = fullName.split("/");
         ArrayList<String> wordArray = new ArrayList<String>();

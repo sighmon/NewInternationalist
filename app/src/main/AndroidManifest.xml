@@ -102,6 +102,14 @@
                 android:name="android.app.default_searchable"
                 android:value=".SearchActivity" />
         </activity>
+        <activity
+            android:name=".CategoryActivity"
+            android:label="@string/title_activity_category"
+            android:parentActivityName=".CategoriesActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="au.com.newint.newinternationalist.CategoriesActivity" />
+        </activity>
     </application>
 
 </manifest>

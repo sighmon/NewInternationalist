@@ -262,16 +262,14 @@ public class CategoriesActivity extends ActionBarActivity {
 
                 @Override
                 public void onClick(View v) {
-//                    Intent articleIntent = new Intent(MainActivity.applicationContext, ArticleActivity.class);
-//                    // Pass issue through as a Parcel
-//                    if (listElements.get(getPosition()) instanceof Article) {
-//                        Article articleTapped = (Article) listElements.get(getPosition());
-//                        Issue articleTappedIssue = new Issue(articleTapped.getIssueID());
-//                        articleIntent.putExtra("article", articleTapped);
-//                        articleIntent.putExtra("issue", articleTappedIssue);
-//                    }
-//                    startActivity(articleIntent);
-                    Log.i("Categories", "Category tapped!");
+                    Intent categoryIntent = new Intent(MainActivity.applicationContext, CategoryActivity.class);
+//                    // Pass Category through as a Parcel
+                    if (getSectionOrCategoryForPosition(getPosition()) instanceof Category) {
+                        Category categoryTapped = (Category) getSectionOrCategoryForPosition(getPosition());
+                        Log.i("Categories", "Category tapped: " + categoryTapped.getDisplayName());
+                        categoryIntent.putExtra("categoryJson", categoryTapped.categoryJson.toString());
+                    }
+                    startActivity(categoryIntent);
                 }
             }
 
