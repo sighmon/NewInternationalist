@@ -190,6 +190,11 @@ public class MagazineArchiveActivity extends ActionBarActivity {
                                 });
                                 imageView.startAnimation(fadeOutAnimation);
                             }
+
+                            @Override
+                            public void onLoadBackground(byte[] payload) {
+
+                            }
                         });
                     }
 

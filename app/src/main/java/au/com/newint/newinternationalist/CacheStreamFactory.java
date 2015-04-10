@@ -35,6 +35,7 @@ public abstract class CacheStreamFactory {
 
     interface CachePreloadCallback {
         void onLoad(byte[] payload);
+        void onLoadBackground(byte [] payload);
     }
 
     class PreloadParameters {
@@ -91,7 +92,10 @@ public abstract class CacheStreamFactory {
                 } catch (IOException e) {
                     //e.printStackTrace();
                 }
-                return new PreloadReturn(callback, byteArrayOutputStream.toByteArray());
+
+                byte[] payload = byteArrayOutputStream.toByteArray();
+                callback.onLoadBackground(payload);
+                return new PreloadReturn(callback,payload);
             }
         }
 

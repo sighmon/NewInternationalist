@@ -30,6 +30,9 @@ public class URLCacheStreamFactory extends CacheStreamFactory {
         return "URLCacheStreamFactory["+sourceURL.getPath()+"]";
     }
 
+    // Q: should we automatically fail if on the UI thread? is returning null enough?
+    // eg. catch (NetworkOnMainThreadException e)
+    // A: bad idea unless we need it, as it might hide design flaws
     @Override
     protected InputStream createCacheInputStream() {
         Log.i("URLCacheStreamFactory", "createCacheInputStream() ["+sourceURL+"]");

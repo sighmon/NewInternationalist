@@ -21,6 +21,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Writer;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -36,6 +38,8 @@ import java.util.TimeZone;
 public enum Publisher {
     INSTANCE;
 
+    final CacheStreamFactory issuesJSONCacheStreamFactory;
+
     ArrayList<Issue> issuesList;
 
     ArrayList <UpdateListener> listeners = new ArrayList <UpdateListener> ();
@@ -48,6 +52,24 @@ public enum Publisher {
 
     Publisher() {
         deleteCookieStore();
+
+        // Get SITE_URL from config variables
+        String siteURLString = Helpers.getSiteURL();
+        Log.i("SITE_URL", siteURLString);
+
+        // Get issues.json and save/update our cache
+        URL issuesURL = null;
+        try {
+            issuesURL = new URL(siteURLString + "issues.json");
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+
+        File cacheDir = MainActivity.applicationContext.getCacheDir();
+        File cacheFile = new File(cacheDir,"issues.json");
+
+        issuesJSONCacheStreamFactory = new FileCacheStreamFactory(cacheFile, new URLCacheStreamFactory(issuesURL));
+
     }
 
     public void deleteCookieStore() {

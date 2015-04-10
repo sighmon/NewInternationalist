@@ -206,6 +206,11 @@ public class SearchActivity extends ActionBarActivity {
                             coverImageView.setImageBitmap(coverBitmap);
 
                         }
+
+                        @Override
+                        public void onLoadBackground(byte[] payload) {
+
+                        }
                     });
 
                 } else if (holder instanceof SearchArticleViewHolder) {

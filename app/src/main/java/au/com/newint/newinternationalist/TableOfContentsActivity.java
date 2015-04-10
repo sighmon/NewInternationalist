@@ -281,6 +281,11 @@ public class TableOfContentsActivity extends ActionBarActivity {
                             coverImageView.setImageBitmap(coverBitmap);
 
                         }
+
+                        @Override
+                        public void onLoadBackground(byte[] payload) {
+
+                        }
                     });
 
                 } else if (holder instanceof TableOfContentsViewHolder) {
@@ -319,6 +324,11 @@ public class TableOfContentsActivity extends ActionBarActivity {
                             public void onLoad(byte[] payload) {
                                 Bitmap editorsImageBitmap = BitmapFactory.decodeByteArray(payload,0,payload.length);
                                 editorImageView.setImageDrawable(Helpers.roundDrawableFromBitmap(editorsImageBitmap));
+                            }
+
+                            @Override
+                            public void onLoadBackground(byte[] payload) {
+
                             }
                         });
                     }
