@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -108,10 +109,18 @@ public class CategoriesActivity extends ActionBarActivity {
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
-            View rootView = inflater.inflate(R.layout.fragment_categories, container, false);
+
+            // Set a light theme
+            final Context contextThemeWrapper = new ContextThemeWrapper(getActivity(), R.style.ArticleTheme);
+
+            // Clone the inflater using the ContextThemeWrapper to apply the theme
+            LayoutInflater localInflater = inflater.cloneInContext(contextThemeWrapper);
+            View rootView = localInflater.inflate(R.layout.fragment_categories, container, false);
 
             // RecyclerView setup
             final RecyclerView recList = (RecyclerView) rootView.findViewById(R.id.categories_recycler_view);
+            // TODO: Work out how to change the colour to not-white
+            recList.addItemDecoration(new DividerItemDecoration(getActivity(), null));
             recList.setHasFixedSize(false);
             LinearLayoutManager llm = new LinearLayoutManager(rootView.getContext());
             llm.setOrientation(LinearLayoutManager.VERTICAL);

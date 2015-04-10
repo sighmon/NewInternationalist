@@ -61,7 +61,7 @@ public class Category {
         } else if (wordArray.size() == 1) {
             return wordArray.get(0);
         } else {
-            return TextUtils.join(" - ", wordArray);
+            return TextUtils.join(" / ", wordArray);
         }
     }
 
