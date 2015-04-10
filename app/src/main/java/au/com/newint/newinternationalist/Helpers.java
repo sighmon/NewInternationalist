@@ -135,4 +135,8 @@ public class Helpers {
         // TODO: Load CSS from file and throw it in the HTML returned
         return "<html><head><link href='article-body.css' type='text/css' rel='stylesheet'/></head><body>" + htmlToWrap + "</body></html>";
     }
+
+    public static String capitalize(final String line) {
+        return Character.toUpperCase(line.charAt(0)) + line.substring(1);
+    }
 }

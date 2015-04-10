@@ -210,8 +210,7 @@ public class Issue implements Parcelable {
         dest.writeInt(this.getID());
     }
 
-    public static final Parcelable.Creator<Issue> CREATOR
-            = new Parcelable.Creator<Issue>() {
+    public static final Parcelable.Creator<Issue> CREATOR = new Parcelable.Creator<Issue>() {
         public Issue createFromParcel(Parcel in) {
             return new Issue(in);
         }

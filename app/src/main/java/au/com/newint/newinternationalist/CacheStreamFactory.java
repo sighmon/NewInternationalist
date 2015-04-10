@@ -74,6 +74,7 @@ public abstract class CacheStreamFactory {
             if (params.length > 0) {
                 lock = params[0].lock;
             } else {
+                Log.e("CacheStreamFactory","params.length <= 0");
                 return null;
             }
             synchronized (lock) {
@@ -84,6 +85,7 @@ public abstract class CacheStreamFactory {
                 InputStream inputStream = createInputStream(startingAt, stoppingAt);
                 ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
                 if (inputStream == null) {
+                    Log.e("CacheStreamFactory","createInputStream returned null");
                     return null;
                 }
                 try {
@@ -103,6 +105,7 @@ public abstract class CacheStreamFactory {
         protected void onPostExecute(PreloadReturn params) {
             super.onPostExecute(params);
             Log.i("CacheStreamFactory", CacheStreamFactory.this+"->preload()->onPostExecute("+((params==null)?"null":"not-null")+")");
+            // TODO: on network failure this can be legitimately null
             CachePreloadCallback callback = params.callback;
             byte[] payload = params.payload;
             //Log.i("CacheStreamFactory", CacheStreamFactory.this+"->preload()->onPostExecute("+((callback==null)?"null":"not-null")+")");

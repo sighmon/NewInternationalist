@@ -8,6 +8,7 @@ import android.graphics.BitmapFactory;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -92,7 +93,7 @@ public class MagazineArchiveActivity extends ActionBarActivity {
 
             // Setup the GridView
             GridView gridview = (GridView) rootView.findViewById(R.id.magazineArchiveGridView);
-            gridview.setAdapter(new ImageAdapter(rootView.getContext(), new HashMap<Integer, Bitmap>()));
+            gridview.setAdapter(new ImageAdapter(rootView.getContext()));
 
             gridview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
@@ -108,12 +109,32 @@ public class MagazineArchiveActivity extends ActionBarActivity {
         }
 
         public class ImageAdapter extends BaseAdapter {
-            private Context mContext;
-            private HashMap<Integer,Bitmap> mCovers;
 
-            public ImageAdapter(Context c, HashMap<Integer,Bitmap> covers) {
+            public class CachedImageView extends ImageView {
+                public CacheStreamFactory cacheStreamFactory;
+
+                public CachedImageView(Context context) {
+                    super(context);
+                }
+
+                public void setCacheStreamFactory(CacheStreamFactory cacheStreamFactory) {
+                    this.cacheStreamFactory = cacheStreamFactory;
+                }
+
+                public boolean hasCacheStreamFactory(CacheStreamFactory cacheStreamFactory) {
+                    return this.cacheStreamFactory==cacheStreamFactory;
+                }
+
+            }
+
+            private Context mContext;
+            private Bitmap mDefaultCoverBitmap;
+
+            public ImageAdapter(Context c) {
                 mContext = c;
-                mCovers = covers;
+
+                mDefaultCoverBitmap = BitmapFactory.decodeResource(mContext.getResources(), R.drawable.home_cover);
+
             }
 
             public int getCount() {
@@ -139,14 +160,15 @@ public class MagazineArchiveActivity extends ActionBarActivity {
 
             // create a new ImageView for each item referenced by the Adapter
             public View getView(final int position, View convertView, ViewGroup parent) {
-                final ImageView imageView;
-                if (convertView == null) {  // if it's not recycled, initialize some attributes
-                    imageView = new ImageView(mContext);
-                    imageView.setLayoutParams(new GridView.LayoutParams(coverWidth, coverHeight));
+                final CachedImageView cachedImageView;
+                if (convertView == null || !(convertView instanceof CachedImageView) ) {  // if it's not recycled, initialize some attributes
+                    cachedImageView = new CachedImageView(mContext);
+                    cachedImageView.setLayoutParams(new GridView.LayoutParams(coverWidth, coverHeight));
 //                    imageView.setScaleType(ImageView.ScaleType.CENTER_CROP);
-                    imageView.setPadding(0, 0, 0, 0);
+                    cachedImageView.setPadding(0, 0, 0, 0);
                 } else {
-                    imageView = (ImageView) convertView;
+                    cachedImageView = (CachedImageView) convertView;
+                    cachedImageView.setCacheStreamFactory(null);
                 }
 
                 // Get/set the cover for this view.
@@ -154,23 +176,37 @@ public class MagazineArchiveActivity extends ActionBarActivity {
                     Issue issue = magazines.get(position);
 
                     // Set default loading cover...
-                    Bitmap defaultCoverBitmap = BitmapFactory.decodeResource(mContext.getResources(), R.drawable.home_cover);
-                    imageView.setImageBitmap(defaultCoverBitmap);
+                    cachedImageView.setImageBitmap(mDefaultCoverBitmap);
 
-                    Bitmap cachedCover = mCovers.get(position);
-                    if (cachedCover != null) {
-                        imageView.setImageBitmap(cachedCover);
-                    } else {
-                        issue.getCoverCacheStreamFactoryForSize(coverWidth).preload(new CacheStreamFactory.CachePreloadCallback() {
-                            @Override
-                            public void onLoad(byte[] payload) {
-                                final Bitmap coverBitmap = BitmapFactory.decodeByteArray(payload,0,payload.length);
-                                mCovers.put(position, coverBitmap);
+                    final CacheStreamFactory cacheStreamFactory = issue.getCoverCacheStreamFactoryForSize(coverWidth);
+                    // tell the cached image view which CacheStreamFactory to expect a callback from
+                    cachedImageView.setCacheStreamFactory(cacheStreamFactory);
+                    final long callTime = System.nanoTime();
+                    cacheStreamFactory.preload(new CacheStreamFactory.CachePreloadCallback() {
+                        @Override
+                        public void onLoad(byte[] payload) {
+                            if (cachedImageView.hasCacheStreamFactory(cacheStreamFactory))
+                                Log.i("MagazineArchiveActivity", "getView->preload->onLoad: expected callback");
+                            else {
+                                Log.i("MagazineArchiveActivity", "getView->preload->onLoad: not expecting this callback");
+                                return;
+                            }
+
+                            long returnTime = System.nanoTime();
+
+                            final Bitmap coverBitmap = BitmapFactory.decodeByteArray(payload, 0, payload.length);
+
+                            Log.i("MagazineArchiveActivity", "onLoad delay: " + (returnTime - callTime));
+
+                            // only fade in if the callback took longer than 5 ms
+                            if ((returnTime - callTime) < 5 * 1000 * 1000 * 1000) {
+                                cachedImageView.setImageBitmap(coverBitmap);
+                            } else {
 
                                 Animation fadeOutAnimation = new AlphaAnimation(1.0f, 0.0f);
                                 final Animation fadeInAnimation = new AlphaAnimation(0.0f, 1.0f);
-                                fadeOutAnimation.setDuration(300);
-                                fadeInAnimation.setDuration(300);
+                                fadeOutAnimation.setDuration(100);
+                                fadeInAnimation.setDuration(200);
                                 fadeOutAnimation.setAnimationListener(new Animation.AnimationListener() {
                                     @Override
                                     public void onAnimationStart(Animation animation) {
@@ -179,8 +215,8 @@ public class MagazineArchiveActivity extends ActionBarActivity {
 
                                     @Override
                                     public void onAnimationEnd(Animation animation) {
-                                        imageView.setImageBitmap(coverBitmap);
-                                        imageView.startAnimation(fadeInAnimation);
+                                        cachedImageView.setImageBitmap(coverBitmap);
+                                        cachedImageView.startAnimation(fadeInAnimation);
                                     }
 
                                     @Override
@@ -188,20 +224,19 @@ public class MagazineArchiveActivity extends ActionBarActivity {
 
                                     }
                                 });
-                                imageView.startAnimation(fadeOutAnimation);
+                                cachedImageView.startAnimation(fadeOutAnimation);
                             }
+                        }
 
-                            @Override
-                            public void onLoadBackground(byte[] payload) {
+                        @Override
+                        public void onLoadBackground(byte[] payload) {
 
-                            }
-                        });
-                    }
-
-
+                        }
+                    });
                 }
 
-                return imageView;
+
+                return cachedImageView;
             }
         }
     }
