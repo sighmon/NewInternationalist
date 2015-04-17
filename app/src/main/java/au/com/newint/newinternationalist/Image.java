@@ -1,6 +1,11 @@
 package au.com.newint.newinternationalist;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+
+import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 /**
  * Created by New Internationalist on 17/04/15.
@@ -20,9 +25,13 @@ public class Image {
     // position
 
     JsonObject imageJson;
+    int issueID;
+    CacheStreamFactory fullImageCacheStreamFactory;
 
-    public Image(JsonObject imageJson) {
+    public Image(JsonObject imageJson, int issueID) {
         this.imageJson = imageJson;
+        this.issueID = issueID;
+        fullImageCacheStreamFactory = new FileCacheStreamFactory(getImageLocationOnFilesystem(), new URLCacheStreamFactory(getFullsizeImageURL()));
     }
 
     @Override
@@ -38,11 +47,45 @@ public class Image {
         return imageJson.get("id").getAsInt();
     }
 
+    public int getArticleID() {
+        return imageJson.get("article_id").getAsInt();
+    }
+
     public String getCaption() {
-        return imageJson.get("caption").getAsString();
+        JsonElement element = imageJson.get("caption");
+        if (element == null) {
+            return "";
+        }
+        return element.getAsString();
     }
 
     public String getCredit() {
-        return imageJson.get("credit").getAsString();
+        JsonElement element = imageJson.get("credit");
+        if (element == null) {
+            return "";
+        }
+        return element.getAsString();
+    }
+
+    private URL getFullsizeImageURL() {
+        try {
+            return new URL(imageJson.get("data").getAsJsonObject().get("url").getAsString());
+        } catch (MalformedURLException e) {
+            return null;
+        }
+    }
+
+    public File getImageLocationOnFilesystem() {
+        Article article = new Article(Publisher.getArticleJsonForId(getArticleID(), issueID), issueID);
+        File issueDir =  new File(MainActivity.applicationContext.getFilesDir(), Integer.toString(article.getIssueID()));
+        String[] pathComponents = getFullsizeImageURL().getPath().split("/");
+        String coverFilename = pathComponents[pathComponents.length - 1];
+
+        return new File(issueDir, coverFilename);
+    }
+
+    public ThumbnailCacheStreamFactory getImageCacheStreamFactoryForSize(int width) {
+
+        return new ThumbnailCacheStreamFactory(width, getImageLocationOnFilesystem(), fullImageCacheStreamFactory);
     }
 }

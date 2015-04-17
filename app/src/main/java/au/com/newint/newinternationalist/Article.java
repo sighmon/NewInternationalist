@@ -83,6 +83,11 @@ public class Article implements Parcelable {
         issueID = Integer.parseInt(jsonFile.getPath().split("/")[5]);
     }
 
+    public Article(JsonObject jsonObject, int issueID) {
+        this.articleJson = jsonObject;
+        this.issueID = issueID;
+    }
+
     public int getID() {
         return articleJson.get("id").getAsInt();
     }
@@ -178,7 +183,10 @@ public class Article implements Parcelable {
             Log.i("ExpandedBody", "Group count: " + regexMatcher.groupCount());
             Log.i("ExpandedBody", "Group 1: " + regexMatcher.group(1));
             imageID = regexMatcher.group(1);
-            String[] options = regexMatcher.group(2).split("|");
+            String[] options = new String[0];
+            if (regexMatcher.group(2) != null) {
+                options = regexMatcher.group(2).split("|");
+            }
             String cssClass = "article-image";
             String imageWidth = "300";
             for (String option : options) {
@@ -287,7 +295,7 @@ public class Article implements Parcelable {
             for (JsonElement aRootArray : rootArray) {
                 JsonObject jsonObject = aRootArray.getAsJsonObject();
                 if (jsonObject != null) {
-                    Image image = new Image(jsonObject);
+                    Image image = new Image(jsonObject, issueID);
                     images.add(image);
                 }
             }

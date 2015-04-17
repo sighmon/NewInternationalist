@@ -24,6 +24,7 @@ import org.apache.http.util.EntityUtils;
 import org.w3c.dom.Text;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -118,12 +119,35 @@ public class ArticleActivity extends ActionBarActivity {
             super.onResume();
             if (rootView != null) {
 //                Log.i("onResume", "****LOADING BODY****");
-                WebView articleBody = (WebView) rootView.findViewById(R.id.article_body);
+                final WebView articleBody = (WebView) rootView.findViewById(R.id.article_body);
                 String articleBodyHTML = article.getExpandedBody();
+                ArrayList<Image> images = article.getImages();
                 if (articleBodyHTML == null) {
                     articleBodyHTML = Helpers.wrapInHTML("<p>Loading...</p>");
                 }
                 articleBody.loadDataWithBaseURL("file:///android_asset/", articleBodyHTML, "text/html", "utf-8", null);
+                for (final Image image : images) {
+                    // Get the images
+                    Log.i("ArticleBody", "Loading image: " + image.getID());
+                    image.fullImageCacheStreamFactory.preload("net", null, new CacheStreamFactory.CachePreloadCallback() {
+                        @Override
+                        public void onLoad(byte[] payload) {
+                            // TODO: Work out why the javascript to inject the image isn't working
+                            Log.i("ArticleBody", "Inserting image: " + image.getID());
+                            try {
+                                articleBody.loadUrl("javascript:( function () { var img = document.getElementById('image" + image.getID() + "'); img.src = '" + image.getImageLocationOnFilesystem().toURI().toURL() + "'; img.parentElement.href = '" + image.getImageLocationOnFilesystem().toURI().toURL() + "' } ) ()");
+                                articleBody.loadUrl("javascript:( function () { alert('FOOOOOOO') } ) ()");
+                            } catch (MalformedURLException e) {
+                                e.printStackTrace();
+                            }
+                        }
+
+                        @Override
+                        public void onLoadBackground(byte[] payload) {
+
+                        }
+                    });
+                }
             }
         }
 
