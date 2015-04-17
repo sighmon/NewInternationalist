@@ -37,4 +37,12 @@ public class Image {
     public int getID() {
         return imageJson.get("id").getAsInt();
     }
+
+    public String getCaption() {
+        return imageJson.get("caption").getAsString();
+    }
+
+    public String getCredit() {
+        return imageJson.get("credit").getAsString();
+    }
 }

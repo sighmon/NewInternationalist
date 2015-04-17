@@ -345,7 +345,7 @@ public class SearchActivity extends ActionBarActivity {
                     } else {
                         // Search the body if it exists on file
                         if (article.isBodyOnFilesystem()) {
-                            Matcher bodyMatcher = pattern.matcher(article.getBody());
+                            Matcher bodyMatcher = pattern.matcher(article.getExpandedBody());
                             if (bodyMatcher.find()) {
                                 filteredArticlesArray.add(article);
                             }

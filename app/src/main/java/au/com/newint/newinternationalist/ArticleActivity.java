@@ -119,7 +119,11 @@ public class ArticleActivity extends ActionBarActivity {
             if (rootView != null) {
 //                Log.i("onResume", "****LOADING BODY****");
                 WebView articleBody = (WebView) rootView.findViewById(R.id.article_body);
-                articleBody.loadDataWithBaseURL("file:///android_asset/", article.getBody(), "text/html", "utf-8", null);
+                String articleBodyHTML = article.getExpandedBody();
+                if (articleBodyHTML == null) {
+                    articleBodyHTML = Helpers.wrapInHTML("<p>Loading...</p>");
+                }
+                articleBody.loadDataWithBaseURL("file:///android_asset/", articleBodyHTML, "text/html", "utf-8", null);
             }
         }
 
