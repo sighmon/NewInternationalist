@@ -35,6 +35,7 @@ public abstract class CacheStreamFactory {
 
     interface CachePreloadCallback {
         void onLoad(byte[] payload);
+        void onLoadBackground(byte [] payload);
     }
 
     class PreloadParameters {
@@ -43,7 +44,7 @@ public abstract class CacheStreamFactory {
         String startingAt;
         String stoppingAt;
 
-        PreloadParameters(Object lock, CachePreloadCallback callback, String stoppingAt, String startingAt) {
+        PreloadParameters(Object lock, CachePreloadCallback callback, String startingAt, String stoppingAt) {
             this.lock = lock;
             this.callback = callback;
             this.stoppingAt = stoppingAt;
@@ -93,7 +94,10 @@ public abstract class CacheStreamFactory {
                 } catch (IOException e) {
                     //e.printStackTrace();
                 }
-                return new PreloadReturn(callback, byteArrayOutputStream.toByteArray());
+
+                byte[] payload = byteArrayOutputStream.toByteArray();
+                callback.onLoadBackground(payload);
+                return new PreloadReturn(callback,payload);
             }
         }
 
@@ -112,10 +116,14 @@ public abstract class CacheStreamFactory {
     }
 
     void preload(CachePreloadCallback callback) {
-        Log.i("CacheStreamFactory", this+"->preload(...)");
+        preload(null,null,callback);
+    }
+
+    void preload(String startingAt, String stoppingAt, CachePreloadCallback callback) {
+        Log.i("CacheStreamFactory", this+"->preload(...,"+startingAt+","+stoppingAt+")");
         PreloadTask preloadTask = new PreloadTask();
         //preloadTask.callback = callback;
-        preloadTask.execute(new PreloadParameters(this,callback,null,null));
+        preloadTask.execute(new PreloadParameters(this,callback,startingAt,stoppingAt));
     }
 
     InputStream createInputStream() {

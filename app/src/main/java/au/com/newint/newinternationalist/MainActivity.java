@@ -73,28 +73,130 @@ public class MainActivity extends ActionBarActivity {
         // Set default preferences, the false on the end means it's only set once
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
 
-        // Get SITE_URL from config variables
-        String siteURLString = Helpers.getSiteURL();
-        Log.i("SITE_URL", siteURLString);
 
-        // Get issues.json and save/update our cache
-        URL issuesURL = null;
-        try {
-            issuesURL = new URL(siteURLString + "issues.json");
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        }
+        Publisher.INSTANCE.issuesJSONCacheStreamFactory.preload("net",null,new CacheStreamFactory.CachePreloadCallback() {
+            @Override
+            public void onLoadBackground(byte[] payload) {
 
-        issuesJSONCache = new ByteCache();
+                //TODO: numerous direct filesystem access here which should be abstracted with CSFs
 
-        File cacheDir = getApplicationContext().getCacheDir();
-        File cacheFile = new File(cacheDir,"issues.json");
+                JsonElement root = new JsonParser().parse(new InputStreamReader(new ByteArrayInputStream(payload)));
+                //TODO: throws an exception (which one?) if the payload is empty instead of returning null
+                JsonArray magazines = root.getAsJsonArray();
 
-        //issuesJSONCache.addMethod(new MemoryByteCacheMethod());
-        issuesJSONCache.addMethod(new FileByteCacheMethod(cacheFile));
-        issuesJSONCache.addMethod(new URLByteCacheMethod(issuesURL));
+                Issue latestIssueOnFile = null;
 
-        new DownloadIssuesJSONTask().execute(issuesJSONCache);
+                if (magazines!=null) {
+                    JsonObject latestIssueOnlineJson = magazines.get(0).getAsJsonObject();
+                    //latestIssue = new Issue()
+
+                    JsonObject newestOnlineIssue = magazines.get(0).getAsJsonObject();
+                    int newestOnlineIssueRailsId = newestOnlineIssue.get("id").getAsInt();
+                    int magazinesOnFilesystem = Publisher.INSTANCE.numberOfIssues();
+
+                    Log.i("Filesystem", String.format("Number of issues on filesystem: %1$d", magazinesOnFilesystem));
+                    Log.i("www", String.format("Number of issues on www: %1$d", magazines.size()));
+
+                    if (magazines.size() > magazinesOnFilesystem) {
+                        // There are more issues online. Now check if it's a new or backissue
+
+                        Issue latestIssue = Publisher.INSTANCE.latestIssue(); // hits filesystem but we are still in background
+                        if (latestIssue != null) {
+                            int newestFilesystemIssueRailsId = latestIssue.getID();
+
+                            if (newestOnlineIssueRailsId != newestFilesystemIssueRailsId) {
+                                // It's a new issue
+                                Log.i("NewIssue", String.format("New issue available! Id: %1$d", newestOnlineIssueRailsId));
+                                newIssueAdded = true;
+                            }
+                        }
+
+                        for (JsonElement magazine : magazines) {
+                            JsonObject jsonObject = magazine.getAsJsonObject();
+
+                            int id = jsonObject.get("id").getAsInt();
+
+                            File dir = new File(getApplicationContext().getFilesDir(), Integer.toString(id));
+                            dir.mkdirs();
+
+                            File file = new File(dir, "issue.json");
+
+                            try {
+                                Writer w = new FileWriter(file);
+
+                                new Gson().toJson(jsonObject, w);
+
+                                w.close();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }
+
+                        //TODO: this should be done in main activity in response to a listener
+                        Publisher.INSTANCE.issuesList = null;
+
+                        latestIssue = Publisher.INSTANCE.latestIssue(); //hits filesystem but we are in the background still
+
+
+                        //if (latestIssue!=null) latestIssue.getCover();
+
+                    }
+                }
+
+            }
+
+            //TODO: does this have to be in the foreground? .. maybe because of the UI stuff?
+
+            @Override
+            public void onLoad(byte[] payload) {
+                Issue latestIssueOnFile = Publisher.INSTANCE.latestIssue();
+
+                latestIssueOnFile.coverCacheStreamFactory.preload(new CacheStreamFactory.CachePreloadCallback() {
+
+                    @Override
+                    public void onLoad(byte[] payload) {
+
+                        Log.i("coverCSF..onLoad", "Received listener, showing cover.");
+
+                        // Show cover
+                        final ImageButton home_cover = (ImageButton) MainActivity.this.findViewById(R.id.home_cover);
+                        if (home_cover != null) {
+                            Log.i("coverCSF..onLoad", "calling decodeStream");
+
+                            final Bitmap coverBitmap = BitmapFactory.decodeByteArray(payload,0,payload.length);
+                            Log.i("coverCSF..onLoad", "decodeStream returned");
+                            Animation fadeOutAnimation = new AlphaAnimation(1.0f, 0.0f);
+                            final Animation fadeInAnimation = new AlphaAnimation(0.0f, 1.0f);
+                            fadeOutAnimation.setDuration(300);
+                            fadeInAnimation.setDuration(300);
+                            fadeOutAnimation.setAnimationListener(new Animation.AnimationListener() {
+                                @Override
+                                public void onAnimationStart(Animation animation) {
+
+                                }
+
+                                @Override
+                                public void onAnimationEnd(Animation animation) {
+                                    home_cover.setImageBitmap(coverBitmap);
+                                    home_cover.setScaleType(ImageView.ScaleType.FIT_CENTER);
+                                    home_cover.startAnimation(fadeInAnimation);
+                                }
+
+                                @Override
+                                public void onAnimationRepeat(Animation animation) {
+
+                                }
+                            });
+                            home_cover.startAnimation(fadeOutAnimation);
+                        }
+
+                    }
+
+                    @Override
+                    public void onLoadBackground(byte[] payload) {}
+                });
+            }
+        });
 
         // Search intent
         Intent intent = getIntent();
@@ -256,133 +358,4 @@ public class MainActivity extends ActionBarActivity {
         }
     }
 
-    private class DownloadIssuesJSONTask extends AsyncTask<ByteCache, Integer, JsonArray> {
-
-        @Override
-        protected JsonArray doInBackground(ByteCache... caches) {
-
-            JsonArray rootArray = null;
-
-            ByteCache issuesJSONCache = caches[0];
-
-            ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(issuesJSONCache.read("net"));
-            BufferedInputStream bufferedInputStream = new BufferedInputStream(byteArrayInputStream);
-            InputStreamReader inputStreamReader = new InputStreamReader(bufferedInputStream);
-            JsonElement root = new JsonParser().parse(inputStreamReader);
-            rootArray = root.getAsJsonArray();
-
-            //JsonObject firstMagazine = root.getAsJsonArray().get(0).getAsJsonObject();
-            //Log.i("firstMagazine", firstMagazine.toString());
-
-            //Log.i("toJson", new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create().toJson(firstMagazine));
-
-            JsonArray magazines = rootArray;
-
-            if (magazines != null) {
-                JsonObject newestOnlineIssue = magazines.get(0).getAsJsonObject();
-                int newestOnlineIssueRailsId = newestOnlineIssue.get("id").getAsInt();
-                int magazinesOnFilesystem = Publisher.INSTANCE.numberOfIssues();
-
-                Log.i("Filesystem", String.format("Number of issues on filesystem: %1$d", magazinesOnFilesystem));
-                Log.i("www", String.format("Number of issues on www: %1$d", magazines.size()));
-
-                if (magazines.size() > magazinesOnFilesystem) {
-                    // There are more issues online. Now check if it's a new or backissue
-                    Issue latestIssue = Publisher.INSTANCE.latestIssue();
-                    if (latestIssue != null) {
-                        int newestFilesystemIssueRailsId = latestIssue.getID();
-
-                        if (newestOnlineIssueRailsId != newestFilesystemIssueRailsId) {
-                            // It's a new issue
-                            Log.i("NewIssue", String.format("New issue available! Id: %1$d", newestOnlineIssueRailsId));
-                            newIssueAdded = true;
-                        }
-                    }
-
-                    for (JsonElement magazine : magazines) {
-                        JsonObject jsonObject = magazine.getAsJsonObject();
-
-                        int id = jsonObject.get("id").getAsInt();
-
-                        File dir = new File(getApplicationContext().getFilesDir(), Integer.toString(id));
-                        dir.mkdirs();
-
-                        File file = new File(dir, "issue.json");
-
-                        try {
-                            Writer w = new FileWriter(file);
-
-                            new Gson().toJson(jsonObject, w);
-
-                            w.close();
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
-
-                    //TODO: this should be done in main activity in response to a listener
-                    Publisher.INSTANCE.issuesList = null;
-                    latestIssue = Publisher.INSTANCE.latestIssue();
-
-
-                    //if (latestIssue!=null) latestIssue.getCover();
-
-                }
-            }
-
-            return rootArray;
-        }
-
-        @Override
-        protected void onPostExecute(JsonArray magazines) {
-            super.onPostExecute(magazines);
-
-            Issue latestIssueOnFile = Publisher.INSTANCE.latestIssue();
-
-            latestIssueOnFile.coverCacheStreamFactory.preload(new CacheStreamFactory.CachePreloadCallback() {
-
-                @Override
-                public void onLoad(byte[] payload) {
-
-                    Log.i("DlIssJSONTask.onPostEx", "Received listener, showing cover.");
-
-                    // Show cover
-                    final ImageButton home_cover = (ImageButton) MainActivity.this.findViewById(R.id.home_cover);
-                    if (home_cover != null) {
-                        Log.i("DlIssJSONTask.onPostEx", "calling decodeStream");
-                        //byte[] byteArray = streamCache.read();
-                        //Log.i("DlIssJSONTask.onPostEx","byteArray.length is "+byteArray.length);
-                        //final Bitmap coverBitmap = BitmapFactory.decodeByteArray(byteArray,0,byteArray.length);
-                        final Bitmap coverBitmap = BitmapFactory.decodeByteArray(payload,0,payload.length);
-                        Log.i("DlIssJSONTask.onPostEx", "decodeStream returned");
-                        Animation fadeOutAnimation = new AlphaAnimation(1.0f, 0.0f);
-                        final Animation fadeInAnimation = new AlphaAnimation(0.0f, 1.0f);
-                        fadeOutAnimation.setDuration(300);
-                        fadeInAnimation.setDuration(300);
-                        fadeOutAnimation.setAnimationListener(new Animation.AnimationListener() {
-                            @Override
-                            public void onAnimationStart(Animation animation) {
-
-                            }
-
-                            @Override
-                            public void onAnimationEnd(Animation animation) {
-                                home_cover.setImageBitmap(coverBitmap);
-                                home_cover.setScaleType(ImageView.ScaleType.FIT_CENTER);
-                                home_cover.startAnimation(fadeInAnimation);
-                            }
-
-                            @Override
-                            public void onAnimationRepeat(Animation animation) {
-
-                            }
-                        });
-                        home_cover.startAnimation(fadeOutAnimation);
-                    }
-
-                }
-            });
-
-        }
-    }
 }

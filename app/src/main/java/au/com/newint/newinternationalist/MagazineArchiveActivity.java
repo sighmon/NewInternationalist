@@ -196,10 +196,10 @@ public class MagazineArchiveActivity extends ActionBarActivity {
 
                             final Bitmap coverBitmap = BitmapFactory.decodeByteArray(payload, 0, payload.length);
 
-                            Log.i("MagazineArchiveActivity","onLoad delay: "+(returnTime - callTime));
+                            Log.i("MagazineArchiveActivity", "onLoad delay: " + (returnTime - callTime));
 
                             // only fade in if the callback took longer than 5 ms
-                            if((returnTime-callTime) < 5*1000*1000*1000) {
+                            if ((returnTime - callTime) < 5 * 1000 * 1000 * 1000) {
                                 cachedImageView.setImageBitmap(coverBitmap);
                             } else {
 
@@ -227,10 +227,14 @@ public class MagazineArchiveActivity extends ActionBarActivity {
                                 cachedImageView.startAnimation(fadeOutAnimation);
                             }
                         }
+
+                        @Override
+                        public void onLoadBackground(byte[] payload) {
+
+                        }
                     });
-
-
                 }
+
 
                 return cachedImageView;
             }

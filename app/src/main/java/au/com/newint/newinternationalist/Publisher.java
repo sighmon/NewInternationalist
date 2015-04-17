@@ -21,6 +21,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Writer;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -36,6 +38,8 @@ import java.util.TimeZone;
 public enum Publisher {
     INSTANCE;
 
+    final CacheStreamFactory issuesJSONCacheStreamFactory;
+
     ArrayList<Issue> issuesList;
 
     ArrayList <UpdateListener> listeners = new ArrayList <UpdateListener> ();
@@ -48,6 +52,24 @@ public enum Publisher {
 
     Publisher() {
         deleteCookieStore();
+
+        // Get SITE_URL from config variables
+        String siteURLString = Helpers.getSiteURL();
+        Log.i("SITE_URL", siteURLString);
+
+        // Get issues.json and save/update our cache
+        URL issuesURL = null;
+        try {
+            issuesURL = new URL(siteURLString + "issues.json");
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+
+        File cacheDir = MainActivity.applicationContext.getCacheDir();
+        File cacheFile = new File(cacheDir,"issues.json");
+
+        issuesJSONCacheStreamFactory = new FileCacheStreamFactory(cacheFile, new URLCacheStreamFactory(issuesURL));
+
     }
 
     public void deleteCookieStore() {
@@ -199,25 +221,15 @@ public enum Publisher {
     }
 
     public Issue latestIssue() {
-        // Return latest issue.json
-        ArrayList<Issue> issuesJsonArray = getIssuesFromFilesystem();
+        // assuming this array is sorted
+        ArrayList<Issue> issuesArray = getIssuesFromFilesystem();
 
-        Issue newestIssue = null;
+        Issue newestIssue = issuesArray.isEmpty()?null:issuesArray.get(0);;
 
-        for (int i = 0; i < issuesJsonArray.size(); i++) {
-            Issue thisIssue = issuesJsonArray.get(i);
-            if (newestIssue != null) {
-
-                if (thisIssue.getRelease().after(newestIssue.getRelease())) {
-                    newestIssue = thisIssue;
-                }
-            } else {
-                newestIssue = thisIssue;
-            }
-        }
         if (newestIssue != null) {
             Log.i("LatestIssue", String.format("ID: %1$s, Title: %2$s", newestIssue.getID(), newestIssue.getTitle()));
         }
+
         return newestIssue;
     }
 
