@@ -59,13 +59,10 @@ public class Article implements Parcelable {
     ArrayList images; */
 
     JsonObject articleJson;
-    ArrayList<Category> categories;
     int issueID;
 
     // TODO: create Images class
 //    ArrayList<Images> articles;
-    // TODO: create Categories class
-//    ArrayList<Category> categories;
 
     public Article(File jsonFile) {
         JsonElement root = null;
