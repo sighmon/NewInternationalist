@@ -74,7 +74,7 @@ public class MainActivity extends ActionBarActivity {
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
 
 
-        Publisher.INSTANCE.issuesJSONCacheStreamFactory.preload(new CacheStreamFactory.CachePreloadCallback() {
+        Publisher.INSTANCE.issuesJSONCacheStreamFactory.preload("net",null,new CacheStreamFactory.CachePreloadCallback() {
             @Override
             public void onLoadBackground(byte[] payload) {
 
