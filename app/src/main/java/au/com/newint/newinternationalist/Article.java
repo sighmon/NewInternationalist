@@ -59,13 +59,10 @@ public class Article implements Parcelable {
     ArrayList images; */
 
     JsonObject articleJson;
-    ArrayList<Category> categories;
     int issueID;
 
     // TODO: create Images class
 //    ArrayList<Images> articles;
-    // TODO: create Categories class
-//    ArrayList<Category> categories;
 
     public Article(File jsonFile) {
         JsonElement root = null;
@@ -191,6 +188,24 @@ public class Article implements Parcelable {
         }
 
         return categories;
+    }
+
+    public ArrayList<Image> getImages() {
+
+        JsonArray rootArray = articleJson.get("images").getAsJsonArray();
+        ArrayList<Image> images = new ArrayList<>();
+
+        if (rootArray != null) {
+            for (JsonElement aRootArray : rootArray) {
+                JsonObject jsonObject = aRootArray.getAsJsonObject();
+                if (jsonObject != null) {
+                    Image image = new Image(jsonObject);
+                    images.add(image);
+                }
+            }
+        }
+
+        return images;
     }
 
     public URL getWebURL() {
