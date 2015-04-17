@@ -61,7 +61,7 @@ public class Category {
         } else if (wordArray.size() == 1) {
             return wordArray.get(0);
         } else {
-            return TextUtils.join(" - ", wordArray);
+            return TextUtils.join(" / ", wordArray);
         }
     }
 
@@ -76,5 +76,22 @@ public class Category {
     public String getSectionName() {
 
         return Helpers.capitalize(getName().split("/")[1]);
+    }
+
+    public ArrayList<Article> getArticles() {
+        ArrayList<Issue> issuesList = Publisher.INSTANCE.getIssuesFromFilesystem();
+        ArrayList<Article> articles = new ArrayList<Article>();
+        for (Issue issue : issuesList) {
+            ArrayList<Article> articlesList = issue.getArticles();
+            for (Article article : articlesList) {
+                ArrayList<Category> articleCategories = article.getCategories();
+                for (Category category : articleCategories) {
+                    if (category.equals(this)) {
+                        articles.add(article);
+                    }
+                }
+            }
+        }
+        return articles;
     }
 }

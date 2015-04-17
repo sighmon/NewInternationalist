@@ -7,6 +7,7 @@
     <TextView
         android:text="@string/category_name"
         android:id="@+id/category_name"
+        android:paddingTop="@dimen/categories_category_name_padding"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
 

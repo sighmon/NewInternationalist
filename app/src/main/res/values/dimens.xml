@@ -38,4 +38,6 @@
     <dimen name="search_results_cover_height">141dp</dimen>
     <dimen name="toc_editors_image_width">200dp</dimen>
     <dimen name="toc_editors_image_height">200dp</dimen>
+    <dimen name="category_header_padding_top">10dp</dimen>
+    <dimen name="categories_category_name_padding">8dp</dimen>
 </resources>

@@ -7,7 +7,9 @@
     <TextView
         android:text="@string/category_header"
         android:textSize="25sp"
+        android:textColor="@color/primary_text_default_material_light"
         android:id="@+id/category_header"
+        android:paddingTop="@dimen/category_header_padding_top"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
 
