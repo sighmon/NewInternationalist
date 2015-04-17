@@ -44,7 +44,7 @@ public abstract class CacheStreamFactory {
         String startingAt;
         String stoppingAt;
 
-        PreloadParameters(Object lock, CachePreloadCallback callback, String stoppingAt, String startingAt) {
+        PreloadParameters(Object lock, CachePreloadCallback callback, String startingAt, String stoppingAt) {
             this.lock = lock;
             this.callback = callback;
             this.stoppingAt = stoppingAt;

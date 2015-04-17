@@ -81,6 +81,7 @@ public class MainActivity extends ActionBarActivity {
                 //TODO: numerous direct filesystem access here which should be abstracted with CSFs
 
                 JsonElement root = new JsonParser().parse(new InputStreamReader(new ByteArrayInputStream(payload)));
+                //TODO: throws an exception (which one?) if the payload is empty instead of returning null
                 JsonArray magazines = root.getAsJsonArray();
 
                 Issue latestIssueOnFile = null;
@@ -98,7 +99,8 @@ public class MainActivity extends ActionBarActivity {
 
                     if (magazines.size() > magazinesOnFilesystem) {
                         // There are more issues online. Now check if it's a new or backissue
-                        Issue latestIssue = Publisher.INSTANCE.latestIssue();
+
+                        Issue latestIssue = Publisher.INSTANCE.latestIssue(); // hits filesystem but we are still in background
                         if (latestIssue != null) {
                             int newestFilesystemIssueRailsId = latestIssue.getID();
 
@@ -132,7 +134,8 @@ public class MainActivity extends ActionBarActivity {
 
                         //TODO: this should be done in main activity in response to a listener
                         Publisher.INSTANCE.issuesList = null;
-                        latestIssue = Publisher.INSTANCE.latestIssue();
+
+                        latestIssue = Publisher.INSTANCE.latestIssue(); //hits filesystem but we are in the background still
 
 
                         //if (latestIssue!=null) latestIssue.getCover();
@@ -142,7 +145,7 @@ public class MainActivity extends ActionBarActivity {
 
             }
 
-            //TODO: does this have to be in the foreground?
+            //TODO: does this have to be in the foreground? .. maybe because of the UI stuff?
 
             @Override
             public void onLoad(byte[] payload) {
