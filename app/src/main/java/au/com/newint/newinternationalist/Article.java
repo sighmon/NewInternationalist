@@ -190,6 +190,24 @@ public class Article implements Parcelable {
         return categories;
     }
 
+    public ArrayList<Image> getImages() {
+
+        JsonArray rootArray = articleJson.get("images").getAsJsonArray();
+        ArrayList<Image> images = new ArrayList<>();
+
+        if (rootArray != null) {
+            for (JsonElement aRootArray : rootArray) {
+                JsonObject jsonObject = aRootArray.getAsJsonObject();
+                if (jsonObject != null) {
+                    Image image = new Image(jsonObject);
+                    images.add(image);
+                }
+            }
+        }
+
+        return images;
+    }
+
     public URL getWebURL() {
         try {
             return new URL(Helpers.getSiteURL() + "issues/" + getIssueID() + "/articles/" + getID());

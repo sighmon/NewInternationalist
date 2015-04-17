@@ -159,9 +159,9 @@ public class ArticleActivity extends ActionBarActivity {
             }
             articleCategories.setText(categoriesTemporaryString);
 
-            // Article body html (Doing this in onResume now)
-//            articleBody.getSettings().setJavaScriptEnabled(true);
-//            articleBody.loadDataWithBaseURL(null, article.getBody(), "text/html", "utf-8", null);
+            // TODO: Get Images
+            ArrayList<Image> images = article.getImages();
+            Log.i("Article", "Images: " + images.size());
 
             // Register for ArticleBodyDownloadComplete listener
             Publisher.ArticleBodyDownloadCompleteListener listener = new Publisher.ArticleBodyDownloadCompleteListener() {
