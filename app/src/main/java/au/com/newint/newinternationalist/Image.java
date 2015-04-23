@@ -77,11 +77,11 @@ public class Image {
 
     public File getImageLocationOnFilesystem() {
         Article article = new Article(Publisher.getArticleJsonForId(getArticleID(), issueID), issueID);
-        File issueDir =  new File(MainActivity.applicationContext.getFilesDir(), Integer.toString(article.getIssueID()));
+        File articleDir =  new File(MainActivity.applicationContext.getFilesDir(), Integer.toString(article.getIssueID()) + "/" + article.getID() + "/");
         String[] pathComponents = getFullsizeImageURL().getPath().split("/");
-        String coverFilename = pathComponents[pathComponents.length - 1];
+        String imageFilename = pathComponents[pathComponents.length - 1];
 
-        return new File(issueDir, coverFilename);
+        return new File(articleDir, imageFilename);
     }
 
     public ThumbnailCacheStreamFactory getImageCacheStreamFactoryForSize(int width) {

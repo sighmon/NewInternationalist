@@ -16,6 +16,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.widget.TextView;
 
@@ -125,18 +126,25 @@ public class ArticleActivity extends ActionBarActivity {
                 if (articleBodyHTML == null) {
                     articleBodyHTML = Helpers.wrapInHTML("<p>Loading...</p>");
                 }
+                articleBody.getSettings().setJavaScriptEnabled(true);
                 articleBody.loadDataWithBaseURL("file:///android_asset/", articleBodyHTML, "text/html", "utf-8", null);
                 for (final Image image : images) {
                     // Get the images
                     Log.i("ArticleBody", "Loading image: " + image.getID());
+                    // TODO: Pretty sure this is getting the images from the net every time.
                     image.fullImageCacheStreamFactory.preload("net", null, new CacheStreamFactory.CachePreloadCallback() {
                         @Override
                         public void onLoad(byte[] payload) {
-                            // TODO: Work out why the javascript to inject the image isn't working
                             Log.i("ArticleBody", "Inserting image: " + image.getID());
                             try {
-                                articleBody.loadUrl("javascript:( function () { var img = document.getElementById('image" + image.getID() + "'); img.src = '" + image.getImageLocationOnFilesystem().toURI().toURL() + "'; img.parentElement.href = '" + image.getImageLocationOnFilesystem().toURI().toURL() + "' } ) ()");
-                                articleBody.loadUrl("javascript:( function () { alert('FOOOOOOO') } ) ()");
+                                String javascript = String.format("javascript:"
+                                        + "var insertBody = function () {"
+                                        + "  var img = document.getElementById('image%1$s');"
+                                        + "  img.src = '%2$s';"
+                                        + "  img.parentElement.href = '%3$s';"
+                                        + "};"
+                                        + "insertBody();", image.getID(), image.getImageLocationOnFilesystem().toURI().toURL(), image.getImageLocationOnFilesystem().toURI().toURL());
+                                articleBody.loadUrl(javascript);
                             } catch (MalformedURLException e) {
                                 e.printStackTrace();
                             }
@@ -187,7 +195,7 @@ public class ArticleActivity extends ActionBarActivity {
             }
             articleCategories.setText(categoriesTemporaryString);
 
-            // TODO: Get Images
+            // Get Images
             ArrayList<Image> images = article.getImages();
             Log.i("Article", "Images: " + images.size());
 
