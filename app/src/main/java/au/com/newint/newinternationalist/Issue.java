@@ -182,8 +182,6 @@ public class Issue implements Parcelable {
 
     public void preloadArticles() {
 
-
-
         // Get SITE_URL
         String siteURLString = (String) Helpers.getSiteURL();
 
@@ -194,8 +192,6 @@ public class Issue implements Parcelable {
         } catch (MalformedURLException e) {
             e.printStackTrace();
         }
-
-        ByteCache articlesJSONCache = new ByteCache();
 
         File cacheDir = MainActivity.applicationContext.getCacheDir();
         File cacheFile = new File(cacheDir, this.getID() + ".json");
