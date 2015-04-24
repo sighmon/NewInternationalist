@@ -183,6 +183,7 @@ public class Issue implements Parcelable {
     public void preloadArticles() {
 
 
+
         // Get SITE_URL
         String siteURLString = (String) Helpers.getSiteURL();
 
@@ -199,11 +200,56 @@ public class Issue implements Parcelable {
         File cacheDir = MainActivity.applicationContext.getCacheDir();
         File cacheFile = new File(cacheDir, this.getID() + ".json");
 
-        //articlesJSONCache.addMethod(new MemoryByteCacheMethod());
-        articlesJSONCache.addMethod(new FileByteCacheMethod(cacheFile));
-        articlesJSONCache.addMethod(new URLByteCacheMethod(articlesURL));
+        // new way..
+        CacheStreamFactory articlesJSONCacheStreamFactory = new FileCacheStreamFactory(cacheFile, new URLCacheStreamFactory(articlesURL));
 
-        new Issue.DownloadArticlesJSONTask().execute(articlesJSONCache, this);
+        articlesJSONCacheStreamFactory.preload(new CacheStreamFactory.CachePreloadCallback() {
+            @Override
+            public void onLoad(byte[] payload) {
+            }
+
+            @Override
+            public void onLoadBackground(byte[] payload) {
+                JsonArray rootArray = null;
+
+                ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(payload);
+                InputStreamReader inputStreamReader = new InputStreamReader(byteArrayInputStream);
+                JsonElement root = new JsonParser().parse(inputStreamReader);
+                rootArray = root.getAsJsonObject().get("articles").getAsJsonArray();
+
+                // Save article.json for each article to the filesystem
+
+                if (rootArray != null) {
+                    for (JsonElement aRootArray : rootArray) {
+                        JsonObject jsonObject = aRootArray.getAsJsonObject();
+
+                        int id = jsonObject.get("id").getAsInt();
+
+                        File dir = new File(MainActivity.applicationContext.getFilesDir() + "/" + Integer.toString(Issue.this.getID()) + "/", Integer.toString(id));
+
+                        dir.mkdirs();
+
+                        File file = new File(dir, "article.json");
+
+                        try {
+                            Writer w = new FileWriter(file);
+
+                            new Gson().toJson(jsonObject, w);
+
+                            w.close();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+
+                //TODO: articles should inform their issue when they are updated
+                // make issue reload articles from disk
+                Issue.this.articles = null;
+
+            }
+        });
+
 
 
     }
@@ -266,66 +312,4 @@ public class Issue implements Parcelable {
         }
     };
 
-    // ARTICLES download task for Issue issue
-    public static class DownloadArticlesJSONTask extends AsyncTask<Object, Integer, JsonArray> {
-
-        @Override
-        protected JsonArray doInBackground(Object... objects) {
-
-            JsonArray rootArray = null;
-
-            ByteCache articlesJSONCache = (ByteCache) objects[0];
-            Issue issue = (Issue) objects[1];
-
-            ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(articlesJSONCache.read());
-            BufferedInputStream bufferedInputStream = new BufferedInputStream(byteArrayInputStream);
-            InputStreamReader inputStreamReader = new InputStreamReader(bufferedInputStream);
-            JsonElement root = new JsonParser().parse(inputStreamReader);
-            rootArray = root.getAsJsonObject().get("articles").getAsJsonArray();
-
-            // Save article.json for each article to the filesystem
-
-            if (rootArray != null) {
-                for (JsonElement aRootArray : rootArray) {
-                    JsonObject jsonObject = aRootArray.getAsJsonObject();
-
-                    int id = jsonObject.get("id").getAsInt();
-
-                    File dir = new File(MainActivity.applicationContext.getFilesDir() + "/" + Integer.toString(issue.getID()) + "/", Integer.toString(id));
-
-                    dir.mkdirs();
-
-                    File file = new File(dir, "article.json");
-
-                    try {
-                        Writer w = new FileWriter(file);
-
-                        new Gson().toJson(jsonObject, w);
-
-                        w.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-
-            //TODO: articles should inform their issue when they are updated
-            // make issue reload articles from disk
-            issue.articles = null;
-
-            return rootArray;
-        }
-
-        @Override
-        protected void onPostExecute(JsonArray articles) {
-            super.onPostExecute(articles);
-
-            // Send articles to listener
-            for (Publisher.ArticlesDownloadCompleteListener listener : Publisher.articleListeners) {
-                Log.i("ArticlesReady", "Calling onArticlesDownloadComplete");
-                // TODO: Handle multiple listeners
-                listener.onArticlesDownloadComplete(articles);
-            }
-        }
-    }
 }
