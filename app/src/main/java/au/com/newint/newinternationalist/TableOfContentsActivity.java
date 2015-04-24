@@ -3,8 +3,6 @@ package au.com.newint.newinternationalist;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.media.MediaScannerConnection;
-import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
@@ -17,29 +15,22 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewManager;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
-import android.widget.ShareActionProvider;
 import android.widget.TextView;
 
 import com.google.gson.JsonArray;
 
-import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Locale;
 
 
 public class TableOfContentsActivity extends ActionBarActivity {
 
-    ByteCache articlesJSONCache;
     Issue issue;
 
     @Override
@@ -64,27 +55,8 @@ public class TableOfContentsActivity extends ActionBarActivity {
         // Set title to Home screen
         setTitle("Home");
 
-        // Get SITE_URL
-        String siteURLString = (String) Helpers.getSiteURL();
 
-        // Get articles.json (actually issueID.json) and save/update our cache
-        URL articlesURL = null;
-        try {
-            articlesURL = new URL(siteURLString + "issues/" + issue.getID() + ".json");
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        }
-
-        articlesJSONCache = new ByteCache();
-
-        File cacheDir = getApplicationContext().getCacheDir();
-        File cacheFile = new File(cacheDir, issue.getID() + ".json");
-
-        //articlesJSONCache.addMethod(new MemoryByteCacheMethod());
-        articlesJSONCache.addMethod(new FileByteCacheMethod(cacheFile));
-        articlesJSONCache.addMethod(new URLByteCacheMethod(articlesURL));
-
-        new Publisher.DownloadArticlesJSONTask().execute(articlesJSONCache, issue);
+        issue.preloadArticles();
     }
 
     @Override

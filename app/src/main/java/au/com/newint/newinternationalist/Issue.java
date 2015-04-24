@@ -1,36 +1,32 @@
 package au.com.newint.newinternationalist;
 
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
-import android.graphics.Matrix;
-import android.graphics.Paint;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.Log;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
-import org.apache.commons.io.IOUtils;
-
+import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
+import java.io.InputStreamReader;
+import java.io.Writer;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.HashMap;
 
 /**
  * Created by New Internationalist on 4/02/15.
@@ -85,6 +81,25 @@ public class Issue implements Parcelable {
         articles = getArticles();
         coverCacheStreamFactory = new FileCacheStreamFactory(getCoverLocationOnFilesystem(), new URLCacheStreamFactory(getCoverURL()));
         editorsImageCacheStreamFactory = new FileCacheStreamFactory(getEditorsLetterLocationOnFilesystem(), new URLCacheStreamFactory(getEditorsPhotoURL()));
+    }
+
+    public static ArrayList<Article> buildArticlesFromDir (File dir) {
+        ArrayList<Article> articlesArray = new ArrayList<Article>();
+        if (dir.exists()) {
+            File[] files = dir.listFiles();
+            for (File file : files) {
+                if (file.isDirectory()) {
+                    articlesArray.addAll(buildArticlesFromDir(file));
+                } else {
+                    // do something here with the file
+                    if (file.getName().equals("article.json")) {
+                        // Add to array
+                        articlesArray.add(new Article(file));
+                    }
+                }
+            }
+        }
+        return articlesArray;
     }
 
     public String getTitle() {
@@ -165,10 +180,41 @@ public class Issue implements Parcelable {
         return uri.build();
     }
 
+    public void preloadArticles() {
+
+
+        // Get SITE_URL
+        String siteURLString = (String) Helpers.getSiteURL();
+
+        // Get articles.json (actually issueID.json) and save/update our cache
+        URL articlesURL = null;
+        try {
+            articlesURL = new URL(siteURLString + "issues/" + this.getID() + ".json");
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+
+        ByteCache articlesJSONCache = new ByteCache();
+
+        File cacheDir = MainActivity.applicationContext.getCacheDir();
+        File cacheFile = new File(cacheDir, this.getID() + ".json");
+
+        //articlesJSONCache.addMethod(new MemoryByteCacheMethod());
+        articlesJSONCache.addMethod(new FileByteCacheMethod(cacheFile));
+        articlesJSONCache.addMethod(new URLByteCacheMethod(articlesURL));
+
+        new Issue.DownloadArticlesJSONTask().execute(articlesJSONCache, this);
+
+
+    }
+
     public ArrayList<Article> getArticles() {
+        // articles is nulled by the DownloadArticlesJSONTask.onPostExecute in Publisher
+
         if (articles == null) {
+            // assumes that all articles have been downloaded..
             File dir = new File(MainActivity.applicationContext.getFilesDir() + "/" + Integer.toString(getID()) + "/");
-            articles = Publisher.buildArticlesFromDir(dir);
+            articles = buildArticlesFromDir(dir);
             // TODO: Sort into sections by category
             Collections.sort(articles, new Comparator<Article>() {
                 @Override
@@ -220,4 +266,66 @@ public class Issue implements Parcelable {
         }
     };
 
+    // ARTICLES download task for Issue issue
+    public static class DownloadArticlesJSONTask extends AsyncTask<Object, Integer, JsonArray> {
+
+        @Override
+        protected JsonArray doInBackground(Object... objects) {
+
+            JsonArray rootArray = null;
+
+            ByteCache articlesJSONCache = (ByteCache) objects[0];
+            Issue issue = (Issue) objects[1];
+
+            ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(articlesJSONCache.read());
+            BufferedInputStream bufferedInputStream = new BufferedInputStream(byteArrayInputStream);
+            InputStreamReader inputStreamReader = new InputStreamReader(bufferedInputStream);
+            JsonElement root = new JsonParser().parse(inputStreamReader);
+            rootArray = root.getAsJsonObject().get("articles").getAsJsonArray();
+
+            // Save article.json for each article to the filesystem
+
+            if (rootArray != null) {
+                for (JsonElement aRootArray : rootArray) {
+                    JsonObject jsonObject = aRootArray.getAsJsonObject();
+
+                    int id = jsonObject.get("id").getAsInt();
+
+                    File dir = new File(MainActivity.applicationContext.getFilesDir() + "/" + Integer.toString(issue.getID()) + "/", Integer.toString(id));
+
+                    dir.mkdirs();
+
+                    File file = new File(dir, "article.json");
+
+                    try {
+                        Writer w = new FileWriter(file);
+
+                        new Gson().toJson(jsonObject, w);
+
+                        w.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            //TODO: articles should inform their issue when they are updated
+            // make issue reload articles from disk
+            issue.articles = null;
+
+            return rootArray;
+        }
+
+        @Override
+        protected void onPostExecute(JsonArray articles) {
+            super.onPostExecute(articles);
+
+            // Send articles to listener
+            for (Publisher.ArticlesDownloadCompleteListener listener : Publisher.articleListeners) {
+                Log.i("ArticlesReady", "Calling onArticlesDownloadComplete");
+                // TODO: Handle multiple listeners
+                listener.onArticlesDownloadComplete(articles);
+            }
+        }
+    }
 }

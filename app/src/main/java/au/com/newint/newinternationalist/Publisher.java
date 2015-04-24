@@ -165,25 +165,6 @@ public enum Publisher {
         return issuesArray;
     }
 
-    public static ArrayList<Article> buildArticlesFromDir (File dir) {
-        ArrayList<Article> articlesArray = new ArrayList<Article>();
-        if (dir.exists()) {
-            File[] files = dir.listFiles();
-            for (File file : files) {
-                if (file.isDirectory()) {
-                    articlesArray.addAll(buildArticlesFromDir(file));
-                } else {
-                    // do something here with the file
-                    if (file.getName().equals("article.json")) {
-                        // Add to array
-                        articlesArray.add(new Article(file));
-                    }
-                }
-            }
-        }
-        return articlesArray;
-    }
-
     public static JsonObject getIssueJsonForId(int id) {
         // Return issue.json for id handed in
         File issueJson;
@@ -259,69 +240,6 @@ public enum Publisher {
             e.printStackTrace();
         }
         return releaseDate;
-    }
-
-    // ARTICLES download task for Issue issue
-    public static class DownloadArticlesJSONTask extends AsyncTask<Object, Integer, JsonArray> {
-
-        @Override
-        protected JsonArray doInBackground(Object... objects) {
-
-            JsonArray rootArray = null;
-
-            ByteCache articlesJSONCache = (ByteCache) objects[0];
-            Issue issue = (Issue) objects[1];
-
-            ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(articlesJSONCache.read());
-            BufferedInputStream bufferedInputStream = new BufferedInputStream(byteArrayInputStream);
-            InputStreamReader inputStreamReader = new InputStreamReader(bufferedInputStream);
-            JsonElement root = new JsonParser().parse(inputStreamReader);
-            rootArray = root.getAsJsonObject().get("articles").getAsJsonArray();
-
-            // Save article.json for each article to the filesystem
-
-            if (rootArray != null) {
-                for (JsonElement aRootArray : rootArray) {
-                    JsonObject jsonObject = aRootArray.getAsJsonObject();
-
-                    int id = jsonObject.get("id").getAsInt();
-
-                    File dir = new File(MainActivity.applicationContext.getFilesDir() + "/" + Integer.toString(issue.getID()) + "/", Integer.toString(id));
-
-                    dir.mkdirs();
-
-                    File file = new File(dir, "article.json");
-
-                    try {
-                        Writer w = new FileWriter(file);
-
-                        new Gson().toJson(jsonObject, w);
-
-                        w.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-
-            //TODO: articles should inform their issue when they are updated
-            // make issue reload articles from disk
-            issue.articles = null;
-
-            return rootArray;
-        }
-
-        @Override
-        protected void onPostExecute(JsonArray articles) {
-            super.onPostExecute(articles);
-
-            // Send articles to listener
-            for (ArticlesDownloadCompleteListener listener : articleListeners) {
-                Log.i("ArticlesReady", "Calling onArticlesDownloadComplete");
-                // TODO: Handle multiple listeners
-                listener.onArticlesDownloadComplete(articles);
-            }
-        }
     }
 
     // DEBUG FUNCTIONS
