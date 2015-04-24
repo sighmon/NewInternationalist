@@ -80,6 +80,9 @@
     <string name="title_activity_category">Category</string>
 
     <!-- Category -->
-    <string name="tmp">Tmp</string>
+    <string name="title_activity_image">ImageActivity</string>
+
+    <!-- Image -->
+    <string name="image_url">Image url</string>
 
 </resources>

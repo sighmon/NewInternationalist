@@ -131,11 +131,11 @@ public class ArticleActivity extends ActionBarActivity {
                 articleBody.setWebViewClient(new WebViewClient() {
                     @Override
                     public void onPageFinished (WebView view, String url) {
+                        // Insert the images from the cache onPageFinished loading
                         ArrayList<Image> images = article.getImages();
                         for (final Image image : images) {
                             // Get the images
                             Log.i("ArticleBody", "Loading image: " + image.getID());
-                            // TODO: Handle image taps to open a new activity.. fullscreen?
                             image.fullImageCacheStreamFactory.preload(null, null, new CacheStreamFactory.CachePreloadCallback() {
                                 @Override
                                 public void onLoad(byte[] payload) {
@@ -160,6 +160,25 @@ public class ArticleActivity extends ActionBarActivity {
 
                                 }
                             });
+                        }
+                    }
+
+                    // Handle tapping images to expand, and other web links
+                    @Override
+                    public boolean shouldOverrideUrlLoading(WebView  view, String  url) {
+                        String[] pathComponents = url.split("\\.");
+                        String fileExtension = pathComponents[pathComponents.length - 1];
+                        Log.i("Article", "Image tapped: " + fileExtension);
+                        if ( fileExtension.equals("jpeg") || fileExtension.equals("jpg") || fileExtension.equals("png") || fileExtension.equals("gif") ){
+                            // An image was tapped
+                            Intent imageIntent = new Intent(MainActivity.applicationContext, ImageActivity.class);
+//                          // Pass the image url through
+                            imageIntent.putExtra("url", url);
+                            startActivity(imageIntent);
+                            return true;
+                        } else {
+                            // TODO: Something else tapped
+                            return true;
                         }
                     }
                 });
