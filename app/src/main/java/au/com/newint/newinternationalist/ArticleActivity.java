@@ -131,8 +131,8 @@ public class ArticleActivity extends ActionBarActivity {
                 for (final Image image : images) {
                     // Get the images
                     Log.i("ArticleBody", "Loading image: " + image.getID());
-                    // TODO: Pretty sure this is getting the images from the net every time.
-                    image.fullImageCacheStreamFactory.preload("net", null, new CacheStreamFactory.CachePreloadCallback() {
+                    // TODO: Handle image taps to open a new activity.. fullscreen?
+                    image.fullImageCacheStreamFactory.preload(null, null, new CacheStreamFactory.CachePreloadCallback() {
                         @Override
                         public void onLoad(byte[] payload) {
                             Log.i("ArticleBody", "Inserting image: " + image.getID());

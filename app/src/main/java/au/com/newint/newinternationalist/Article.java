@@ -203,6 +203,8 @@ public class Article implements Parcelable {
                     cssClass = "article-image article-image-small";
                     imageWidth = "150";
                 }
+
+                // TODO: Is no-shadow actually working???
                 if (option.equalsIgnoreCase("ns")) {
                     cssClass += " no-shadow";
                 }
