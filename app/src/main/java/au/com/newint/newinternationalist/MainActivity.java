@@ -55,8 +55,6 @@ public class MainActivity extends ActionBarActivity {
     static Context applicationContext;
     static Resources applicationResources;
 
-    ByteCache issuesJSONCache;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
