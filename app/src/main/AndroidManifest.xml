@@ -110,6 +110,14 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="au.com.newint.newinternationalist.CategoriesActivity" />
         </activity>
+        <activity
+            android:name=".ImageActivity"
+            android:label="@string/title_activity_image"
+            android:parentActivityName=".ArticleActivity" >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="au.com.newint.newinternationalist.ArticleActivity" />
+        </activity>
     </application>
 
 </manifest>
