@@ -16,7 +16,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.WebChromeClient;
 import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.TextView;
 
 import org.apache.http.HttpResponse;
@@ -24,6 +26,7 @@ import org.apache.http.util.EntityUtils;
 import org.w3c.dom.Text;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -118,8 +121,48 @@ public class ArticleActivity extends ActionBarActivity {
             super.onResume();
             if (rootView != null) {
 //                Log.i("onResume", "****LOADING BODY****");
-                WebView articleBody = (WebView) rootView.findViewById(R.id.article_body);
-                articleBody.loadDataWithBaseURL("file:///android_asset/", article.getBody(), "text/html", "utf-8", null);
+                final WebView articleBody = (WebView) rootView.findViewById(R.id.article_body);
+                String articleBodyHTML = article.getExpandedBody();
+                if (articleBodyHTML == null) {
+                    articleBodyHTML = Helpers.wrapInHTML("<p>Loading...</p>");
+                }
+                articleBody.getSettings().setJavaScriptEnabled(true);
+                articleBody.loadDataWithBaseURL("file:///android_asset/", articleBodyHTML, "text/html", "utf-8", null);
+                articleBody.setWebViewClient(new WebViewClient() {
+                    @Override
+                    public void onPageFinished (WebView view, String url) {
+                        ArrayList<Image> images = article.getImages();
+                        for (final Image image : images) {
+                            // Get the images
+                            Log.i("ArticleBody", "Loading image: " + image.getID());
+                            // TODO: Handle image taps to open a new activity.. fullscreen?
+                            image.fullImageCacheStreamFactory.preload(null, null, new CacheStreamFactory.CachePreloadCallback() {
+                                @Override
+                                public void onLoad(byte[] payload) {
+                                    Log.i("ArticleBody", "Inserting image: " + image.getID());
+                                    try {
+                                        String javascript = String.format("javascript:"
+                                                + "var insertBody = function () {"
+                                                + "  var id = 'image%1$s';"
+                                                + "  var img = document.getElementById(id);"
+                                                + "  img.src = '%2$s';"
+                                                + "  img.parentElement.href = '%3$s';"
+                                                + "};"
+                                                + "insertBody();", image.getID(), image.getImageLocationOnFilesystem().toURI().toURL(), image.getImageLocationOnFilesystem().toURI().toURL());
+                                        articleBody.loadUrl(javascript);
+                                    } catch (MalformedURLException e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+
+                                @Override
+                                public void onLoadBackground(byte[] payload) {
+
+                                }
+                            });
+                        }
+                    }
+                });
             }
         }
 
@@ -159,9 +202,9 @@ public class ArticleActivity extends ActionBarActivity {
             }
             articleCategories.setText(categoriesTemporaryString);
 
-            // Article body html (Doing this in onResume now)
-//            articleBody.getSettings().setJavaScriptEnabled(true);
-//            articleBody.loadDataWithBaseURL(null, article.getBody(), "text/html", "utf-8", null);
+            // Get Images
+            ArrayList<Image> images = article.getImages();
+            Log.i("Article", "Images: " + images.size());
 
             // Register for ArticleBodyDownloadComplete listener
             Publisher.ArticleBodyDownloadCompleteListener listener = new Publisher.ArticleBodyDownloadCompleteListener() {

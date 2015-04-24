@@ -42,6 +42,9 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.regex.MatchResult;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by New Internationalist on 4/02/15.
@@ -59,13 +62,10 @@ public class Article implements Parcelable {
     ArrayList images; */
 
     JsonObject articleJson;
-    ArrayList<Category> categories;
     int issueID;
 
     // TODO: create Images class
-//    ArrayList<Images> articles;
-    // TODO: create Categories class
-//    ArrayList<Category> categories;
+//    ArrayList<Images> images;
 
     public Article(File jsonFile) {
         JsonElement root = null;
@@ -81,6 +81,11 @@ public class Article implements Parcelable {
         // So file exists but data was never saved?
         articleJson = root.getAsJsonObject();
         issueID = Integer.parseInt(jsonFile.getPath().split("/")[5]);
+    }
+
+    public Article(JsonObject jsonObject, int issueID) {
+        this.articleJson = jsonObject;
+        this.issueID = issueID;
     }
 
     public int getID() {
@@ -108,7 +113,7 @@ public class Article implements Parcelable {
         return new File(articleDir,"body.html");
     }
 
-    public String getBody() {
+    private String getBody() {
 
         // POST request to rails.
 
@@ -121,7 +126,7 @@ public class Article implements Parcelable {
 
         File cacheFile = bodyCacheFile();
 
-        String bodyHTML = Helpers.wrapInHTML("<p>Loading...</p>");
+        String bodyHTML = null;
 
         if (cacheFile.exists()) {
             // Already have the body, so return it's contents as a string
@@ -153,6 +158,96 @@ public class Article implements Parcelable {
             new DownloadBodyTask().execute(articleBodyURL);
         }
         return bodyHTML;
+    }
+
+    public String getExpandedBody() {
+        // Expand [File:xxx] image tags
+        String articleBody = getBody();
+
+        if (articleBody != null) {
+            articleBody = expandImageTagsInBody(articleBody);
+        }
+
+        return articleBody;
+    }
+
+    private String expandImageTagsInBody(String body) {
+
+        Pattern regex = Pattern.compile("\\[File:(\\d+)(?:\\|([^\\]]*))?]");
+        Matcher regexMatcher = regex.matcher(body);
+        String imageID = null;
+        while (regexMatcher.find()) {
+            MatchResult matchResult = regexMatcher.toMatchResult();
+            String replacement = null;
+            Log.i("ExpandedBody", "Group: " + regexMatcher.group());
+            Log.i("ExpandedBody", "Group count: " + regexMatcher.groupCount());
+            Log.i("ExpandedBody", "Group 1: " + regexMatcher.group(1));
+            imageID = regexMatcher.group(1);
+            String[] options = new String[0];
+            if (regexMatcher.group(2) != null) {
+                options = regexMatcher.group(2).split("|");
+            }
+            String cssClass = "article-image";
+            String imageWidth = "300";
+            for (String option : options) {
+                if (option.equalsIgnoreCase("full")) {
+                    cssClass = "all-article-images article-image-cartoon article-image-full";
+                    imageWidth = "945";
+                } else if (option.equalsIgnoreCase("cartoon")) {
+                    cssClass = "all-article-images article-image-cartoon";
+                    imageWidth = "600";
+                } else if (option.equalsIgnoreCase("centre")) {
+                    cssClass = "all-article-images article-image-cartoon article-image-centre";
+                    imageWidth = "300";
+                } else if (option.equalsIgnoreCase("small")) {
+                    cssClass = "article-image article-image-small";
+                    imageWidth = "150";
+                }
+
+                // TODO: Is no-shadow actually working???
+                if (option.equalsIgnoreCase("ns")) {
+                    cssClass += " no-shadow";
+                }
+
+                if (option.equalsIgnoreCase("left")) {
+                    cssClass += " article-image-float-none";
+                }
+            }
+
+            String credit_div = null;
+            String caption_div = null;
+            String imageCredit = null;
+            String imageCaption = null;
+            String imageSource = "file:///android_res/drawable/loading_image.png";
+            String imageZoomURI = "#";
+            ArrayList<Image> images = getImages();
+            Image image = null;
+            for (Image anImage : images) {
+                if (anImage.getID() == Integer.valueOf(imageID)) {
+                    image = anImage;
+                }
+            }
+            if (image != null) {
+                imageCredit = image.getCredit();
+                imageCaption = image.getCaption();
+            }
+
+            if (imageCredit != null) {
+                credit_div = String.format("<div class='new-image-credit'>%1$s</div>", imageCredit);
+            }
+
+            if (imageCaption != null) {
+                caption_div = String.format("<div class='new-image-caption'>%1$s</div>", imageCaption);
+            }
+
+            // TODO: Add the image zoom functionality here...
+            replacement = String.format("<div class='%1$s'><a href='%2$s'><img id='image%3$s' width='%4$s' src='%5$s'/></a>%6$s%7$s</div>", cssClass, imageZoomURI, imageID, imageWidth, imageSource, caption_div, credit_div);
+
+            body = body.substring(0, matchResult.start()) + replacement + body.substring(matchResult.end());
+            regexMatcher.reset(body);
+        }
+
+        return body;
     }
 
     public Date getPublication() {
@@ -191,6 +286,24 @@ public class Article implements Parcelable {
         }
 
         return categories;
+    }
+
+    public ArrayList<Image> getImages() {
+
+        JsonArray rootArray = articleJson.get("images").getAsJsonArray();
+        ArrayList<Image> images = new ArrayList<>();
+
+        if (rootArray != null) {
+            for (JsonElement aRootArray : rootArray) {
+                JsonObject jsonObject = aRootArray.getAsJsonObject();
+                if (jsonObject != null) {
+                    Image image = new Image(jsonObject, issueID);
+                    images.add(image);
+                }
+            }
+        }
+
+        return images;
     }
 
     public URL getWebURL() {
@@ -312,7 +425,8 @@ public class Article implements Parcelable {
 
             ArrayList<Object> responseList = new ArrayList<>();
             responseList.add(response);
-            responseList.add(bodyHTML);
+            // Get expanded bodyHTML here too..
+            responseList.add(getExpandedBody());
 
             return responseList;
         }
