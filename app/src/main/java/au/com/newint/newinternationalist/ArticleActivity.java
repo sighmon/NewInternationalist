@@ -18,6 +18,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.TextView;
 
 import org.apache.http.HttpResponse;
@@ -122,40 +123,46 @@ public class ArticleActivity extends ActionBarActivity {
 //                Log.i("onResume", "****LOADING BODY****");
                 final WebView articleBody = (WebView) rootView.findViewById(R.id.article_body);
                 String articleBodyHTML = article.getExpandedBody();
-                ArrayList<Image> images = article.getImages();
                 if (articleBodyHTML == null) {
                     articleBodyHTML = Helpers.wrapInHTML("<p>Loading...</p>");
                 }
                 articleBody.getSettings().setJavaScriptEnabled(true);
                 articleBody.loadDataWithBaseURL("file:///android_asset/", articleBodyHTML, "text/html", "utf-8", null);
-                for (final Image image : images) {
-                    // Get the images
-                    Log.i("ArticleBody", "Loading image: " + image.getID());
-                    // TODO: Handle image taps to open a new activity.. fullscreen?
-                    image.fullImageCacheStreamFactory.preload(null, null, new CacheStreamFactory.CachePreloadCallback() {
-                        @Override
-                        public void onLoad(byte[] payload) {
-                            Log.i("ArticleBody", "Inserting image: " + image.getID());
-                            try {
-                                String javascript = String.format("javascript:"
-                                        + "var insertBody = function () {"
-                                        + "  var img = document.getElementById('image%1$s');"
-                                        + "  img.src = '%2$s';"
-                                        + "  img.parentElement.href = '%3$s';"
-                                        + "};"
-                                        + "insertBody();", image.getID(), image.getImageLocationOnFilesystem().toURI().toURL(), image.getImageLocationOnFilesystem().toURI().toURL());
-                                articleBody.loadUrl(javascript);
-                            } catch (MalformedURLException e) {
-                                e.printStackTrace();
-                            }
-                        }
+                articleBody.setWebViewClient(new WebViewClient() {
+                    @Override
+                    public void onPageFinished (WebView view, String url) {
+                        ArrayList<Image> images = article.getImages();
+                        for (final Image image : images) {
+                            // Get the images
+                            Log.i("ArticleBody", "Loading image: " + image.getID());
+                            // TODO: Handle image taps to open a new activity.. fullscreen?
+                            image.fullImageCacheStreamFactory.preload(null, null, new CacheStreamFactory.CachePreloadCallback() {
+                                @Override
+                                public void onLoad(byte[] payload) {
+                                    Log.i("ArticleBody", "Inserting image: " + image.getID());
+                                    try {
+                                        String javascript = String.format("javascript:"
+                                                + "var insertBody = function () {"
+                                                + "  var id = 'image%1$s';"
+                                                + "  var img = document.getElementById(id);"
+                                                + "  img.src = '%2$s';"
+                                                + "  img.parentElement.href = '%3$s';"
+                                                + "};"
+                                                + "insertBody();", image.getID(), image.getImageLocationOnFilesystem().toURI().toURL(), image.getImageLocationOnFilesystem().toURI().toURL());
+                                        articleBody.loadUrl(javascript);
+                                    } catch (MalformedURLException e) {
+                                        e.printStackTrace();
+                                    }
+                                }
 
-                        @Override
-                        public void onLoadBackground(byte[] payload) {
+                                @Override
+                                public void onLoadBackground(byte[] payload) {
 
+                                }
+                            });
                         }
-                    });
-                }
+                    }
+                });
             }
         }
 
