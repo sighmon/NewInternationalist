@@ -29,7 +29,8 @@ public class ImageActivity extends ActionBarActivity {
         }
 
         url = getIntent().getStringExtra("url");
-        setTitle(url);
+        Article article = getIntent().getParcelableExtra("article");
+        setTitle(article.getTitle());
     }
 
 

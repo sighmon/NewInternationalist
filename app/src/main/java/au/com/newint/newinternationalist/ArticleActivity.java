@@ -174,6 +174,7 @@ public class ArticleActivity extends ActionBarActivity {
                             Intent imageIntent = new Intent(MainActivity.applicationContext, ImageActivity.class);
 //                          // Pass the image url through
                             imageIntent.putExtra("url", url);
+                            imageIntent.putExtra("article", article);
                             startActivity(imageIntent);
                             return true;
                         } else {
