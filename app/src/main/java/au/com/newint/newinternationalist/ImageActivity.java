@@ -29,7 +29,8 @@ public class ImageActivity extends ActionBarActivity {
         }
 
         url = getIntent().getStringExtra("url");
-        setTitle(url);
+        Article article = getIntent().getParcelableExtra("article");
+        setTitle(article.getTitle());
     }
 
 
@@ -83,13 +84,8 @@ public class ImageActivity extends ActionBarActivity {
             WebView imageWebView = (WebView) rootView.findViewById(R.id.image_web_view);
             imageWebView.getSettings().setBuiltInZoomControls(true);
             imageWebView.setBackgroundColor(getResources().getColor(R.color.background_material_dark));
-            // TODO: Fix the vertical-centering css so it doesn't randomly appear too high
-            String html = String.format("<html> <head> <style type='text/css'> body { padding: 0; margin: 0; } body img { } </style> </head> <body> <img src='%1$s' style='width: 100%%; position: relative; top: 50%%; transform: translateY(-50%%);' /> </body> </html>", url);
-
-            // TODO: REMOVE Purely for remote debugging with chrome using chrome://inspect
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                WebView.setWebContentsDebuggingEnabled(true);
-            }
+            // Oh CSS you difficult beast. Using divs displaying as tables to centre the image
+            String html = String.format("<html> <head> <style type='text/css'> body { padding: 0; margin: 0; } body img { width: 100%%; } </style> </head> <body> <div style='display: table; position: absolute; height: 100%%; width: 100%%;'> <div style=' display: table-cell; vertical-align: middle;'> <img src='%1$s' /> </div> </div> </body> </html>", url);
 
             imageWebView.loadDataWithBaseURL("file:///android_asset/", html, "text/html", "utf-8", null);
 
