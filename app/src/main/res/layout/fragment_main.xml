@@ -13,6 +13,7 @@
         android:layout_height="@dimen/home_cover_height"
         android:layout_marginTop="@dimen/home_cover_margin_top"
         android:layout_centerHorizontal="true"
+        android:scaleType="fitCenter"
         android:src="@drawable/home_cover"
         android:contentDescription="@string/home_cover"
         android:elevation="2dp"/>
