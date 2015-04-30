@@ -185,6 +185,8 @@ public class MagazineArchiveActivity extends ActionBarActivity {
                     cacheStreamFactory.preload(new CacheStreamFactory.CachePreloadCallback() {
                         @Override
                         public void onLoad(byte[] payload) {
+                            if (payload==null) return;
+
                             if (cachedImageView.hasCacheStreamFactory(cacheStreamFactory))
                                 Log.i("MagazineArchiveActivity", "getView->preload->onLoad: expected callback");
                             else {

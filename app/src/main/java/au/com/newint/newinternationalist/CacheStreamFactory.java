@@ -75,7 +75,7 @@ public abstract class CacheStreamFactory {
                 lock = params[0].lock;
             } else {
                 Log.e("CacheStreamFactory","params.length <= 0");
-                return null;
+                return new PreloadReturn(callback,null);
             }
             synchronized (lock) {
                 callback = params[0].callback;
@@ -86,7 +86,7 @@ public abstract class CacheStreamFactory {
                 ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
                 if (inputStream == null) {
                     Log.e("CacheStreamFactory","createInputStream returned null");
-                    return null;
+                    return new PreloadReturn(callback,null);
                 }
                 try {
                     IOUtils.copy(inputStream, byteArrayOutputStream);
@@ -105,11 +105,11 @@ public abstract class CacheStreamFactory {
         protected void onPostExecute(PreloadReturn params) {
             super.onPostExecute(params);
             Log.i("CacheStreamFactory", CacheStreamFactory.this+"->preload()->onPostExecute("+((params==null)?"null":"not-null")+")");
-            // TODO: on network failure this can be legitimately null
             CachePreloadCallback callback = params.callback;
+            // on network failure params.payload will be null
             byte[] payload = params.payload;
             //Log.i("CacheStreamFactory", CacheStreamFactory.this+"->preload()->onPostExecute("+((callback==null)?"null":"not-null")+")");
-            if(callback!=null) {
+            if (callback != null) {
                 callback.onLoad(payload);
             }
         }
@@ -241,7 +241,7 @@ public abstract class CacheStreamFactory {
             InputStream inputStream = this.createInputStream(startingAt, stoppingAt);
             long c = IOUtils.copy(inputStream, byteArrayOutputStream);
             inputStream.close();
-            Log.i("CacheStreamFactory", this+": IOUtils.copy processes "+c+" bytes");
+            Log.i("CacheStreamFactory", this+": IOUtils.copy processed "+c+" bytes");
             return byteArrayOutputStream.toByteArray();
         } catch (IOException e) {
             Log.e("CacheStreamFactory", this+": IOException while reading stream to byte array");
