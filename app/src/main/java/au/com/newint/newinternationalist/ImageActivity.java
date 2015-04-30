@@ -1,6 +1,7 @@
 package au.com.newint.newinternationalist;
 
 import android.content.Intent;
+import android.os.Build;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
@@ -9,6 +10,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.WebView;
 import android.widget.TextView;
 
 
@@ -78,9 +80,18 @@ public class ImageActivity extends ActionBarActivity {
 
             View rootView = inflater.inflate(R.layout.fragment_image, container, false);
 
-            // TODO: Turn this into a nice image view
-            TextView urlTextView = (TextView) rootView.findViewById(R.id.image_url);
-            urlTextView.setText(url);
+            WebView imageWebView = (WebView) rootView.findViewById(R.id.image_web_view);
+            imageWebView.getSettings().setBuiltInZoomControls(true);
+            imageWebView.setBackgroundColor(getResources().getColor(R.color.background_material_dark));
+            // TODO: Fix the vertical-centering css so it doesn't randomly appear too high
+            String html = String.format("<html> <head> <style type='text/css'> body { padding: 0; margin: 0; } body img { } </style> </head> <body> <img src='%1$s' style='width: 100%%; position: relative; top: 50%%; transform: translateY(-50%%);' /> </body> </html>", url);
+
+            // TODO: REMOVE Purely for remote debugging with chrome using chrome://inspect
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                WebView.setWebContentsDebuggingEnabled(true);
+            }
+
+            imageWebView.loadDataWithBaseURL("file:///android_asset/", html, "text/html", "utf-8", null);
 
             return rootView;
         }
