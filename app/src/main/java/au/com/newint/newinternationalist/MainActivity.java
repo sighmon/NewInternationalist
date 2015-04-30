@@ -78,9 +78,16 @@ public class MainActivity extends ActionBarActivity {
 
                 //TODO: numerous direct filesystem access here which should be abstracted with CSFs
 
-                JsonElement root = new JsonParser().parse(new InputStreamReader(new ByteArrayInputStream(payload)));
-                //TODO: throws an exception (which one?) if the payload is empty instead of returning null
-                JsonArray magazines = root.getAsJsonArray();
+                JsonArray magazines = null;
+
+                if(payload.length>0) {
+
+                    JsonElement root = new JsonParser().parse(new String(payload));
+                    //TODO: throws an exception (which one?) if the payload is empty instead of returning null
+                    // IllegalStateException
+
+                    magazines = root.getAsJsonArray();
+                }
 
                 Issue latestIssueOnFile = null;
 
