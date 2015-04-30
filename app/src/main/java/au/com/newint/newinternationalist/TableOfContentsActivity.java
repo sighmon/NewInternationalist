@@ -239,6 +239,9 @@ public class TableOfContentsActivity extends ActionBarActivity {
             @Override
             public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
 
+                // TOFIX???
+                holder.setIsRecyclable(false);
+
                 if (holder instanceof TableOfContentsHeaderViewHolder) {
                     // Header
                     DateFormat dateFormat = new SimpleDateFormat("MMMM, yyyy", Locale.getDefault());
@@ -263,7 +266,8 @@ public class TableOfContentsActivity extends ActionBarActivity {
                 } else if (holder instanceof TableOfContentsViewHolder) {
                     // Article
                     Article article = getArticle(position);
-                    ((TableOfContentsViewHolder) holder).articleTitleTextView.setText(article.getTitle());
+                    ArrayList<Image> images = article.getImages();
+                            ((TableOfContentsViewHolder) holder).articleTitleTextView.setText(article.getTitle());
                     String articleTeaser = article.getTeaser();
                     TableOfContentsViewHolder tableOfContentsViewHolder = ((TableOfContentsViewHolder) holder);
                     if (articleTeaser != null && !articleTeaser.isEmpty()) {
@@ -272,6 +276,23 @@ public class TableOfContentsActivity extends ActionBarActivity {
                     } else {
                         // Remove teaser view.
                         tableOfContentsViewHolder.articleTeaserTextView.setVisibility(View.GONE);
+                    }
+
+                    final ImageView articleImageView = ((TableOfContentsViewHolder) holder).articleImageView;
+                    if (images.size() > 0) {
+                        images.get(0).getImageCacheStreamFactoryForSize(MainActivity.applicationContext.getResources().getDisplayMetrics().widthPixels).preload(new CacheStreamFactory.CachePreloadCallback() {
+                            @Override
+                            public void onLoad(byte[] payload) {
+                                Bitmap coverBitmap = BitmapFactory.decodeByteArray(payload,0,payload.length);
+                                articleImageView.setImageBitmap(coverBitmap);
+
+                            }
+
+                            @Override
+                            public void onLoadBackground(byte[] payload) {
+
+                            }
+                        });
                     }
 
                     String categoriesTemporaryString = "";
@@ -316,12 +337,14 @@ public class TableOfContentsActivity extends ActionBarActivity {
                 public TextView articleTitleTextView;
                 public TextView articleTeaserTextView;
                 public TextView articleCategoriesTextView;
+                public ImageView articleImageView;
 
                 public TableOfContentsViewHolder(View itemView) {
                     super(itemView);
                     articleTitleTextView = (TextView) itemView.findViewById(R.id.toc_article_title);
                     articleTeaserTextView = (TextView) itemView.findViewById(R.id.toc_article_teaser);
                     articleCategoriesTextView = (TextView) itemView.findViewById(R.id.toc_article_categories);
+                    articleImageView = (ImageView) itemView.findViewById(R.id.toc_article_image);
                     itemView.setOnClickListener(this);
                 }
 
