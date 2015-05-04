@@ -11,6 +11,7 @@
     card_view:cardCornerRadius="@dimen/card_corner_radius">
 
     <RelativeLayout
+        android:id="@+id/toc_relative_layout"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
@@ -28,7 +29,7 @@
             android:textSize="@dimen/toc_article_font_size_title"
             android:textColor="@color/primary_text_default_material_light"
             android:paddingTop="@dimen/toc_article_padding_container_top_bottom"
-            android:paddingBottom="@dimen/toc_article_padding_top_bottom"
+            android:paddingBottom="@dimen/toc_article_title_padding_bottom"
             android:paddingLeft="@dimen/toc_article_padding_left_right"
             android:paddingRight="@dimen/toc_article_padding_left_right"
             android:layout_width="wrap_content"
@@ -46,18 +47,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@id/toc_article_title" />
-
-        <TextView
-            android:text="@string/toc_article_categories"
-            android:id="@+id/toc_article_categories"
-            android:textColor="@color/button_material_light"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:paddingTop="0dp"
-            android:paddingRight="@dimen/toc_article_padding_left_right"
-            android:paddingBottom="@dimen/toc_article_padding_container_top_bottom"
-            android:paddingLeft="@dimen/toc_article_padding_left_right"
-            android:layout_below="@id/toc_article_teaser" />
 
     </RelativeLayout>
 

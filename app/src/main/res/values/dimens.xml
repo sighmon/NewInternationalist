@@ -25,7 +25,8 @@
     <dimen name="article_body_margin_top">15dp</dimen>
     <dimen name="article_margin_left_right">20dp</dimen>
     <dimen name="toc_article_padding_container_top_bottom">16dp</dimen>
-    <dimen name="toc_article_padding_top_bottom">8dp</dimen>
+    <dimen name="toc_article_padding_top_bottom">16dp</dimen>
+    <dimen name="toc_article_title_padding_bottom">8dp</dimen>
     <dimen name="toc_article_padding_left_right">16dp</dimen>
     <dimen name="search_margin">16dp</dimen>
     <dimen name="search_article_font_size_title">20sp</dimen>

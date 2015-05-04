@@ -15,7 +15,11 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.GridView;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.google.gson.JsonArray;
@@ -297,17 +301,6 @@ public class TableOfContentsActivity extends ActionBarActivity {
                         articleImageView.setVisibility(View.GONE);
                     }
 
-                    String categoriesTemporaryString = "";
-                    String separator = "";
-                    ArrayList<Category> categories = article.getCategories();
-                    for (Category category : categories) {
-                        categoriesTemporaryString += separator;
-                        categoriesTemporaryString += category.getName();
-                        separator = "\n";
-                    }
-
-                    ((TableOfContentsViewHolder) holder).articleCategoriesTextView.setText(categoriesTemporaryString);
-
                 } else if (holder instanceof TableOfContentsFooterViewHolder) {
                     // Footer
                     // Get editor image.
@@ -338,14 +331,12 @@ public class TableOfContentsActivity extends ActionBarActivity {
 
                 public TextView articleTitleTextView;
                 public TextView articleTeaserTextView;
-                public TextView articleCategoriesTextView;
                 public ImageView articleImageView;
 
                 public TableOfContentsViewHolder(View itemView) {
                     super(itemView);
                     articleTitleTextView = (TextView) itemView.findViewById(R.id.toc_article_title);
                     articleTeaserTextView = (TextView) itemView.findViewById(R.id.toc_article_teaser);
-                    articleCategoriesTextView = (TextView) itemView.findViewById(R.id.toc_article_categories);
                     articleImageView = (ImageView) itemView.findViewById(R.id.toc_article_image);
                     itemView.setOnClickListener(this);
                 }
