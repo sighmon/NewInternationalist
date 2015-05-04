@@ -293,6 +293,8 @@ public class TableOfContentsActivity extends ActionBarActivity {
 
                             }
                         });
+                    } else {
+                        articleImageView.setVisibility(View.GONE);
                     }
 
                     String categoriesTemporaryString = "";

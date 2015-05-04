@@ -248,6 +248,7 @@ public class ArticleActivity extends ActionBarActivity {
                             // Article request failed
                             Log.i("ArticleBody", "Failed with code: " + responseStatusCode);
                             // Alert and intent to login.
+                            // TODO: Why is this getting called so many times for an article body when not logged in???
                             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
                             builder.setMessage(R.string.login_dialog_message_article_body).setTitle(R.string.login_dialog_title_article_body);
                             builder.setPositiveButton(R.string.login_dialog_ok_button, new DialogInterface.OnClickListener() {

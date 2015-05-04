@@ -19,7 +19,7 @@
             android:background="@color/accent_material_dark"
             android:scaleType="centerCrop"
             android:contentDescription="@string/toc_article_image_description"
-            android:layout_width="@dimen/toc_article_image_width"
+            android:layout_width="wrap_content"
             android:layout_height="@dimen/toc_article_image_height" />
 
         <TextView
@@ -33,8 +33,7 @@
             android:paddingRight="@dimen/toc_article_padding_left_right"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_toRightOf="@+id/toc_article_image"
-            android:layout_toEndOf="@+id/toc_article_image" />
+            android:layout_below="@+id/toc_article_image" />
 
         <TextView
             android:text="@string/toc_article_teaser"
@@ -46,9 +45,7 @@
             android:paddingLeft="@dimen/toc_article_padding_left_right"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@id/toc_article_title"
-            android:layout_toRightOf="@+id/toc_article_image"
-            android:layout_toEndOf="@+id/toc_article_image" />
+            android:layout_below="@id/toc_article_title" />
 
         <TextView
             android:text="@string/toc_article_categories"
@@ -60,9 +57,7 @@
             android:paddingRight="@dimen/toc_article_padding_left_right"
             android:paddingBottom="@dimen/toc_article_padding_container_top_bottom"
             android:paddingLeft="@dimen/toc_article_padding_left_right"
-            android:layout_below="@id/toc_article_teaser"
-            android:layout_toRightOf="@+id/toc_article_image"
-            android:layout_toEndOf="@+id/toc_article_image" />
+            android:layout_below="@id/toc_article_teaser" />
 
     </RelativeLayout>
 

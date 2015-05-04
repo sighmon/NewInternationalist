@@ -38,6 +38,8 @@ import java.lang.reflect.Array;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -302,6 +304,14 @@ public class Article implements Parcelable {
                 }
             }
         }
+
+        // Sort the image array by position
+        Collections.sort(images, new Comparator<Image>() {
+            @Override
+            public int compare(Image lhs, Image rhs) {
+                return Double.compare(lhs.getPosition(), rhs.getPosition());
+            }
+        });
 
         return images;
     }

@@ -41,5 +41,5 @@
     <dimen name="category_header_padding_top">10dp</dimen>
     <dimen name="categories_category_name_padding">8dp</dimen>
     <dimen name="toc_article_image_width">50dp</dimen>
-    <dimen name="toc_article_image_height">50dp</dimen>
+    <dimen name="toc_article_image_height">150dp</dimen>
 </resources>
