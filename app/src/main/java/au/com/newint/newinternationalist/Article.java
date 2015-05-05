@@ -436,7 +436,9 @@ public class Article implements Parcelable {
             ArrayList<Object> responseList = new ArrayList<>();
             responseList.add(response);
             // Get expanded bodyHTML here too..
-            responseList.add(getExpandedBody());
+            if (success) {
+                responseList.add(getExpandedBody());
+            }
 
             return responseList;
         }

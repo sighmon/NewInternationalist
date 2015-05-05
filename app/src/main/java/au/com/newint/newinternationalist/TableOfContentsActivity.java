@@ -243,8 +243,10 @@ public class TableOfContentsActivity extends ActionBarActivity {
             @Override
             public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
 
-                // TOFIX???
+                // Not recycling so that images don't appear in the wrong place
                 holder.setIsRecyclable(false);
+
+                // TODO: Sort out why it crashes when off-line
 
                 if (holder instanceof TableOfContentsHeaderViewHolder) {
                     // Header
@@ -256,9 +258,10 @@ public class TableOfContentsActivity extends ActionBarActivity {
                     issue.getCoverCacheStreamFactoryForSize((int) getResources().getDimension(R.dimen.toc_cover_width)).preload(new CacheStreamFactory.CachePreloadCallback() {
                         @Override
                         public void onLoad(byte[] payload) {
-                            Bitmap coverBitmap = BitmapFactory.decodeByteArray(payload,0,payload.length);
-                            coverImageView.setImageBitmap(coverBitmap);
-
+                            if (payload != null && payload.length > 0) {
+                                Bitmap coverBitmap = BitmapFactory.decodeByteArray(payload,0,payload.length);
+                                coverImageView.setImageBitmap(coverBitmap);
+                            }
                         }
 
                         @Override
@@ -287,9 +290,10 @@ public class TableOfContentsActivity extends ActionBarActivity {
                         images.get(0).getImageCacheStreamFactoryForSize(MainActivity.applicationContext.getResources().getDisplayMetrics().widthPixels).preload(new CacheStreamFactory.CachePreloadCallback() {
                             @Override
                             public void onLoad(byte[] payload) {
-                                Bitmap coverBitmap = BitmapFactory.decodeByteArray(payload,0,payload.length);
-                                articleImageView.setImageBitmap(coverBitmap);
-
+                                if (payload != null && payload.length > 0) {
+                                    Bitmap coverBitmap = BitmapFactory.decodeByteArray(payload,0,payload.length);
+                                    articleImageView.setImageBitmap(coverBitmap);
+                                }
                             }
 
                             @Override
@@ -310,8 +314,10 @@ public class TableOfContentsActivity extends ActionBarActivity {
                         issue.getEditorsImageCacheStreamFactoryForSize((int) getResources().getDimension(R.dimen.toc_editors_image_width), (int) getResources().getDimension(R.dimen.toc_editors_image_height)).preload(new CacheStreamFactory.CachePreloadCallback() {
                             @Override
                             public void onLoad(byte[] payload) {
-                                Bitmap editorsImageBitmap = BitmapFactory.decodeByteArray(payload,0,payload.length);
-                                editorImageView.setImageDrawable(Helpers.roundDrawableFromBitmap(editorsImageBitmap));
+                                if (payload != null && payload.length > 0) {
+                                    Bitmap editorsImageBitmap = BitmapFactory.decodeByteArray(payload, 0, payload.length);
+                                    editorImageView.setImageDrawable(Helpers.roundDrawableFromBitmap(editorsImageBitmap));
+                                }
                             }
 
                             @Override
