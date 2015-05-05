@@ -97,7 +97,6 @@ public class Helpers {
     }
 
     public static void savePassword(String value) {
-        // TODO: crypto here
 
         SecretKeySpec skeySpec = new SecretKeySpec(getKey(), "AES");
         Cipher cipher = null;

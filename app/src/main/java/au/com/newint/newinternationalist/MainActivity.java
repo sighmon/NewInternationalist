@@ -33,7 +33,17 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.protocol.ClientContext;
 import org.apache.http.cookie.Cookie;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.protocol.BasicHttpContext;
+import org.apache.http.protocol.HttpContext;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
@@ -46,6 +56,7 @@ import java.io.InputStreamReader;
 import java.io.Writer;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends ActionBarActivity {
@@ -209,6 +220,14 @@ public class MainActivity extends ActionBarActivity {
             String query = intent.getStringExtra(SearchManager.QUERY);
             Log.i("Search","Searching for: " + query);
         }
+
+        // Attempt to login if credentials have been stored.
+        String username = Helpers.getFromPrefs(Helpers.LOGIN_USERNAME_KEY, "");
+
+        if (username != null && !username.equals("")) {
+            // Try logging in!
+            new SilentUserLoginTask(Helpers.getFromPrefs(Helpers.LOGIN_USERNAME_KEY, ""), Helpers.getPassword("")).execute();
+        }
     }
 
     @Override
@@ -363,4 +382,107 @@ public class MainActivity extends ActionBarActivity {
         }
     }
 
+    // User login to Rails in the background, but silently fail
+    public class SilentUserLoginTask extends AsyncTask<Void, Void, Boolean> {
+
+        private final String mEmail;
+        private final String mPassword;
+
+        SilentUserLoginTask(String email, String password) {
+            mEmail = email;
+            mPassword = password;
+        }
+
+        @Override
+        protected Boolean doInBackground(Void... params) {
+
+            boolean success = false;
+
+            // Try logging into Rails for authentication.
+            DefaultHttpClient httpclient = new DefaultHttpClient();
+
+            // List current cookies
+            List<Cookie> cookies = Publisher.INSTANCE.cookieStore.getCookies();
+            if( !cookies.isEmpty() ){
+                for (Cookie cookie : cookies){
+                    String cookieString = cookie.getName() + " : " + cookie.getValue();
+                    Log.i("Home login", "Old cookie: " + cookieString);
+                }
+            }
+
+            // Delete cookies.
+            Publisher.INSTANCE.deleteCookieStore();
+
+            // Try to connect
+            HttpContext ctx = new BasicHttpContext();
+            ctx.setAttribute(ClientContext.COOKIE_STORE, Publisher.INSTANCE.cookieStore);
+            HttpPost post = new HttpPost(Helpers.getSiteURL() + "users/sign_in.json?username=" + mEmail);
+            post.setHeader("Content-Type", "application/x-www-form-urlencoded");
+            HttpResponse response = null;
+
+            try {
+                // Add your data
+                List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(2);
+                nameValuePairs.add(new BasicNameValuePair("user[login]", mEmail));
+                nameValuePairs.add(new BasicNameValuePair("user[password]", mPassword));
+                post.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+
+                // Save username to SharedPreferences
+                Helpers.saveToPrefs(Helpers.LOGIN_USERNAME_KEY,mEmail);
+
+                // Execute HTTP Post Request
+                response = httpclient.execute(post, ctx);
+
+            } catch (ClientProtocolException e) {
+                Log.i("Home login", "ClientProtocolException: " + e);
+            } catch (IOException e) {
+                Log.i("Home login", "IOException: " + e);
+            }
+
+            int responseStatusCode;
+            Publisher.INSTANCE.loggedIn = false;
+            if (response != null) {
+                responseStatusCode = response.getStatusLine().getStatusCode();
+
+                if (responseStatusCode > 200 && responseStatusCode < 300) {
+                    // Login was successful, we should have a cookie
+                    success = true;
+                    Publisher.INSTANCE.loggedIn = true;
+
+                    Helpers.savePassword(mPassword);
+
+                } else if (responseStatusCode > 400 && responseStatusCode < 500) {
+                    // Login was incorrect.
+                    Log.i("Home login", "Failed with code: " + responseStatusCode);
+
+                } else {
+                    // Server error.
+                    Log.i("Home login", "Failed with code: " + responseStatusCode + " and response: " + response.getStatusLine());
+                }
+
+            } else {
+                // Error logging in
+                Log.i("Home login", "Failed! Response is null");
+            }
+
+            return success;
+        }
+
+        @Override
+        protected void onPostExecute(final Boolean success) {
+
+            if (success) {
+
+                // Let listener know
+                for (Publisher.LoginListener listener : Publisher.INSTANCE.loginListeners) {
+                    Log.i("Home login", "Sending listener login success: True");
+                    // Pass in login success boolean
+                    listener.onUpdate(success);
+                }
+
+            } else {
+                // Silently fail
+            }
+        }
+    }
 }
