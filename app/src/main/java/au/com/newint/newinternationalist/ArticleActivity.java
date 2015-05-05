@@ -4,11 +4,14 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.database.DataSetObserver;
+import android.graphics.PorterDuff;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.text.Html;
+import android.util.AttributeSet;
 import android.util.Log;
 import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
@@ -19,13 +22,20 @@ import android.view.ViewGroup;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.AdapterView;
+import android.widget.BaseAdapter;
+import android.widget.Button;
+import android.widget.GridView;
+import android.widget.ListAdapter;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.util.EntityUtils;
 import org.w3c.dom.Text;
 
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.net.MalformedURLException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -115,6 +125,7 @@ public class ArticleActivity extends ActionBarActivity {
         }
 
         View rootView;
+        Publisher.ArticleBodyDownloadCompleteListener articleBodyDownloadCompleteListener;
 
         @Override
         public void onResume() {
@@ -200,7 +211,6 @@ public class ArticleActivity extends ActionBarActivity {
 
             TextView articleTitle = (TextView) rootView.findViewById(R.id.article_title);
             TextView articleTeaser = (TextView) rootView.findViewById(R.id.article_teaser);
-            TextView articleCategories = (TextView) rootView.findViewById(R.id.article_categories);
             final WebView articleBody = (WebView) rootView.findViewById(R.id.article_body);
 
             articleTitle.setText(article.getTitle());
@@ -212,22 +222,18 @@ public class ArticleActivity extends ActionBarActivity {
                 articleTeaser.setVisibility(View.GONE);
             }
 
-            String categoriesTemporaryString = "";
-            String separator = "";
             ArrayList<Category> categories = article.getCategories();
-            for (Category category : categories) {
-                categoriesTemporaryString += separator;
-                categoriesTemporaryString += category.getName();
-                separator = "\n";
-            }
-            articleCategories.setText(categoriesTemporaryString);
+
+            final ExpandableHeightGridView gridview = (ExpandableHeightGridView) rootView.findViewById(R.id.article_categories_gridview);
+            gridview.setExpanded(true);
+            gridview.setAdapter(new CategoriesAdapter(MainActivity.applicationContext, categories));
 
             // Get Images
             ArrayList<Image> images = article.getImages();
             Log.i("Article", "Images: " + images.size());
 
             // Register for ArticleBodyDownloadComplete listener
-            Publisher.ArticleBodyDownloadCompleteListener listener = new Publisher.ArticleBodyDownloadCompleteListener() {
+            articleBodyDownloadCompleteListener = new Publisher.ArticleBodyDownloadCompleteListener() {
 
                 @Override
                 public void onArticleBodyDownloadComplete(ArrayList responseList) {
@@ -291,9 +297,67 @@ public class ArticleActivity extends ActionBarActivity {
 //                    Publisher.INSTANCE.articleBodyDownloadCompleteListener = null;
                 }
             };
-            Publisher.INSTANCE.setOnArticleBodyDownloadCompleteListener(listener);
+            Publisher.INSTANCE.setOnArticleBodyDownloadCompleteListener(articleBodyDownloadCompleteListener);
 
             return rootView;
+        }
+
+        public class CategoriesAdapter extends BaseAdapter {
+            private Context mContext;
+            private ArrayList<Category> mCategories;
+
+            public CategoriesAdapter(Context c, ArrayList<Category> categories) {
+                mContext = c;
+                mCategories = categories;
+            }
+
+            public int getCount() {
+                return mCategories.size();
+            }
+
+            public Object getItem(int position) {
+                return null;
+            }
+
+            public long getItemId(int position) {
+                return 0;
+            }
+
+            // create a new ImageView for each item referenced by the Adapter
+            public View getView(final int position, View convertView, ViewGroup parent) {
+                Button categoryButton;
+                if (convertView == null) {
+                    // if it's not recycled, initialize some attributes
+                    categoryButton = new Button(mContext);
+//                    categoryButton.setLayoutParams(new GridView.LayoutParams(85, 85));
+                    categoryButton.setPadding(0, 0, 0, 0);
+                    categoryButton.setTransformationMethod(null);
+                    categoryButton.getBackground().setColorFilter(getResources().getColor(R.color.button_material_light), PorterDuff.Mode.MULTIPLY);
+
+                    categoryButton.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            Intent categoryIntent = new Intent(MainActivity.applicationContext, CategoryActivity.class);
+                            Category categoryTapped = (Category) mCategories.get(position);
+                            Log.i("Categories", "Category tapped: " + categoryTapped.getDisplayName());
+                            categoryIntent.putExtra("categoryJson", categoryTapped.categoryJson.toString());
+                            startActivity(categoryIntent);
+                        }
+                    });
+
+                } else {
+                    categoryButton = (Button) convertView;
+                }
+
+                categoryButton.setText(mCategories.get(position).getDisplayName());
+                return categoryButton;
+            }
+        }
+
+        @Override
+        public void onPause() {
+            super.onPause();
+            Publisher.INSTANCE.removeArticleBodyDownloadCompleteListener(articleBodyDownloadCompleteListener);
         }
     }
 }

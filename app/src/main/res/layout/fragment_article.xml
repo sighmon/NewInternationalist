@@ -32,23 +32,26 @@
             android:layout_height="wrap_content"
             android:layout_below="@+id/article_title" />
 
-        <TextView
-            android:id="@+id/article_categories"
-            android:text="@string/article_categories"
-            android:layout_marginTop="@dimen/article_categories_margin_top"
+        <au.com.newint.newinternationalist.ExpandableHeightGridView
+            android:id="@+id/article_categories_gridview"
             android:paddingLeft="@dimen/article_margin_left_right"
             android:paddingRight="@dimen/article_margin_left_right"
-            android:textColor="@color/button_material_light"
-            android:layout_width="wrap_content"
+            android:paddingTop="@dimen/article_margin_left_right"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/article_teaser" />
+            android:numColumns="auto_fit"
+            android:stretchMode="columnWidth"
+            android:gravity="center"
+            android:layout_below="@+id/article_teaser" >
+
+        </au.com.newint.newinternationalist.ExpandableHeightGridView>
 
         <WebView
             android:id="@+id/article_body"
             android:layout_marginTop="@dimen/article_body_margin_top"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/article_categories" />
+            android:layout_below="@+id/article_categories_gridview" />
 
     </RelativeLayout>
 
