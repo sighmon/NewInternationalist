@@ -1,8 +1,10 @@
 package au.com.newint.newinternationalist;
 
+import android.app.AlertDialog;
 import android.app.SearchManager;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.res.Resources;
@@ -225,50 +227,72 @@ public class MainActivity extends ActionBarActivity {
             public void onLoad(byte[] payload) {
                 Issue latestIssueOnFile = Publisher.INSTANCE.latestIssue();
 
-                latestIssueOnFile.coverCacheStreamFactory.preload(new CacheStreamFactory.CachePreloadCallback() {
+                //if latestIssueOnFile==null we probably have no internet, and this is the first run
+                //TODO: DRY this up, maybe make a helper?
 
-                    @Override
-                    public void onLoad(byte[] payload) {
+                if(latestIssueOnFile==null) {
+                    Log.i("ArticleBody", "Failed! Response is null");
+                    AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                    builder.setMessage(R.string.no_internet_dialog_message_article_body).setTitle(R.string.no_internet_dialog_title_article_body);
 
-                        Log.i("coverCSF..onLoad", "Received listener, showing cover.");
+                    builder.setNegativeButton(R.string.no_internet_dialog_ok_button, new DialogInterface.OnClickListener() {
 
-                        // Show cover
-                        final ImageButton home_cover = (ImageButton) MainActivity.this.findViewById(R.id.home_cover);
-                        if (home_cover != null) {
-                            Log.i("coverCSF..onLoad", "calling decodeStream");
+                        public void onClick(DialogInterface dialog, int id) {
+                            // User cancelled the dialog
+                            //finish();
+                        }
+                    });
 
-                            final Bitmap coverBitmap = BitmapFactory.decodeByteArray(payload,0,payload.length);
-                            Log.i("coverCSF..onLoad", "decodeStream returned");
-                            Animation fadeOutAnimation = new AlphaAnimation(1.0f, 0.0f);
-                            final Animation fadeInAnimation = new AlphaAnimation(0.0f, 1.0f);
-                            fadeOutAnimation.setDuration(300);
-                            fadeInAnimation.setDuration(300);
-                            fadeOutAnimation.setAnimationListener(new Animation.AnimationListener() {
-                                @Override
-                                public void onAnimationStart(Animation animation) {
+                    AlertDialog dialog = builder.create();
+                    dialog.show();
+                } else {
 
-                                }
+                    latestIssueOnFile.coverCacheStreamFactory.preload(new CacheStreamFactory.CachePreloadCallback() {
 
-                                @Override
-                                public void onAnimationEnd(Animation animation) {
-                                    home_cover.setImageBitmap(coverBitmap);
-                                    home_cover.setScaleType(ImageView.ScaleType.FIT_CENTER);
-                                    home_cover.startAnimation(fadeInAnimation);
-                                }
+                        @Override
+                        public void onLoad(byte[] payload) {
 
-                                @Override
-                                public void onAnimationRepeat(Animation animation) {
+                            Log.i("coverCSF..onLoad", "Received listener, showing cover.");
 
-                                }
-                            });
-                            home_cover.startAnimation(fadeOutAnimation);
+                            // Show cover
+                            final ImageButton home_cover = (ImageButton) MainActivity.this.findViewById(R.id.home_cover);
+                            if (home_cover != null) {
+                                Log.i("coverCSF..onLoad", "calling decodeStream");
+
+                                final Bitmap coverBitmap = BitmapFactory.decodeByteArray(payload, 0, payload.length);
+                                Log.i("coverCSF..onLoad", "decodeStream returned");
+                                Animation fadeOutAnimation = new AlphaAnimation(1.0f, 0.0f);
+                                final Animation fadeInAnimation = new AlphaAnimation(0.0f, 1.0f);
+                                fadeOutAnimation.setDuration(300);
+                                fadeInAnimation.setDuration(300);
+                                fadeOutAnimation.setAnimationListener(new Animation.AnimationListener() {
+                                    @Override
+                                    public void onAnimationStart(Animation animation) {
+
+                                    }
+
+                                    @Override
+                                    public void onAnimationEnd(Animation animation) {
+                                        home_cover.setImageBitmap(coverBitmap);
+                                        home_cover.setScaleType(ImageView.ScaleType.FIT_CENTER);
+                                        home_cover.startAnimation(fadeInAnimation);
+                                    }
+
+                                    @Override
+                                    public void onAnimationRepeat(Animation animation) {
+
+                                    }
+                                });
+                                home_cover.startAnimation(fadeOutAnimation);
+                            }
+
                         }
 
-                    }
-
-                    @Override
-                    public void onLoadBackground(byte[] payload) {}
-                });
+                        @Override
+                        public void onLoadBackground(byte[] payload) {
+                        }
+                    });
+                }
             }
         });
 

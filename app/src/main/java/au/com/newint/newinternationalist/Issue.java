@@ -9,6 +9,7 @@ import android.util.Log;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
@@ -211,38 +212,44 @@ public class Issue implements Parcelable {
                 ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(payload);
                 InputStreamReader inputStreamReader = new InputStreamReader(byteArrayInputStream);
                 JsonElement root = new JsonParser().parse(inputStreamReader);
-                rootArray = root.getAsJsonObject().get("articles").getAsJsonArray();
 
-                // Save article.json for each article to the filesystem
+                if (root.isJsonNull()) {
+                    //TODO: got null json, now what?
+                    // doing nothing seems to work...
+                } else {
+                    rootArray = root.getAsJsonObject().get("articles").getAsJsonArray();
 
-                if (rootArray != null) {
-                    for (JsonElement aRootArray : rootArray) {
-                        JsonObject jsonObject = aRootArray.getAsJsonObject();
+                    // Save article.json for each article to the filesystem
 
-                        int id = jsonObject.get("id").getAsInt();
+                    if (rootArray != null) {
+                        for (JsonElement aRootArray : rootArray) {
+                            JsonObject jsonObject = aRootArray.getAsJsonObject();
 
-                        File dir = new File(MainActivity.applicationContext.getFilesDir() + "/" + Integer.toString(Issue.this.getID()) + "/", Integer.toString(id));
+                            int id = jsonObject.get("id").getAsInt();
 
-                        dir.mkdirs();
+                            File dir = new File(MainActivity.applicationContext.getFilesDir() + "/" + Integer.toString(Issue.this.getID()) + "/", Integer.toString(id));
 
-                        File file = new File(dir, "article.json");
+                            dir.mkdirs();
 
-                        try {
-                            Writer w = new FileWriter(file);
+                            File file = new File(dir, "article.json");
 
-                            new Gson().toJson(jsonObject, w);
+                            try {
+                                Writer w = new FileWriter(file);
 
-                            w.close();
-                        } catch (IOException e) {
-                            e.printStackTrace();
+                                new Gson().toJson(jsonObject, w);
+
+                                w.close();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
                         }
                     }
+
+                    //TODO: articles should inform their issue when they are updated
+                    // make issue reload articles from disk
+                    Issue.this.articles = null;
+
                 }
-
-                //TODO: articles should inform their issue when they are updated
-                // make issue reload articles from disk
-                Issue.this.articles = null;
-
             }
         });
 
