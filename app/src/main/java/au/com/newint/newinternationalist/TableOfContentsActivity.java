@@ -15,7 +15,11 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.GridView;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.google.gson.JsonArray;
@@ -239,6 +243,11 @@ public class TableOfContentsActivity extends ActionBarActivity {
             @Override
             public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
 
+                // Not recycling so that images don't appear in the wrong place
+                holder.setIsRecyclable(false);
+
+                // TODO: Sort out why it crashes when off-line
+
                 if (holder instanceof TableOfContentsHeaderViewHolder) {
                     // Header
                     DateFormat dateFormat = new SimpleDateFormat("MMMM, yyyy", Locale.getDefault());
@@ -249,9 +258,10 @@ public class TableOfContentsActivity extends ActionBarActivity {
                     issue.getCoverCacheStreamFactoryForSize((int) getResources().getDimension(R.dimen.toc_cover_width)).preload(new CacheStreamFactory.CachePreloadCallback() {
                         @Override
                         public void onLoad(byte[] payload) {
-                            Bitmap coverBitmap = BitmapFactory.decodeByteArray(payload,0,payload.length);
-                            coverImageView.setImageBitmap(coverBitmap);
-
+                            if (payload != null && payload.length > 0) {
+                                Bitmap coverBitmap = BitmapFactory.decodeByteArray(payload,0,payload.length);
+                                coverImageView.setImageBitmap(coverBitmap);
+                            }
                         }
 
                         @Override
@@ -263,7 +273,8 @@ public class TableOfContentsActivity extends ActionBarActivity {
                 } else if (holder instanceof TableOfContentsViewHolder) {
                     // Article
                     Article article = getArticle(position);
-                    ((TableOfContentsViewHolder) holder).articleTitleTextView.setText(article.getTitle());
+                    ArrayList<Image> images = article.getImages();
+                            ((TableOfContentsViewHolder) holder).articleTitleTextView.setText(article.getTitle());
                     String articleTeaser = article.getTeaser();
                     TableOfContentsViewHolder tableOfContentsViewHolder = ((TableOfContentsViewHolder) holder);
                     if (articleTeaser != null && !articleTeaser.isEmpty()) {
@@ -274,16 +285,25 @@ public class TableOfContentsActivity extends ActionBarActivity {
                         tableOfContentsViewHolder.articleTeaserTextView.setVisibility(View.GONE);
                     }
 
-                    String categoriesTemporaryString = "";
-                    String separator = "";
-                    ArrayList<Category> categories = article.getCategories();
-                    for (Category category : categories) {
-                        categoriesTemporaryString += separator;
-                        categoriesTemporaryString += category.getName();
-                        separator = "\n";
-                    }
+                    final ImageView articleImageView = ((TableOfContentsViewHolder) holder).articleImageView;
+                    if (images.size() > 0) {
+                        images.get(0).getImageCacheStreamFactoryForSize(MainActivity.applicationContext.getResources().getDisplayMetrics().widthPixels).preload(new CacheStreamFactory.CachePreloadCallback() {
+                            @Override
+                            public void onLoad(byte[] payload) {
+                                if (payload != null && payload.length > 0) {
+                                    Bitmap coverBitmap = BitmapFactory.decodeByteArray(payload,0,payload.length);
+                                    articleImageView.setImageBitmap(coverBitmap);
+                                }
+                            }
 
-                    ((TableOfContentsViewHolder) holder).articleCategoriesTextView.setText(categoriesTemporaryString);
+                            @Override
+                            public void onLoadBackground(byte[] payload) {
+
+                            }
+                        });
+                    } else {
+                        articleImageView.setVisibility(View.GONE);
+                    }
 
                 } else if (holder instanceof TableOfContentsFooterViewHolder) {
                     // Footer
@@ -294,8 +314,10 @@ public class TableOfContentsActivity extends ActionBarActivity {
                         issue.getEditorsImageCacheStreamFactoryForSize((int) getResources().getDimension(R.dimen.toc_editors_image_width), (int) getResources().getDimension(R.dimen.toc_editors_image_height)).preload(new CacheStreamFactory.CachePreloadCallback() {
                             @Override
                             public void onLoad(byte[] payload) {
-                                Bitmap editorsImageBitmap = BitmapFactory.decodeByteArray(payload,0,payload.length);
-                                editorImageView.setImageDrawable(Helpers.roundDrawableFromBitmap(editorsImageBitmap));
+                                if (payload != null && payload.length > 0) {
+                                    Bitmap editorsImageBitmap = BitmapFactory.decodeByteArray(payload, 0, payload.length);
+                                    editorImageView.setImageDrawable(Helpers.roundDrawableFromBitmap(editorsImageBitmap));
+                                }
                             }
 
                             @Override
@@ -315,13 +337,13 @@ public class TableOfContentsActivity extends ActionBarActivity {
 
                 public TextView articleTitleTextView;
                 public TextView articleTeaserTextView;
-                public TextView articleCategoriesTextView;
+                public ImageView articleImageView;
 
                 public TableOfContentsViewHolder(View itemView) {
                     super(itemView);
                     articleTitleTextView = (TextView) itemView.findViewById(R.id.toc_article_title);
                     articleTeaserTextView = (TextView) itemView.findViewById(R.id.toc_article_teaser);
-                    articleCategoriesTextView = (TextView) itemView.findViewById(R.id.toc_article_categories);
+                    articleImageView = (ImageView) itemView.findViewById(R.id.toc_article_image);
                     itemView.setOnClickListener(this);
                 }
 

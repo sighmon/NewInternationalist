@@ -84,5 +84,6 @@
 
     <!-- Image -->
     <string name="image_url">Image url</string>
+    <string name="toc_article_image_description">The featured image for this article</string>
 
 </resources>

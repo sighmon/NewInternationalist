@@ -110,23 +110,6 @@ public class MagazineArchiveActivity extends ActionBarActivity {
 
         public class ImageAdapter extends BaseAdapter {
 
-            public class CachedImageView extends ImageView {
-                public CacheStreamFactory cacheStreamFactory;
-
-                public CachedImageView(Context context) {
-                    super(context);
-                }
-
-                public void setCacheStreamFactory(CacheStreamFactory cacheStreamFactory) {
-                    this.cacheStreamFactory = cacheStreamFactory;
-                }
-
-                public boolean hasCacheStreamFactory(CacheStreamFactory cacheStreamFactory) {
-                    return this.cacheStreamFactory==cacheStreamFactory;
-                }
-
-            }
-
             private Context mContext;
             private Bitmap mDefaultCoverBitmap;
 

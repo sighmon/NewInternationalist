@@ -51,6 +51,10 @@ public class Image {
         return imageJson.get("article_id").getAsInt();
     }
 
+    public int getPosition() {
+        return imageJson.get("position").getAsInt();
+    }
+
     public String getCaption() {
         JsonElement element = imageJson.get("caption");
         if (element == null) {

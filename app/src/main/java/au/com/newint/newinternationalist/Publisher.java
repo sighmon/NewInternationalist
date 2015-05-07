@@ -104,6 +104,10 @@ public enum Publisher {
         listeners.remove(listener);
     }
 
+    public void removeArticleBodyDownloadCompleteListener(ArticleBodyDownloadCompleteListener listener) {
+        listeners.remove(listener);
+    }
+
     public void setLoggedInListener(LoginListener listener) {
         // Store the listener object
         loginListeners.add(listener);
