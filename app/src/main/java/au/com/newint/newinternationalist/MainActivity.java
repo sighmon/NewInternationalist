@@ -1,13 +1,17 @@
 package au.com.newint.newinternationalist;
 
 import android.app.SearchManager;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.AsyncTask;
+import android.os.IBinder;
+import android.os.RemoteException;
 import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v4.app.Fragment;
@@ -26,6 +30,7 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.SearchView;
 
+import com.android.vending.billing.IInAppBillingService;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -54,10 +59,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Writer;
+import java.lang.reflect.Array;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+
+import au.com.newint.newinternationalist.util.Base64;
+import au.com.newint.newinternationalist.util.IabHelper;
+import au.com.newint.newinternationalist.util.IabResult;
+import au.com.newint.newinternationalist.util.Inventory;
 
 public class MainActivity extends ActionBarActivity {
 
@@ -65,6 +76,8 @@ public class MainActivity extends ActionBarActivity {
 
     static Context applicationContext;
     static Resources applicationResources;
+
+    IabHelper mHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,7 +95,52 @@ public class MainActivity extends ActionBarActivity {
         // Set default preferences, the false on the end means it's only set once
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
 
+        // Setup in-app billing
+        String base64EncodedPublicKey;
+        String publicKey = Helpers.getVariableFromConfig("PUBLIC_KEY");
+        if (publicKey != null) {
+            base64EncodedPublicKey = Base64.encode(publicKey.getBytes());
+        } else {
+            base64EncodedPublicKey = "";
+        }
 
+        mHelper = new IabHelper(this, base64EncodedPublicKey);
+
+        mHelper.startSetup(new IabHelper.OnIabSetupFinishedListener() {
+            public void onIabSetupFinished(IabResult result) {
+                if (!result.isSuccess()) {
+                    // Oh noes, there was a problem.
+                    Log.d("InApp", "Problem setting up In-app Billing: " + result);
+                }
+                // Hooray, IAB is fully set up!
+                Log.i("InApp", "In-app billing setup result: " + result);
+
+                // Ask Google Play for a products list on a background thread
+                ArrayList<String> additionalSkuList = new ArrayList<String>();
+                additionalSkuList.add("SKU_APPLE");
+                additionalSkuList.add("SKU_BANANA");
+                IabHelper.QueryInventoryFinishedListener mQueryFinishedListener = new IabHelper.QueryInventoryFinishedListener() {
+                    public void onQueryInventoryFinished(IabResult result, Inventory inventory) {
+                        if (result.isFailure()) {
+                            // handle error
+                            Log.i("InApp", "Query failed: " + result);
+                            return;
+                        }
+
+                        // TODO: Do something with the inventory, when we've uploaded products
+                        Log.i("InApp", "Inventory: " + inventory);
+//                        String applePrice = inventory.getSkuDetails("SKU_APPLE").getPrice();
+//                        String bananaPrice = inventory.getSkuDetails("SKU_BANANA").getPrice();
+
+                        // update the UI
+//                        Log.i("InApp", "Products: " + applePrice + bananaPrice);
+                    }
+                };
+                mHelper.queryInventoryAsync(true, additionalSkuList, mQueryFinishedListener);
+            }
+        });
+
+        // Download the latest issues.json list of magazines
         Publisher.INSTANCE.issuesJSONCacheStreamFactory.preload("net",null,new CacheStreamFactory.CachePreloadCallback() {
             @Override
             public void onLoadBackground(byte[] payload) {
@@ -228,6 +286,14 @@ public class MainActivity extends ActionBarActivity {
             // Try logging in!
             new SilentUserLoginTask(Helpers.getFromPrefs(Helpers.LOGIN_USERNAME_KEY, ""), Helpers.getPassword("")).execute();
         }
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        // Dispose of the in-app helper
+        if (mHelper != null) mHelper.dispose();
+        mHelper = null;
     }
 
     @Override
