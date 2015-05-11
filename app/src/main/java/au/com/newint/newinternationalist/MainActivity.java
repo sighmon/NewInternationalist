@@ -71,6 +71,7 @@ import au.com.newint.newinternationalist.util.Base64;
 import au.com.newint.newinternationalist.util.IabHelper;
 import au.com.newint.newinternationalist.util.IabResult;
 import au.com.newint.newinternationalist.util.Inventory;
+import au.com.newint.newinternationalist.util.SkuDetails;
 
 public class MainActivity extends ActionBarActivity {
 
@@ -119,8 +120,8 @@ public class MainActivity extends ActionBarActivity {
 
                 // Ask Google Play for a products list on a background thread
                 ArrayList<String> additionalSkuList = new ArrayList<String>();
-                additionalSkuList.add("SKU_APPLE");
-                additionalSkuList.add("SKU_BANANA");
+                additionalSkuList.add("12monthauto");
+                additionalSkuList.add("1monthauto");
                 IabHelper.QueryInventoryFinishedListener mQueryFinishedListener = new IabHelper.QueryInventoryFinishedListener() {
                     public void onQueryInventoryFinished(IabResult result, Inventory inventory) {
                         if (result.isFailure()) {
@@ -131,11 +132,12 @@ public class MainActivity extends ActionBarActivity {
 
                         // TODO: Do something with the inventory, when we've uploaded products
                         Log.i("InApp", "Inventory: " + inventory);
-//                        String applePrice = inventory.getSkuDetails("SKU_APPLE").getPrice();
-//                        String bananaPrice = inventory.getSkuDetails("SKU_BANANA").getPrice();
+                        SkuDetails yearlyAutomaticSubscription = inventory.getSkuDetails("12monthauto");
+                        SkuDetails monthlyAutomaticSubscription = inventory.getSkuDetails("1monthauto");
 
                         // update the UI
-//                        Log.i("InApp", "Products: " + applePrice + bananaPrice);
+                        Log.i("InApp", "12monthauto: " + yearlyAutomaticSubscription.getTitle() + yearlyAutomaticSubscription.getPrice());
+                        Log.i("InApp", "1monthauto: " + monthlyAutomaticSubscription.getTitle() + monthlyAutomaticSubscription.getPrice());
                     }
                 };
                 mHelper.queryInventoryAsync(true, additionalSkuList, mQueryFinishedListener);
