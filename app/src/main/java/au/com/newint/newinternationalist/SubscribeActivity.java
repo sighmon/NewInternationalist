@@ -1,7 +1,6 @@
 package au.com.newint.newinternationalist;
 
 import android.content.Intent;
-import android.os.Build;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
@@ -11,33 +10,25 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebView;
-import android.widget.TextView;
 
 
-public class ImageActivity extends ActionBarActivity {
-
-    static String url;
+public class SubscribeActivity extends ActionBarActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_image);
+        setContentView(R.layout.activity_subscribe);
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
-                    .add(R.id.container, new ImageActivityFragment())
+                    .add(R.id.container, new SubscribeActivityFragment())
                     .commit();
         }
-
-        url = getIntent().getStringExtra("url");
-        Article article = getIntent().getParcelableExtra("article");
-        setTitle(article.getTitle());
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_image, menu);
+        getMenuInflater().inflate(R.menu.menu_subscribe, menu);
         return true;
     }
 
@@ -68,26 +59,20 @@ public class ImageActivity extends ActionBarActivity {
     }
 
     /**
-     * Image fragment
+     * Subscribe fragment
      */
-    public static class ImageActivityFragment extends Fragment {
+    public static class SubscribeActivityFragment extends Fragment {
 
-        public ImageActivityFragment() {
+        public SubscribeActivityFragment() {
         }
 
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
 
-            View rootView = inflater.inflate(R.layout.fragment_image, container, false);
+            View rootView = inflater.inflate(R.layout.fragment_subscribe, container, false);
 
-            WebView imageWebView = (WebView) rootView.findViewById(R.id.image_web_view);
-            imageWebView.getSettings().setBuiltInZoomControls(true);
-            imageWebView.setBackgroundColor(getResources().getColor(R.color.background_material_dark));
-            // Oh CSS you difficult beast. Using divs displaying as tables to centre the image
-            String html = String.format("<html> <head> <style type='text/css'> body { padding: 0; margin: 0; } body img { width: 100%%; } </style> </head> <body> <div style='display: table; position: absolute; height: 100%%; width: 100%%;'> <div style=' display: table-cell; vertical-align: middle;'> <img src='%1$s' /> </div> </div> </body> </html>", url);
-
-            imageWebView.loadDataWithBaseURL("file:///android_asset/", html, "text/html", "utf-8", null);
+            // TODO: in-app purchase view
 
             return rootView;
         }

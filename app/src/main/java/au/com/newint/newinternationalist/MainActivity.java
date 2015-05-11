@@ -509,6 +509,16 @@ public class MainActivity extends ActionBarActivity {
                 }
             });
 
+            // Set a listener for Subscribe taps
+            Button subscribeButton = (Button) rootView.findViewById(R.id.home_subscribe);
+            subscribeButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent subscribeIntent = new Intent(rootView.getContext(), SubscribeActivity.class);
+                    startActivity(subscribeIntent);
+                }
+            });
+
             // Set a listener for Login taps
             Button login = (Button) rootView.findViewById(R.id.home_login);
             login.setOnClickListener(new View.OnClickListener() {

@@ -75,6 +75,8 @@
     <!-- Categories -->
     <string name="home_categories">Categories</string>
     <string name="title_activity_categories">Categories</string>
+
+    <!-- Category -->
     <string name="category_header">Category header</string>
     <string name="category_name">Category name</string>
     <string name="title_activity_category">Category</string>
@@ -85,5 +87,9 @@
     <!-- Image -->
     <string name="image_url">Image url</string>
     <string name="toc_article_image_description">The featured image for this article</string>
+
+    <!-- Subscribe -->
+    <string name="title_activity_subscribe">Subscribe</string>
+    <string name="tmp">Subscribe</string>
 
 </resources>
