@@ -65,12 +65,15 @@ import java.lang.reflect.Array;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 import au.com.newint.newinternationalist.util.Base64;
 import au.com.newint.newinternationalist.util.IabHelper;
 import au.com.newint.newinternationalist.util.IabResult;
 import au.com.newint.newinternationalist.util.Inventory;
+import au.com.newint.newinternationalist.util.Purchase;
 import au.com.newint.newinternationalist.util.SkuDetails;
 
 public class MainActivity extends ActionBarActivity {
@@ -130,14 +133,47 @@ public class MainActivity extends ActionBarActivity {
                             return;
                         }
 
-                        // TODO: Do something with the inventory, when we've uploaded products
+                        // Check subscription inventory
                         Log.i("InApp", "Inventory: " + inventory);
                         SkuDetails yearlyAutomaticSubscription = inventory.getSkuDetails("12monthauto");
                         SkuDetails monthlyAutomaticSubscription = inventory.getSkuDetails("1monthauto");
-
-                        // update the UI
                         Log.i("InApp", "12monthauto: " + yearlyAutomaticSubscription.getTitle() + yearlyAutomaticSubscription.getPrice());
                         Log.i("InApp", "1monthauto: " + monthlyAutomaticSubscription.getTitle() + monthlyAutomaticSubscription.getPrice());
+
+                        // Check if the user has purchased the inventory
+                        if (inventory.hasPurchase("12monthauto")) {
+                            Purchase purchase = inventory.getPurchase("12monthauto");
+                            Log.i("InApp", "Purchase: " + purchase.toString());
+
+                            Date purchaseDate = new Date(purchase.getPurchaseTime());
+
+                            if (Helpers.isSubscriptionValid(purchaseDate, 12)) {
+                                // User has a valid subscription
+                                Publisher.INSTANCE.hasValidSubscription = true;
+                                for (Publisher.SubscriptionListener listener : Publisher.INSTANCE.subscriptionListeners) {
+                                    Log.i("InApp", "Sending listener subscription valid.");
+                                    // Pass in login success boolean
+                                    listener.onUpdate(purchase);
+                                }
+                                Log.i("InApp", "Subscription expiry date: " + Helpers.subscriptionExpiryDate(purchaseDate, 12));
+                            }
+                        } else if (inventory.hasPurchase("1monthauto")) {
+                            Purchase purchase = inventory.getPurchase("1monthauto");
+                            Log.i("InApp", "Purchase: " + purchase.toString());
+
+                            Date purchaseDate = new Date(purchase.getPurchaseTime());
+
+                            if (Helpers.isSubscriptionValid(purchaseDate, 1)) {
+                                // User has a valid subscription
+                                Publisher.INSTANCE.hasValidSubscription = true;
+                                for (Publisher.SubscriptionListener listener : Publisher.INSTANCE.subscriptionListeners) {
+                                    Log.i("InApp", "Sending listener subscription valid.");
+                                    // Pass in purchase if needed
+                                    listener.onUpdate(purchase);
+                                }
+                                Log.i("InApp", "Subscription expiry date: " + Helpers.subscriptionExpiryDate(purchaseDate, 1));
+                            }
+                        }
                     }
                 };
                 mHelper.queryInventoryAsync(true, additionalSkuList, mQueryFinishedListener);
@@ -374,6 +410,7 @@ public class MainActivity extends ActionBarActivity {
 
         Publisher.UpdateListener listener;
         Publisher.LoginListener loginListener;
+        Publisher.SubscriptionListener subscriptionListener;
 
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -397,6 +434,24 @@ public class MainActivity extends ActionBarActivity {
                 }
             };
             Publisher.INSTANCE.setLoggedInListener(loginListener);
+
+            // Check if there's a valid subscription
+            if (Publisher.INSTANCE.hasValidSubscription) {
+                // Set subscription text to Thanks for Subscribing
+                Button subscribeButton = (Button) rootView.findViewById(R.id.home_subscribe);
+                subscribeButton.setText("Thanks for subscribing");
+            }
+
+            // Add listener for subscriptions
+            subscriptionListener = new Publisher.SubscriptionListener() {
+
+                @Override
+                public void onUpdate(Object object) {
+                    Button subscribeButton = (Button) rootView.findViewById(R.id.home_subscribe);
+                    subscribeButton.setText("Thanks for subscribing");
+                }
+            };
+            Publisher.INSTANCE.setSubscriptionListener(subscriptionListener);
 
             // Set a listener for home_cover taps
             final ImageButton home_cover = (ImageButton) rootView.findViewById(R.id.home_cover);

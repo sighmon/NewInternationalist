@@ -46,7 +46,10 @@ public enum Publisher {
 
     ArrayList <LoginListener> loginListeners = new ArrayList<>();
 
+    ArrayList <SubscriptionListener> subscriptionListeners = new ArrayList<>();
+
     boolean loggedIn;
+    boolean hasValidSubscription;
 
     BasicCookieStore cookieStore;
 
@@ -84,6 +87,10 @@ public enum Publisher {
         void onUpdate(Object object);
     }
 
+    public interface SubscriptionListener {
+        void onUpdate(Object object);
+    }
+
     //TODO: shouldn't this be in Issue?
     public interface ArticlesDownloadCompleteListener {
         void onArticlesDownloadComplete(JsonArray articles);
@@ -111,6 +118,11 @@ public enum Publisher {
     public void setLoggedInListener(LoginListener listener) {
         // Store the listener object
         loginListeners.add(listener);
+    }
+
+    public void setSubscriptionListener(SubscriptionListener listener) {
+        // Store the listener object
+        subscriptionListeners.add(listener);
     }
 
     static ArrayList <ArticlesDownloadCompleteListener> articleListeners = new ArrayList <ArticlesDownloadCompleteListener> ();

@@ -18,23 +18,38 @@
         android:contentDescription="@string/home_cover"
         android:elevation="2dp"/>
 
-    <Button
-        android:id="@+id/home_magazine_archive"
-        android:text="@string/home_magazine_archive"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:id="@+id/home_linear_layout_block"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="@dimen/home_button_font_size"
-        android:layout_below="@+id/home_cover"
-        android:layout_centerHorizontal="true"
-        android:textAllCaps="false"/>
+        android:gravity="center_horizontal"
+        android:layout_below="@+id/home_cover">
+
+        <Button
+            android:id="@+id/home_magazine_archive"
+            android:text="@string/home_magazine_archive"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/home_button_font_size"
+            android:textAllCaps="false"/>
+
+        <Button
+            android:id="@+id/home_categories"
+            android:text="@string/home_categories"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/home_button_font_size"
+            android:textAllCaps="false"/>
+
+    </LinearLayout>
 
     <Button
-        android:id="@+id/home_categories"
-        android:text="@string/home_categories"
+        android:id="@+id/home_subscribe"
+        android:text="@string/home_subscribe"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="@dimen/home_button_font_size"
-        android:layout_below="@+id/home_magazine_archive"
+        android:layout_below="@+id/home_linear_layout_block"
         android:layout_centerHorizontal="true"
         android:textAllCaps="false"/>
 
@@ -44,7 +59,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="@dimen/home_button_font_size"
-        android:layout_below="@id/home_categories"
+        android:layout_below="@id/home_subscribe"
         android:layout_centerHorizontal="true"
         android:textAllCaps="false"/>
 

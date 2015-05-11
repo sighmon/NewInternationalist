@@ -16,6 +16,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Properties;
 
 import javax.crypto.Cipher;
@@ -137,5 +139,22 @@ public class Helpers {
 
     public static String capitalize(final String line) {
         return Character.toUpperCase(line.charAt(0)) + line.substring(1);
+    }
+
+    public static boolean isSubscriptionValid(Date purchaseDate, int numberOfMonths) {
+
+        Date todaysDate = new Date();
+
+        return subscriptionExpiryDate(purchaseDate, numberOfMonths).after(todaysDate);
+    }
+
+    public static Date subscriptionExpiryDate(Date purchaseDate, int numberOfMonths) {
+
+        // Add numberOfMonths to determine expiry date
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(purchaseDate);
+        calendar.add(Calendar.MONTH, numberOfMonths);
+
+        return calendar.getTime();
     }
 }
