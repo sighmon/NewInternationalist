@@ -102,15 +102,7 @@ public class MainActivity extends ActionBarActivity {
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
 
         // Setup in-app billing
-        String base64EncodedPublicKey;
-        String publicKey = Helpers.getVariableFromConfig("PUBLIC_KEY");
-        if (publicKey != null) {
-            base64EncodedPublicKey = Base64.encode(publicKey.getBytes());
-        } else {
-            base64EncodedPublicKey = "";
-        }
-
-        mHelper = new IabHelper(this, base64EncodedPublicKey);
+        mHelper = Helpers.setupIabHelper(this);
 
         mHelper.startSetup(new IabHelper.OnIabSetupFinishedListener() {
             public void onIabSetupFinished(IabResult result) {
@@ -149,6 +141,7 @@ public class MainActivity extends ActionBarActivity {
 
                             if (Helpers.isSubscriptionValid(purchaseDate, 12)) {
                                 // User has a valid subscription
+                                // TODO: TEST THIS!
                                 Publisher.INSTANCE.hasValidSubscription = true;
                                 for (Publisher.SubscriptionListener listener : Publisher.INSTANCE.subscriptionListeners) {
                                     Log.i("InApp", "Sending listener subscription valid.");
@@ -165,6 +158,7 @@ public class MainActivity extends ActionBarActivity {
 
                             if (Helpers.isSubscriptionValid(purchaseDate, 1)) {
                                 // User has a valid subscription
+                                // TODO: TEST THIS!
                                 Publisher.INSTANCE.hasValidSubscription = true;
                                 for (Publisher.SubscriptionListener listener : Publisher.INSTANCE.subscriptionListeners) {
                                     Log.i("InApp", "Sending listener subscription valid.");

@@ -2,6 +2,7 @@ package au.com.newint.newinternationalist;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.pm.ApplicationInfo;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -24,6 +25,8 @@ import javax.crypto.Cipher;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.SecretKeySpec;
 
+import au.com.newint.newinternationalist.util.IabHelper;
+
 /**
  * Created by New Internationalist on 26/02/15.
  */
@@ -31,6 +34,11 @@ public class Helpers {
 
     public static final String LOGIN_USERNAME_KEY = "newintLogin" ;
     public static final String LOGIN_PASSWORD_KEY = "newintHarmless" ;
+
+    public static final String TWELVE_MONTH_SUBSCRIPTION_ID = "12monthauto";
+    public static final String ONE_MONTH_SUBSCRIPTION_ID = "1monthauto";
+
+    public static final boolean debugMode = (MainActivity.applicationContext.getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0;
 
     public static RoundedBitmapDrawable roundDrawableFromBitmap(Bitmap bitmap) {
         RoundedBitmapDrawable roundedBitmapDrawable = RoundedBitmapDrawableFactory.create(MainActivity.applicationResources, bitmap);
@@ -141,6 +149,10 @@ public class Helpers {
         return Character.toUpperCase(line.charAt(0)) + line.substring(1);
     }
 
+    public static String singleIssuePurchaseID(int magazineNumber) {
+        return Integer.toString(magazineNumber) + "single";
+    }
+
     public static boolean isSubscriptionValid(Date purchaseDate, int numberOfMonths) {
 
         Date todaysDate = new Date();
@@ -156,5 +168,18 @@ public class Helpers {
         calendar.add(Calendar.MONTH, numberOfMonths);
 
         return calendar.getTime();
+    }
+
+    public static IabHelper setupIabHelper(Context context) {
+
+        String base64EncodedPublicKey;
+        String publicKey = getVariableFromConfig("PUBLIC_KEY");
+        if (publicKey != null) {
+            base64EncodedPublicKey = au.com.newint.newinternationalist.util.Base64.encode(publicKey.getBytes());
+        } else {
+            base64EncodedPublicKey = "";
+        }
+
+        return new IabHelper(context, base64EncodedPublicKey);
     }
 }
