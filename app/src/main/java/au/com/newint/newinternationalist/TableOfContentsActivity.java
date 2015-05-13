@@ -246,8 +246,6 @@ public class TableOfContentsActivity extends ActionBarActivity {
                 // Not recycling so that images don't appear in the wrong place
                 holder.setIsRecyclable(false);
 
-                // TODO: Sort out why it crashes when off-line
-
                 if (holder instanceof TableOfContentsHeaderViewHolder) {
                     // Header
                     DateFormat dateFormat = new SimpleDateFormat("MMMM, yyyy", Locale.getDefault());

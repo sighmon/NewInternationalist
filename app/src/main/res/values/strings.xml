@@ -91,5 +91,10 @@
     <!-- Subscribe -->
     <string name="title_activity_subscribe">Subscribe</string>
     <string name="tmp">Subscribe</string>
+    <string name="subscribe_product_title">Product title</string>
+    <string name="subscribe_product_description">Product description</string>
+    <string name="subscribe_product_price">$0.00</string>
+    <string name="subscribe_header_product_type">Product type</string>
+    <string name="subscribe_footer_restore">Restore purchases</string>
 
 </resources>

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- CardView -->
+<android.support.v7.widget.CardView
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/subscribe_card_view"
+    android:layout_gravity="center"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="@dimen/toc_margin"
+    card_view:cardCornerRadius="@dimen/card_corner_radius">
+
+    <RelativeLayout
+        android:id="@+id/subscribe_relative_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <TextView
+            android:text="@string/subscribe_product_title"
+            android:id="@+id/subscribe_product_title"
+            android:textSize="@dimen/subscribe_product_title_font_size"
+            android:textColor="@color/primary_text_default_material_light"
+            android:paddingTop="@dimen/toc_article_padding_container_top_bottom"
+            android:paddingBottom="@dimen/toc_article_title_padding_bottom"
+            android:paddingLeft="@dimen/toc_article_padding_left_right"
+            android:paddingRight="@dimen/toc_article_padding_left_right"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:text="@string/subscribe_product_description"
+            android:id="@+id/subscribe_product_description"
+            android:textColor="@color/bright_foreground_disabled_material_light"
+            android:paddingTop="0dp"
+            android:paddingRight="@dimen/toc_article_padding_left_right"
+            android:paddingBottom="@dimen/toc_article_padding_top_bottom"
+            android:paddingLeft="@dimen/toc_article_padding_left_right"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/subscribe_product_title" />
+
+        <TextView
+            android:text="@string/subscribe_product_price"
+            android:id="@+id/subscribe_product_price"
+            android:textColor="@color/primary_text_default_material_light"
+            android:paddingTop="0dp"
+            android:paddingRight="@dimen/toc_article_padding_left_right"
+            android:paddingBottom="@dimen/toc_article_padding_top_bottom"
+            android:paddingLeft="@dimen/toc_article_padding_left_right"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/subscribe_product_description" />
+
+    </RelativeLayout>
+
+</android.support.v7.widget.CardView>

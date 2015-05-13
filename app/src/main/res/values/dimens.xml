@@ -43,4 +43,6 @@
     <dimen name="categories_category_name_padding">8dp</dimen>
     <dimen name="toc_article_image_width">50dp</dimen>
     <dimen name="toc_article_image_height">150dp</dimen>
+    <dimen name="subscribe_product_title_font_size">20sp</dimen>
+    <dimen name="subscribe_header_font_size">24sp</dimen>
 </resources>
