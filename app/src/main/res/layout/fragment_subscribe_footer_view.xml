@@ -7,8 +7,10 @@
     <Button
         android:text="@string/subscribe_footer_restore"
         android:id="@+id/subscribe_footer_restore"
+        android:layout_margin="@dimen/subscribe_restore_padding"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:gravity="center" />
+        android:gravity="center"
+        android:textAllCaps="false" />
 
 </RelativeLayout>

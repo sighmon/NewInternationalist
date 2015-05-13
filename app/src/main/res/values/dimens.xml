@@ -45,4 +45,5 @@
     <dimen name="toc_article_image_height">150dp</dimen>
     <dimen name="subscribe_product_title_font_size">20sp</dimen>
     <dimen name="subscribe_header_font_size">24sp</dimen>
+    <dimen name="subscribe_restore_padding">20dp</dimen>
 </resources>

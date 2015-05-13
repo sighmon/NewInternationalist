@@ -32,6 +32,7 @@ public class SubscribeActivity extends ActionBarActivity {
 
     static IabHelper mHelper;
     static ArrayList<SkuDetails> mProducts;
+    static IabHelper.OnIabPurchaseFinishedListener mPurchaseFinishedListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,6 +45,14 @@ public class SubscribeActivity extends ActionBarActivity {
         }
 
         mProducts = new ArrayList<>();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        // Dispose of the in-app helper
+        if (mHelper != null) mHelper.dispose();
+        mHelper = null;
     }
 
     @Override
@@ -153,6 +162,27 @@ public class SubscribeActivity extends ActionBarActivity {
                         }
                     };
                     mHelper.queryInventoryAsync(true, additionalSkuList, mQueryFinishedListener);
+
+                    mPurchaseFinishedListener = new IabHelper.OnIabPurchaseFinishedListener() {
+                        public void onIabPurchaseFinished(IabResult result, Purchase purchase)
+                        {
+                            if (result.isFailure()) {
+                                Log.d("Subscribe", "Error purchasing: " + result);
+                                return;
+                            } else if (result.getResponse() == IabHelper.IABHELPER_USER_CANCELLED) {
+                                // User cancelled the purchase, so ignore, move on
+                                Log.i("Subscribe", "User cancelled purchase.");
+                                return;
+                            } else if (purchase.getSku().equals(Helpers.TWELVE_MONTH_SUBSCRIPTION_ID)) {
+                                // TODO: Update subscription status.
+                                Log.i("Subscribe", "Purchase succeeded: " + purchase.getItemType());
+
+                            } else if (purchase.getSku().equals(Helpers.ONE_MONTH_SUBSCRIPTION_ID)) {
+                                // TODO: Update subscription status.
+                                Log.i("Subscribe", "Purchase succeeded: " + purchase.getItemType());
+                            }
+                        }
+                    };
                 }
             });
 
@@ -202,7 +232,7 @@ public class SubscribeActivity extends ActionBarActivity {
             @Override
             public int getItemCount() {
 //                return mProducts.size() + 3; // 3 = 2 x header + footer
-                return mProducts.size();
+                return mProducts.size() + 1; // Plus footer
             }
 
             @Override
@@ -222,7 +252,7 @@ public class SubscribeActivity extends ActionBarActivity {
 
             private boolean isPositionFooter(int position) {
 //                return position == mProducts.size() + 2; // 0 position + 2 headers?
-                return false;
+                return position == mProducts.size();
             }
 
             @Override
@@ -249,7 +279,7 @@ public class SubscribeActivity extends ActionBarActivity {
                     // Footer
 
                     // TODO: Setup restore purchases???
-                    ((SubscribeFooterViewHolder) holder).restorePurchases.setText("TODO: Restore!");
+                    ((SubscribeFooterViewHolder) holder).restorePurchases.setText("TODO: Restore purchases!");
                 }
             }
 
@@ -272,6 +302,9 @@ public class SubscribeActivity extends ActionBarActivity {
                 public void onClick(View v) {
                     // TODO: Purchase product!
                     Log.i("Subscribe", "Product tapped at position: " + getPosition());
+                    // TODO: Generate developerPayload in helper, now just returns null
+                    String developerPayload = Helpers.getDeveloperPayload();
+//                    mHelper.launchPurchaseFlow(getActivity(), mProducts.get(getPosition()).getSku(), 1, mPurchaseFinishedListener, developerPayload);
                 }
             }
 

@@ -83,6 +83,11 @@ public class Helpers {
         }
     }
 
+    public static String getDeveloperPayload() {
+        // TODO: generate something sekret
+        return null;
+    }
+
     private static byte[] hexStringToByteArray(String s) {
         int len = s.length();
         byte[] data = new byte[len / 2];
