@@ -15,6 +15,8 @@ import android.util.Log;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Calendar;
@@ -180,12 +182,14 @@ public class Helpers {
 
     public static IabHelper setupIabHelper(Context context) {
 
-        String base64EncodedPublicKey;
+        String base64EncodedPublicKey = "";
         String publicKey = getVariableFromConfig("PUBLIC_KEY");
         if (publicKey != null) {
-            base64EncodedPublicKey = au.com.newint.newinternationalist.util.Base64.encode(publicKey.getBytes());
-        } else {
-            base64EncodedPublicKey = "";
+            try {
+                base64EncodedPublicKey = au.com.newint.newinternationalist.util.Base64.encode(URLDecoder.decode(publicKey, "UTF-8").getBytes("ISO8859_1"));
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
         }
 
         return new IabHelper(context, base64EncodedPublicKey);

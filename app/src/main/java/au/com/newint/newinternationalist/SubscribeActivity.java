@@ -1,7 +1,11 @@
 package au.com.newint.newinternationalist;
 
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.drawable.ShapeDrawable;
+import android.graphics.drawable.shapes.RoundRectShape;
 import android.os.AsyncTask;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBarActivity;
@@ -220,7 +224,20 @@ public class SubscribeActivity extends ActionBarActivity {
                         public void onIabPurchaseFinished(IabResult result, Purchase purchase)
                         {
                             if (result.isFailure()) {
-                                Log.d("Subscribe", "Error purchasing: " + result);
+                                if (result.getResponse() == 7) {
+                                    // Already purchased!
+                                    AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                                    builder.setMessage(R.string.subscribe_already_purchased_message).setTitle(R.string.subscribe_already_purchased_title);
+                                    builder.setNegativeButton(R.string.subscribe_already_purchased_cancel_button, new DialogInterface.OnClickListener() {
+                                        public void onClick(DialogInterface dialog, int id) {
+                                            // User cancelled the dialog
+                                        }
+                                    });
+                                    AlertDialog dialog = builder.create();
+                                    dialog.show();
+                                } else {
+                                    Log.d("Subscribe", "Error purchasing: " + result);
+                                }
                                 return;
                             } else if (result.getResponse() == IabHelper.IABHELPER_USER_CANCELLED) {
                                 // User cancelled the purchase, so ignore, move on
@@ -325,11 +342,29 @@ public class SubscribeActivity extends ActionBarActivity {
 
                 } else if (holder instanceof SubscribeViewHolder) {
                     // In-app product
+                    SkuDetails product = mProducts.get(position);
+                    SubscribeViewHolder viewHolder = ((SubscribeViewHolder) holder);
 
                     // Setup product
-                    ((SubscribeViewHolder) holder).productTitle.setText(mProducts.get(position).getTitle());
-                    ((SubscribeViewHolder) holder).productDescription.setText(mProducts.get(position).getDescription());
-                    ((SubscribeViewHolder) holder).productPrice.setText(mProducts.get(position).getPrice());
+                    viewHolder.productTitle.setText(product.getTitle());
+                    viewHolder.productDescription.setText(product.getDescription());
+                    viewHolder.productPrice.setText(product.getPrice());
+
+                    // If product has been purchased
+                    try {
+                        Inventory inventory = mHelper.queryInventory(false, null);
+                        Purchase purchase = inventory.getPurchase(product.getSku());
+                        // TODO: Check if product has really been purchased...?
+                        if (purchase != null) {
+                            // TODO: Sort out rounded corners
+                            viewHolder.itemView.setBackgroundColor(getResources().getColor(R.color.material_deep_teal_200));
+                            viewHolder.productPrice.setText(product.getPrice() + " (Purchased!)");
+                            viewHolder.setIsRecyclable(false);
+//                            viewHolder.itemView.setBackground(new ShapeDrawable(new RoundRectShape(new float[] {8f,8f,8f,8f,8f,8f,8f,8f}, null, null)));
+                        }
+                    } catch (IabException e) {
+                        e.printStackTrace();
+                    }
 
                 } else if (holder instanceof SubscribeFooterViewHolder) {
                     // Footer
