@@ -61,6 +61,22 @@ public class SubscribeActivity extends ActionBarActivity {
     }
 
     @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Log.d("Subscribe", "onActivityResult(" + requestCode + "," + resultCode + "," + data);
+
+        // Pass on the activity result to the helper for handling
+        if (!mHelper.handleActivityResult(requestCode, resultCode, data)) {
+            // not handled, so handle it ourselves (here's where you'd
+            // perform any handling of activity results not related to in-app
+            // billing...
+            super.onActivityResult(requestCode, resultCode, data);
+        }
+        else {
+            Log.d("Subscribe", "onActivityResult handled by IABUtil.");
+        }
+    }
+
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_subscribe, menu);
@@ -131,6 +147,19 @@ public class SubscribeActivity extends ActionBarActivity {
                     // Hooray, IAB is fully set up!
                     Log.i("Subscribe", "In-app billing setup result: " + result);
 
+                    // Consume the test purchase..
+                    if (BuildConfig.DEBUG) {
+                        try {
+                            Inventory inventory = mHelper.queryInventory(false, null);
+                            Purchase purchase = inventory.getPurchase("android.test.purchased");
+                            if (purchase != null) {
+                                mHelper.consumeAsync(inventory.getPurchase("android.test.purchased"), null);
+                            }
+                        } catch (IabException e) {
+                            e.printStackTrace();
+                        }
+                    }
+
                     // Ask Google Play for a products list on a background thread
                     final ArrayList<String> additionalSkuList = new ArrayList<String>();
                     additionalSkuList.add(Helpers.TWELVE_MONTH_SUBSCRIPTION_ID);
@@ -151,7 +180,7 @@ public class SubscribeActivity extends ActionBarActivity {
                         @Override
                         protected Void doInBackground(Void... params) {
 
-                            int partitionSize = 16;
+                            int partitionSize = Helpers.GOOGLE_PLAY_MAX_SKU_LIST_SIZE;
                             for (int i = 0; i < additionalSkuList.size(); i+=partitionSize) {
                                 final int loopNumber = i;
                                 final List<String> partition = additionalSkuList.subList(i, Math.min(i + partitionSize, additionalSkuList.size()));
@@ -204,6 +233,9 @@ public class SubscribeActivity extends ActionBarActivity {
                             } else if (purchase.getSku().equals(Helpers.ONE_MONTH_SUBSCRIPTION_ID)) {
                                 // TODO: Update subscription status.
                                 Log.i("Subscribe", "Purchase succeeded: " + purchase.getItemType());
+                            } else {
+                                // TODO: Handle individual purchases
+                                Log.i("Subscribe", "Individual purchase: " + purchase.getItemType());
                             }
                         }
                     };
@@ -326,9 +358,12 @@ public class SubscribeActivity extends ActionBarActivity {
                 public void onClick(View v) {
                     // TODO: Purchase product!
                     Log.i("Subscribe", "Product tapped at position: " + getPosition());
-                    // TODO: Generate developerPayload in helper, now just returns null
+                    // TODO: Generate developerPayload in helper, now just returns an empty string
                     String developerPayload = Helpers.getDeveloperPayload();
-//                    mHelper.launchPurchaseFlow(getActivity(), mProducts.get(getPosition()).getSku(), 1, mPurchaseFinishedListener, developerPayload);
+                    // For testing:
+                    // mHelper.launchPurchaseFlow(getActivity(), "android.test.purchased", Helpers.GOOGLE_PLAY_REQUEST_CODE, mPurchaseFinishedListener, developerPayload);
+                    // For real:
+                    mHelper.launchPurchaseFlow(getActivity(), mProducts.get(getPosition()).getSku(), Helpers.GOOGLE_PLAY_REQUEST_CODE, mPurchaseFinishedListener, developerPayload);
                 }
             }
 

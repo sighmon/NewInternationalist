@@ -31,6 +31,8 @@ import java.security.SignatureException;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.X509EncodedKeySpec;
 
+import au.com.newint.newinternationalist.BuildConfig;
+
 /**
  * Security-related methods. For a secure implementation, all of this code
  * should be implemented on a server that communicates with the
@@ -56,6 +58,19 @@ public class Security {
      * @param signature the signature for the data, signed with the private key
      */
     public static boolean verifyPurchase(String base64PublicKey, String signedData, String signature) {
+
+        String sku = null;
+        try {
+            sku = new JSONObject(signedData).optString("productId");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        if (BuildConfig.DEBUG && "android.test.purchased".equals(sku)) {
+            Log.e("IabHelper", "TEST purchase: " + sku);
+            return true;
+        }
+
         if (TextUtils.isEmpty(signedData) || TextUtils.isEmpty(base64PublicKey) ||
                 TextUtils.isEmpty(signature)) {
             Log.e(TAG, "Purchase verification failed: missing data.");

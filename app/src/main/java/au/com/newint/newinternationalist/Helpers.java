@@ -38,6 +38,9 @@ public class Helpers {
     public static final String TWELVE_MONTH_SUBSCRIPTION_ID = "12monthauto";
     public static final String ONE_MONTH_SUBSCRIPTION_ID = "1monthauto";
 
+    public static final int GOOGLE_PLAY_REQUEST_CODE = 5000;
+    public static final int GOOGLE_PLAY_MAX_SKU_LIST_SIZE = 16;
+
     public static final boolean debugMode = (MainActivity.applicationContext.getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0;
 
     public static RoundedBitmapDrawable roundDrawableFromBitmap(Bitmap bitmap) {
@@ -84,8 +87,8 @@ public class Helpers {
     }
 
     public static String getDeveloperPayload() {
-        // TODO: generate something sekret
-        return null;
+        // TODO: generate userID string?
+        return "";
     }
 
     private static byte[] hexStringToByteArray(String s) {
