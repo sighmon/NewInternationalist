@@ -1,6 +1,8 @@
 package au.com.newint.newinternationalist;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
@@ -18,9 +20,12 @@ import android.widget.TextView;
 
 import com.google.android.gms.analytics.ecommerce.Product;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
+import au.com.newint.newinternationalist.util.IabException;
 import au.com.newint.newinternationalist.util.IabHelper;
 import au.com.newint.newinternationalist.util.IabResult;
 import au.com.newint.newinternationalist.util.Inventory;
@@ -131,37 +136,56 @@ public class SubscribeActivity extends ActionBarActivity {
                     additionalSkuList.add(Helpers.TWELVE_MONTH_SUBSCRIPTION_ID);
                     additionalSkuList.add(Helpers.ONE_MONTH_SUBSCRIPTION_ID);
 
-                    // Add all the individual magazines as products if we're not in debug mode
-                    if (!Helpers.debugMode) {
-                        ArrayList<Issue> issueList = Publisher.INSTANCE.getIssuesFromFilesystem();
-                        for (Issue issue : issueList) {
-                            additionalSkuList.add(Helpers.singleIssuePurchaseID(issue.getNumber()));
-                        }
+                    ArrayList<Issue> issueList = Publisher.INSTANCE.getIssuesFromFilesystem();
+                    for (Issue issue : issueList) {
+                        additionalSkuList.add(Helpers.singleIssuePurchaseID(issue.getNumber()));
                     }
 
-                    IabHelper.QueryInventoryFinishedListener mQueryFinishedListener = new IabHelper.QueryInventoryFinishedListener() {
-                        public void onQueryInventoryFinished(IabResult result, Inventory inventory) {
+                    final ProgressDialog progress = new ProgressDialog(getActivity());
+                    progress.setTitle("Loading");
+                    progress.setMessage("Loading in-app purchases...");
+                    progress.show();
 
-                            if (result.isFailure()) {
-                                // handle error
-                                Log.i("Subscribe", "Query failed: " + result);
-                                return;
-                            }
+                    new AsyncTask<Void, Integer, Void>() {
 
-                            // Check subscription inventory
-                            Log.i("Subscribe", "Inventory: " + inventory);
+                        @Override
+                        protected Void doInBackground(Void... params) {
 
-                            // Loop through products and add them to mProducts
-                            for (String sku : additionalSkuList) {
-                                SkuDetails product = inventory.getSkuDetails(sku);
-                                if (product != null) {
-                                    mProducts.add(product);
+                            int partitionSize = 16;
+                            for (int i = 0; i < additionalSkuList.size(); i+=partitionSize) {
+                                final int loopNumber = i;
+                                final List<String> partition = additionalSkuList.subList(i, Math.min(i + partitionSize, additionalSkuList.size()));
+                                try {
+                                    Inventory inventory = mHelper.queryInventory(true, partition);
+
+                                    // Check subscription inventory
+                                    Log.i("Subscribe", "Inventory (" + loopNumber + "): " + inventory);
+
+                                    // Loop through products and add them to mProducts
+                                    for (String sku : partition) {
+                                        SkuDetails product = inventory.getSkuDetails(sku);
+                                        if (product != null) {
+                                            mProducts.add(product);
+                                        }
+                                    }
+                                } catch (IabException e) {
+                                    e.printStackTrace();
                                 }
                             }
-                            adapter.notifyDataSetChanged();
+
+                            return null;
                         }
-                    };
-                    mHelper.queryInventoryAsync(true, additionalSkuList, mQueryFinishedListener);
+
+                        @Override
+                        protected void onPostExecute(Void nothing) {
+                            super.onPostExecute(nothing);
+
+                            // Update adapter
+                            adapter.notifyDataSetChanged();
+                            progress.dismiss();
+                        }
+
+                    }.execute();
 
                     mPurchaseFinishedListener = new IabHelper.OnIabPurchaseFinishedListener() {
                         public void onIabPurchaseFinished(IabResult result, Purchase purchase)
