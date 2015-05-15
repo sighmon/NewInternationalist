@@ -10,6 +10,7 @@ import android.os.AsyncTask;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -175,8 +176,8 @@ public class SubscribeActivity extends ActionBarActivity {
                     }
 
                     final ProgressDialog progress = new ProgressDialog(getActivity());
-                    progress.setTitle("Loading");
-                    progress.setMessage("Loading in-app purchases...");
+                    progress.setTitle(getResources().getString(R.string.subscribe_loading_progress_title));
+                    progress.setMessage(getResources().getString(R.string.subscribe_loading_progress_message));
                     progress.show();
 
                     new AsyncTask<Void, Integer, Void>() {
@@ -354,13 +355,12 @@ public class SubscribeActivity extends ActionBarActivity {
                     try {
                         Inventory inventory = mHelper.queryInventory(false, null);
                         Purchase purchase = inventory.getPurchase(product.getSku());
-                        // TODO: Check if product has really been purchased...?
+                        // TODO: Check if product has really been purchased via Rails...?
                         if (purchase != null) {
-                            // TODO: Sort out rounded corners
-                            viewHolder.itemView.setBackgroundColor(getResources().getColor(R.color.material_deep_teal_200));
+                            CardView cardView = (CardView) viewHolder.itemView.findViewById(R.id.subscribe_card_view);
+                            cardView.setCardBackgroundColor(getResources().getColor(R.color.material_deep_teal_200));
                             viewHolder.productPrice.setText(product.getPrice() + " (Purchased!)");
                             viewHolder.setIsRecyclable(false);
-//                            viewHolder.itemView.setBackground(new ShapeDrawable(new RoundRectShape(new float[] {8f,8f,8f,8f,8f,8f,8f,8f}, null, null)));
                         }
                     } catch (IabException e) {
                         e.printStackTrace();
