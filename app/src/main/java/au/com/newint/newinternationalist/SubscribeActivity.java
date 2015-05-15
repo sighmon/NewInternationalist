@@ -42,6 +42,8 @@ public class SubscribeActivity extends ActionBarActivity {
 
     static IabHelper mHelper;
     static ArrayList<SkuDetails> mProducts;
+    static int mPositionTapped;
+    static ArrayList<Issue> mIssueList;
     static IabHelper.OnIabPurchaseFinishedListener mPurchaseFinishedListener;
 
     @Override
@@ -170,8 +172,8 @@ public class SubscribeActivity extends ActionBarActivity {
                     additionalSkuList.add(Helpers.TWELVE_MONTH_SUBSCRIPTION_ID);
                     additionalSkuList.add(Helpers.ONE_MONTH_SUBSCRIPTION_ID);
 
-                    ArrayList<Issue> issueList = Publisher.INSTANCE.getIssuesFromFilesystem();
-                    for (Issue issue : issueList) {
+                    mIssueList = Publisher.INSTANCE.getIssuesFromFilesystem();
+                    for (Issue issue : mIssueList) {
                         additionalSkuList.add(Helpers.singleIssuePurchaseID(issue.getNumber()));
                     }
 
@@ -222,13 +224,30 @@ public class SubscribeActivity extends ActionBarActivity {
                     }.execute();
 
                     mPurchaseFinishedListener = new IabHelper.OnIabPurchaseFinishedListener() {
-                        public void onIabPurchaseFinished(IabResult result, Purchase purchase)
+                        public void onIabPurchaseFinished(IabResult result, final Purchase purchase)
                         {
                             if (result.isFailure()) {
                                 if (result.getResponse() == 7) {
                                     // Already purchased!
                                     AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
                                     builder.setMessage(R.string.subscribe_already_purchased_message).setTitle(R.string.subscribe_already_purchased_title);
+                                    builder.setPositiveButton(R.string.subscribe_already_purchased_read_issue_button, new DialogInterface.OnClickListener() {
+                                        public void onClick(DialogInterface dialog, int id) {
+                                            // User clicked Read this issue button
+                                            Intent issueIntent = new Intent(rootView.getContext(), TableOfContentsActivity.class);
+                                            int issueNumber = Integer.parseInt(mProducts.get(mPositionTapped).getSku().replaceAll("[\\D]", ""));
+                                            Issue issueForIntent = null;
+                                            for (Issue issue : mIssueList) {
+                                                if (issue.getNumber() == issueNumber) {
+                                                    issueForIntent = issue;
+                                                }
+                                            }
+                                            if (issueForIntent != null) {
+                                                issueIntent.putExtra("issue", issueForIntent);
+                                                startActivity(issueIntent);
+                                            }
+                                        }
+                                    });
                                     builder.setNegativeButton(R.string.subscribe_already_purchased_cancel_button, new DialogInterface.OnClickListener() {
                                         public void onClick(DialogInterface dialog, int id) {
                                             // User cancelled the dialog
@@ -306,7 +325,9 @@ public class SubscribeActivity extends ActionBarActivity {
             @Override
             public int getItemCount() {
 //                return mProducts.size() + 3; // 3 = 2 x header + footer
-                return mProducts.size() + 1; // Plus footer
+                // Don't need the footer in the end...
+//                return mProducts.size() + 1; // Plus footer
+                return mProducts.size();
             }
 
             @Override
@@ -325,8 +346,9 @@ public class SubscribeActivity extends ActionBarActivity {
             }
 
             private boolean isPositionFooter(int position) {
-//                return position == mProducts.size() + 2; // 0 position + 2 headers?
-                return position == mProducts.size();
+                // Don't need the restore footer in the end...
+//                return position == mProducts.size();
+                return false;
             }
 
             @Override
@@ -355,7 +377,7 @@ public class SubscribeActivity extends ActionBarActivity {
                     try {
                         Inventory inventory = mHelper.queryInventory(false, null);
                         Purchase purchase = inventory.getPurchase(product.getSku());
-                        // TODO: Check if product has really been purchased via Rails...?
+                        // TODO: Check if product has really been purchased using Rails...?
                         if (purchase != null) {
                             CardView cardView = (CardView) viewHolder.itemView.findViewById(R.id.subscribe_card_view);
                             cardView.setCardBackgroundColor(getResources().getColor(R.color.material_deep_teal_200));
@@ -393,6 +415,7 @@ public class SubscribeActivity extends ActionBarActivity {
                 public void onClick(View v) {
                     // TODO: Purchase product!
                     Log.i("Subscribe", "Product tapped at position: " + getPosition());
+                    mPositionTapped = getPosition();
                     // TODO: Generate developerPayload in helper, now just returns an empty string
                     String developerPayload = Helpers.getDeveloperPayload();
                     // For testing:

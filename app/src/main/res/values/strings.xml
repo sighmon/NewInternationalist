@@ -101,5 +101,6 @@
     <string name="subscribe_already_purchased_cancel_button">OK</string>
     <string name="subscribe_loading_progress_title">Loading...</string>
     <string name="subscribe_loading_progress_message">Loading list of subscriptions and magazines available to buy as in-app purchases.</string>
+    <string name="subscribe_already_purchased_read_issue_button">Read this issue</string>
 
 </resources>
