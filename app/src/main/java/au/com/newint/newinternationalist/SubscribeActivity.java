@@ -273,6 +273,7 @@ public class SubscribeActivity extends ActionBarActivity {
                             } else {
                                 // TODO: Handle individual purchases
                                 Log.i("Subscribe", "Individual purchase: " + purchase.getItemType());
+                                adapter.notifyDataSetChanged();
                             }
                         }
                     };

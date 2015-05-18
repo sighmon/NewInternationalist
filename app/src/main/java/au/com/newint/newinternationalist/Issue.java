@@ -129,7 +129,11 @@ public class Issue implements Parcelable {
 
     public URL getEditorsPhotoURL() {
         try {
-            return new URL(issueJson.get("editors_photo").getAsJsonObject().get("url").getAsString());
+            String photoString = issueJson.get("editors_photo").getAsJsonObject().get("url").getAsString();
+            if (BuildConfig.DEBUG) {
+                photoString = Helpers.getSiteURL() + photoString;
+            }
+            return new URL(photoString);
         } catch (MalformedURLException e) {
             return null;
         }
@@ -137,7 +141,11 @@ public class Issue implements Parcelable {
 
     private URL getCoverURL() {
         try {
-            return new URL(issueJson.get("cover").getAsJsonObject().get("url").getAsString());
+            String coverString = issueJson.get("cover").getAsJsonObject().get("url").getAsString();
+            if (BuildConfig.DEBUG) {
+                coverString = Helpers.getSiteURL() + coverString;
+            }
+            return new URL(coverString);
         } catch (MalformedURLException e) {
             return null;
         }

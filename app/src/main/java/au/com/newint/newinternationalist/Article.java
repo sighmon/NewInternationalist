@@ -7,6 +7,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.Log;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -16,8 +17,12 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.protocol.ClientContext;
+import org.apache.http.entity.BasicHttpEntity;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicHeader;
 import org.apache.http.protocol.BasicHttpContext;
+import org.apache.http.protocol.HTTP;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONArray;
@@ -33,6 +38,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.lang.reflect.Array;
 import java.net.MalformedURLException;
@@ -47,6 +53,8 @@ import java.util.Objects;
 import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import au.com.newint.newinternationalist.util.Purchase;
 
 /**
  * Created by New Internationalist on 4/02/15.
@@ -115,13 +123,13 @@ public class Article implements Parcelable {
         return new File(articleDir,"body.html");
     }
 
-    private String getBody() {
+    private String getBody(ArrayList<Purchase> purchases) {
 
         // POST request to rails.
 
         URL articleBodyURL = null;
         try {
-            articleBodyURL = new URL(Helpers.getSiteURL() + "issues/" + Integer.toString(getIssueID()) + "/articles/" + Integer.toString(getID()) + "/body");
+            articleBodyURL = new URL(Helpers.getSiteURL() + "issues/" + Integer.toString(getIssueID()) + "/articles/" + Integer.toString(getID()) + "/body_android");
         } catch (MalformedURLException e) {
             e.printStackTrace();
         }
@@ -157,14 +165,14 @@ public class Article implements Parcelable {
             }
         } else {
             // Download the body
-            new DownloadBodyTask().execute(articleBodyURL);
+            new DownloadBodyTask().execute(articleBodyURL, purchases);
         }
         return bodyHTML;
     }
 
-    public String getExpandedBody() {
+    public String getExpandedBody(ArrayList<Purchase> purchases) {
         // Expand [File:xxx] image tags
-        String articleBody = getBody();
+        String articleBody = getBody(purchases);
 
         if (articleBody != null) {
             articleBody = expandImageTagsInBody(articleBody);
@@ -361,16 +369,39 @@ public class Article implements Parcelable {
         protected ArrayList doInBackground(Object... objects) {
 
             URL articleBodyURL = (URL) objects[0];
+            // Pass in purchases
+            ArrayList<Purchase> purchases = (ArrayList<Purchase>) objects[1];
             String bodyHTML = "";
 
             // Try logging into Rails for authentication.
             DefaultHttpClient httpclient = new DefaultHttpClient();
 
-            // Try to connect
+            // Setup post request
             HttpContext ctx = new BasicHttpContext();
             ctx.setAttribute(ClientContext.COOKIE_STORE, Publisher.INSTANCE.cookieStore);
             HttpPost post = new HttpPost(articleBodyURL.toString());
             post.setHeader("Content-Type", "application/x-www-form-urlencoded");
+
+            // Add in-app purchase JSON data
+            if (purchases != null && purchases.size() > 0) {
+                JsonArray purchasesJsonArray = new JsonArray();
+                for (Purchase purchase : purchases) {
+                    // Send each purchase JSON data to rails to validate with Google Play
+                    JsonParser parser = new JsonParser();
+                    JsonObject purchaseJsonObject = (JsonObject)parser.parse(purchase.getOriginalJson());
+                    purchasesJsonArray.add(purchaseJsonObject);
+
+                }
+                StringEntity stringEntity = null;
+                try {
+                    stringEntity = new StringEntity( "JSON: " + purchasesJsonArray.getAsString());
+                    stringEntity.setContentEncoding(new BasicHeader(HTTP.CONTENT_TYPE, "application/json"));
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                }
+                post.setEntity(stringEntity);
+            }
+
             HttpResponse response = null;
 
             try {
@@ -437,7 +468,7 @@ public class Article implements Parcelable {
             responseList.add(response);
             // Get expanded bodyHTML here too..
             if (success) {
-                responseList.add(getExpandedBody());
+                responseList.add(getExpandedBody(purchases));
             }
 
             return responseList;

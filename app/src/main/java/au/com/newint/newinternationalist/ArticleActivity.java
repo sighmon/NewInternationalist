@@ -43,11 +43,20 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Locale;
 
+import au.com.newint.newinternationalist.util.IabException;
+import au.com.newint.newinternationalist.util.IabHelper;
+import au.com.newint.newinternationalist.util.IabResult;
+import au.com.newint.newinternationalist.util.Inventory;
+import au.com.newint.newinternationalist.util.Purchase;
+
 
 public class ArticleActivity extends ActionBarActivity {
 
     static Article article;
     static Issue issue;
+    static IabHelper mHelper;
+    static Inventory inventory = null;
+    static ArrayList<Purchase> purchases = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,6 +72,30 @@ public class ArticleActivity extends ActionBarActivity {
         issue = getIntent().getParcelableExtra("issue");
 
         setTitle(issue.getTitle());
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        // Dispose of the in-app helper
+        if (mHelper != null) mHelper.dispose();
+        mHelper = null;
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Log.d("Subscribe", "onActivityResult(" + requestCode + "," + resultCode + "," + data);
+
+        // Pass on the activity result to the helper for handling
+        if (!mHelper.handleActivityResult(requestCode, resultCode, data)) {
+            // not handled, so handle it ourselves (here's where you'd
+            // perform any handling of activity results not related to in-app
+            // billing...
+            super.onActivityResult(requestCode, resultCode, data);
+        }
+        else {
+            Log.d("Subscribe", "onActivityResult handled by IABUtil.");
+        }
     }
 
     @Override
@@ -130,10 +163,45 @@ public class ArticleActivity extends ActionBarActivity {
         @Override
         public void onResume() {
             super.onResume();
+
+            // Setup in-app billing
+            mHelper = Helpers.setupIabHelper(getActivity().getApplicationContext());
+
+            mHelper.startSetup(new IabHelper.OnIabSetupFinishedListener() {
+                public void onIabSetupFinished(IabResult result) {
+                    if (!result.isSuccess()) {
+                        // Oh noes, there was a problem.
+                        Log.d("ArticleBody", "Problem setting up In-app Billing: " + result);
+                    }
+                    // Hooray, IAB is fully set up!
+                    Log.i("ArticleBody", "In-app billing setup result: " + result);
+
+                    // Make a products list of the subscriptions and this issue
+                    final ArrayList<String> skuList = new ArrayList<String>();
+                    skuList.add(Helpers.TWELVE_MONTH_SUBSCRIPTION_ID);
+                    skuList.add(Helpers.ONE_MONTH_SUBSCRIPTION_ID);
+                    skuList.add(Helpers.singleIssuePurchaseID(issue.getNumber()));
+
+                    try {
+                        purchases = new ArrayList<>();
+                        inventory = mHelper.queryInventory(true, skuList);
+                        // Is there a subscription purchase in the inventory?
+                        for (String sku : skuList) {
+                            Purchase purchase = inventory.getPurchase(sku);
+                            if (purchase != null) {
+                                purchases.add(purchase);
+                            }
+                        }
+                    } catch (IabException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+
             if (rootView != null) {
 //                Log.i("onResume", "****LOADING BODY****");
                 final WebView articleBody = (WebView) rootView.findViewById(R.id.article_body);
-                String articleBodyHTML = article.getExpandedBody();
+                String articleBodyHTML = article.getExpandedBody(purchases);
                 if (articleBodyHTML == null) {
                     articleBodyHTML = Helpers.wrapInHTML("<p>Loading...</p>");
                 }
