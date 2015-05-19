@@ -394,7 +394,7 @@ public class Article implements Parcelable {
                 }
                 StringEntity stringEntity = null;
                 try {
-                    stringEntity = new StringEntity( "JSON: " + purchasesJsonArray.getAsString());
+                    stringEntity = new StringEntity(purchasesJsonArray.toString());
                     stringEntity.setContentEncoding(new BasicHeader(HTTP.CONTENT_TYPE, "application/json"));
                 } catch (UnsupportedEncodingException e) {
                     e.printStackTrace();

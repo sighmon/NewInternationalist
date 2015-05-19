@@ -344,6 +344,7 @@ public class ArticleActivity extends ActionBarActivity {
                         } else {
                             // Server error.
                             Log.i("ArticleBody", "Failed with code: " + responseStatusCode + " and response: " + response.getStatusLine());
+                            bodyHTML = response.getStatusLine().toString();
                         }
 
                     } else {

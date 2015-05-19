@@ -130,7 +130,8 @@ public class Issue implements Parcelable {
     public URL getEditorsPhotoURL() {
         try {
             String photoString = issueJson.get("editors_photo").getAsJsonObject().get("url").getAsString();
-            if (BuildConfig.DEBUG) {
+            if (BuildConfig.DEBUG && Helpers.getSiteURL().contains("3000")) {
+                // For running from a local Rails dev site
                 photoString = Helpers.getSiteURL() + photoString;
             }
             return new URL(photoString);
@@ -142,7 +143,8 @@ public class Issue implements Parcelable {
     private URL getCoverURL() {
         try {
             String coverString = issueJson.get("cover").getAsJsonObject().get("url").getAsString();
-            if (BuildConfig.DEBUG) {
+            if (BuildConfig.DEBUG && Helpers.getSiteURL().contains("3000")) {
+                // For running from a local Rails dev site
                 coverString = Helpers.getSiteURL() + coverString;
             }
             return new URL(coverString);
