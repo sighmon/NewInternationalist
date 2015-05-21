@@ -5,6 +5,8 @@ import android.os.AsyncTask;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.Log;
+import android.util.SparseArray;
+import android.util.SparseIntArray;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -28,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 
 /**
  * Created by New Internationalist on 4/02/15.
@@ -49,6 +52,8 @@ public class Issue implements Parcelable {
     CacheStreamFactory coverCacheStreamFactory;
     CacheStreamFactory editorsImageCacheStreamFactory;
 
+    SparseArray<ThumbnailCacheStreamFactory> thumbnailCacheStreamFactorySparseArray;
+
     public Issue(File jsonFile) {
         JsonElement root = null;
         try {
@@ -61,6 +66,8 @@ public class Issue implements Parcelable {
         issueJson = root.getAsJsonObject();
         coverCacheStreamFactory = new FileCacheStreamFactory(getCoverLocationOnFilesystem(), new URLCacheStreamFactory(getCoverURL()));
         editorsImageCacheStreamFactory = new FileCacheStreamFactory(getEditorsLetterLocationOnFilesystem(), new URLCacheStreamFactory(getEditorsPhotoURL()));
+
+        thumbnailCacheStreamFactorySparseArray = new SparseArray<>();
 
         /*
         title = getTitle();
@@ -287,8 +294,13 @@ public class Issue implements Parcelable {
     }
 
     public ThumbnailCacheStreamFactory getCoverCacheStreamFactoryForSize(int width) {
+        //store in a hash, only make once for each width
+        ThumbnailCacheStreamFactory tcsf = thumbnailCacheStreamFactorySparseArray.get(width);
+        if (tcsf==null) {
+            tcsf = new ThumbnailCacheStreamFactory(width, getCoverLocationOnFilesystem(), coverCacheStreamFactory);
+        }
 
-        return new ThumbnailCacheStreamFactory(width, getCoverLocationOnFilesystem(), coverCacheStreamFactory);
+        return tcsf;
     }
 
     public ThumbnailCacheStreamFactory getEditorsImageCacheStreamFactoryForSize(int width, int height) {
