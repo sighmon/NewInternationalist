@@ -310,7 +310,33 @@ public class Issue implements Parcelable {
         ThumbnailCacheStreamFactory tcsf = thumbnailCacheStreamFactorySparseArray.get(width);
         if (tcsf==null) {
             tcsf = new ThumbnailCacheStreamFactory(width, getCoverLocationOnFilesystem(), coverCacheStreamFactory);
-        }
+        }/*
+            // Register for DownloadComplete listener
+            Publisher.ArticlesDownloadCompleteListener listener = new Publisher.ArticlesDownloadCompleteListener() {
+
+                @Override
+                public void onArticlesDownloadComplete(JsonArray articles) {
+                    Log.i("ArticlesReady", "Received listener, refreshing articles view.");
+                    // Refresh adapter data
+                    adapter.notifyDataSetChanged();
+                    Publisher.articleListeners.clear();
+                }
+            };
+            Publisher.INSTANCE.setOnArticlesDownloadCompleteListener(listener);
+
+            // Register for editors photo complete listener.
+            // Register for DownloadComplete listener
+            Publisher.UpdateListener editorImageListener = new Publisher.UpdateListener() {
+                @Override
+                public void onUpdate(Object object) {
+
+                    // Tell the adapter to update the footer view so it loads the editor image
+                    adapter.notifyItemChanged(adapter.getItemCount() - 1);
+                }
+            };
+            Publisher.INSTANCE.setOnDownloadCompleteListener(editorImageListener);
+
+            */
 
         return tcsf;
     }
