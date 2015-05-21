@@ -355,13 +355,13 @@ public class SubscribeActivity extends ActionBarActivity {
             @Override
             public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
 
-                // Could we recycle? Not sure..
+                // Recycling the viewHolder for all but the purchases
 //                holder.setIsRecyclable(false);
 
                 if (holder instanceof SubscribeHeaderViewHolder) {
                     // Header
 
-                    // TODO: Setup header...
+                    // TODO: Do we need headers separating the Subscriptions from the single issues?
                     ((SubscribeHeaderViewHolder) holder).productType.setText("TODO: Set type text.");
 
                 } else if (holder instanceof SubscribeViewHolder) {
@@ -378,7 +378,7 @@ public class SubscribeActivity extends ActionBarActivity {
                     try {
                         Inventory inventory = mHelper.queryInventory(false, null);
                         Purchase purchase = inventory.getPurchase(product.getSku());
-                        // TODO: Check if product has really been purchased using Rails...?
+                        // NOTE: Purchase is double checked via Rails when actually trying to get the article body
                         if (purchase != null) {
                             CardView cardView = (CardView) viewHolder.itemView.findViewById(R.id.subscribe_card_view);
                             cardView.setCardBackgroundColor(getResources().getColor(R.color.material_deep_teal_200));
@@ -392,7 +392,7 @@ public class SubscribeActivity extends ActionBarActivity {
                 } else if (holder instanceof SubscribeFooterViewHolder) {
                     // Footer
 
-                    // TODO: Setup restore purchases???
+                    // TODO: Make sure that purchases are restored each time the inventory & purchases are checked
                     ((SubscribeFooterViewHolder) holder).restorePurchases.setText("TODO: Restore purchases!");
                 }
             }
@@ -414,7 +414,7 @@ public class SubscribeActivity extends ActionBarActivity {
 
                 @Override
                 public void onClick(View v) {
-                    // TODO: Purchase product!
+                    // Purchase product!
                     Log.i("Subscribe", "Product tapped at position: " + getPosition());
                     mPositionTapped = getPosition();
                     // TODO: Generate developerPayload in helper, now just returns an empty string

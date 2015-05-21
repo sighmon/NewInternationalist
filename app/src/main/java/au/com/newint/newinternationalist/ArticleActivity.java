@@ -195,18 +195,23 @@ public class ArticleActivity extends ActionBarActivity {
                     } catch (IabException e) {
                         e.printStackTrace();
                     }
+
+                    // Now attempt to get the expanded article body sending any in-app purchases
+                    String articleBodyHTML = article.getExpandedBody(purchases);
+                    if (articleBodyHTML == null) {
+                        articleBodyHTML = Helpers.wrapInHTML("<p>Loading...</p>");
+                    }
+                    final WebView articleBody = (WebView) rootView.findViewById(R.id.article_body);
+                    articleBody.loadDataWithBaseURL("file:///android_asset/", articleBodyHTML, "text/html", "utf-8", null);
                 }
             });
 
             if (rootView != null) {
 //                Log.i("onResume", "****LOADING BODY****");
+
+                // When the article webView body has finished loading, insert the images.
                 final WebView articleBody = (WebView) rootView.findViewById(R.id.article_body);
-                String articleBodyHTML = article.getExpandedBody(purchases);
-                if (articleBodyHTML == null) {
-                    articleBodyHTML = Helpers.wrapInHTML("<p>Loading...</p>");
-                }
                 articleBody.getSettings().setJavaScriptEnabled(true);
-                articleBody.loadDataWithBaseURL("file:///android_asset/", articleBodyHTML, "text/html", "utf-8", null);
                 articleBody.setWebViewClient(new WebViewClient() {
                     @Override
                     public void onPageFinished (WebView view, String url) {
@@ -322,7 +327,6 @@ public class ArticleActivity extends ActionBarActivity {
                             // Article request failed
                             Log.i("ArticleBody", "Failed with code: " + responseStatusCode);
                             // Alert and intent to login.
-                            // TODO: Why is this getting called so many times for an article body when not logged in???
                             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
                             builder.setMessage(R.string.login_dialog_message_article_body).setTitle(R.string.login_dialog_title_article_body);
                             builder.setPositiveButton(R.string.login_dialog_ok_button, new DialogInterface.OnClickListener() {
@@ -330,6 +334,14 @@ public class ArticleActivity extends ActionBarActivity {
                                     // User clicked OK button
                                     Intent loginIntent = new Intent(rootView.getContext(), LoginActivity.class);
                                     startActivity(loginIntent);
+                                }
+                            });
+                            builder.setNeutralButton(R.string.login_dialog_purchase_button, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int id) {
+                                    // User clicked Purchase button
+                                    Intent subscribeIntent = new Intent(rootView.getContext(), SubscribeActivity.class);
+                                    startActivity(subscribeIntent);
                                 }
                             });
                             builder.setNegativeButton(R.string.login_dialog_cancel_button, new DialogInterface.OnClickListener() {

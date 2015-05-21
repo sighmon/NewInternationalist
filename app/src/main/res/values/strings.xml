@@ -58,7 +58,7 @@
     <string name="login_dialog_ok_button">Login</string>
     <string name="login_dialog_cancel_button">Cancel</string>
     <string name="no_internet_dialog_title_article_body">No internet?</string>
-    <string name="no_internet_dialog_message_article_body">The app doesn\'t seem to be able to connect to our server, do you have internet access there?</string>
+    <string name="no_internet_dialog_message_article_body">The app doesn\'t seem to be able to connect to our server, do you have internet access there? You\'ll still be able to read articles that you\'ve already downloaded to your device.</string>
     <string name="no_internet_dialog_ok_button">OK</string>
 
     <!-- Search -->
@@ -102,5 +102,6 @@
     <string name="subscribe_loading_progress_title">Loading...</string>
     <string name="subscribe_loading_progress_message">Loading the current subscriptions and magazines available as in-app purchases.</string>
     <string name="subscribe_already_purchased_read_issue_button">Read this issue</string>
+    <string name="login_dialog_purchase_button">Subscribe</string>
 
 </resources>
