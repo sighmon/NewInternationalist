@@ -59,8 +59,6 @@ public class TableOfContentsActivity extends ActionBarActivity {
         // Set title to Home screen
         setTitle("Home");
 
-
-
     }
 
     @Override
@@ -147,6 +145,7 @@ public class TableOfContentsActivity extends ActionBarActivity {
             issueFromActivity.preloadArticles(new CacheStreamFactory.CachePreloadCallback() {
                 @Override
                 public void onLoad(byte[] payload) {
+                    // TODO: Fix the double loading...
                     adapter.notifyDataSetChanged();
                 }
 
@@ -304,7 +303,7 @@ public class TableOfContentsActivity extends ActionBarActivity {
                                 if (payload != null && payload.length > 0) {
                                     Bitmap editorsImageBitmap = BitmapFactory.decodeByteArray(payload, 0, payload.length);
                                     editorImageView.setImageDrawable(Helpers.roundDrawableFromBitmap(editorsImageBitmap));
-                                    TableOfContentsAdapter.this.notifyItemChanged(TableOfContentsAdapter.this.getItemCount()-1);
+//                                    TableOfContentsAdapter.this.notifyItemChanged(TableOfContentsAdapter.this.getItemCount()-1);
                                 }
                             }
 

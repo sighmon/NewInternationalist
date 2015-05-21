@@ -57,7 +57,7 @@ public class Issue implements Parcelable {
 
     public Issue(File jsonFile) throws StreamCorruptedException {
 
-        issueJson = Publisher.parseJsonFile(jsonFile);
+        issueJson = Publisher.parseJsonFile(jsonFile).getAsJsonObject();
         coverCacheStreamFactory = new FileCacheStreamFactory(getCoverLocationOnFilesystem(), new URLCacheStreamFactory(getCoverURL()));
         editorsImageCacheStreamFactory = new FileCacheStreamFactory(getEditorsLetterLocationOnFilesystem(), new URLCacheStreamFactory(getEditorsPhotoURL()));
         thumbnailCacheStreamFactorySparseArray = new SparseArray<>();
