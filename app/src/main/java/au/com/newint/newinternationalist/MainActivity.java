@@ -134,6 +134,7 @@ public class MainActivity extends ActionBarActivity {
 
                         // Check if the user has purchased the inventory
                         if (inventory.hasPurchase("12monthauto")) {
+                            // TODO: See how multiple purchases work.. and renewals
                             Purchase purchase = inventory.getPurchase("12monthauto");
                             Log.i("InApp", "Purchase: " + purchase.toString());
 
@@ -141,7 +142,6 @@ public class MainActivity extends ActionBarActivity {
 
                             if (Helpers.isSubscriptionValid(purchaseDate, 12)) {
                                 // User has a valid subscription
-                                // TODO: TEST THIS!
                                 Publisher.INSTANCE.hasValidSubscription = true;
                                 for (Publisher.SubscriptionListener listener : Publisher.INSTANCE.subscriptionListeners) {
                                     Log.i("InApp", "Sending listener subscription valid.");
@@ -151,6 +151,7 @@ public class MainActivity extends ActionBarActivity {
                                 Log.i("InApp", "Subscription expiry date: " + Helpers.subscriptionExpiryDate(purchaseDate, 12));
                             }
                         } else if (inventory.hasPurchase("1monthauto")) {
+                            // TODO: See how multiple purchases work.. and renewals
                             Purchase purchase = inventory.getPurchase("1monthauto");
                             Log.i("InApp", "Purchase: " + purchase.toString());
 
@@ -158,7 +159,6 @@ public class MainActivity extends ActionBarActivity {
 
                             if (Helpers.isSubscriptionValid(purchaseDate, 1)) {
                                 // User has a valid subscription
-                                // TODO: TEST THIS!
                                 Publisher.INSTANCE.hasValidSubscription = true;
                                 for (Publisher.SubscriptionListener listener : Publisher.INSTANCE.subscriptionListeners) {
                                     Log.i("InApp", "Sending listener subscription valid.");
