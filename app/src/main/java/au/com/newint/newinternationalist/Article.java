@@ -38,6 +38,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.StreamCorruptedException;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.lang.reflect.Array;
@@ -77,14 +78,8 @@ public class Article implements Parcelable {
     // TODO: create Images class
 //    ArrayList<Images> images;
 
-    public Article(File jsonFile) {
-        JsonElement root = null;
-        try {
-            root = new JsonParser().parse(new FileReader((File) jsonFile));
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-            throw new IllegalStateException("Issue(File) was passed a non-existent file");
-        }
+    public Article(File jsonFile) throws StreamCorruptedException {
+        JsonElement root = Publisher.parseJsonFile(jsonFile);
 
         // TODO: Work out why this is crashing sometimes when root is JsonNull here.
         // Maybe that the article.json half gets downloaded and never saved?

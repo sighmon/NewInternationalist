@@ -23,6 +23,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.StreamCorruptedException;
 import java.io.Writer;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -54,16 +55,9 @@ public class Issue implements Parcelable {
 
     SparseArray<ThumbnailCacheStreamFactory> thumbnailCacheStreamFactorySparseArray;
 
-    public Issue(File jsonFile) {
-        JsonElement root = null;
-        try {
-            root = new JsonParser().parse(new FileReader((File) jsonFile));
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-            throw new IllegalStateException("Issue(File) was passed a non-existent file");
-        }
+    public Issue(File jsonFile) throws StreamCorruptedException {
 
-        issueJson = root.getAsJsonObject();
+        issueJson = Publisher.parseJsonFile(jsonFile);
         coverCacheStreamFactory = new FileCacheStreamFactory(getCoverLocationOnFilesystem(), new URLCacheStreamFactory(getCoverURL()));
         editorsImageCacheStreamFactory = new FileCacheStreamFactory(getEditorsLetterLocationOnFilesystem(), new URLCacheStreamFactory(getEditorsPhotoURL()));
         thumbnailCacheStreamFactorySparseArray = new SparseArray<>();
@@ -102,7 +96,11 @@ public class Issue implements Parcelable {
                     // do something here with the file
                     if (file.getName().equals("article.json")) {
                         // Add to array
-                        articlesArray.add(new Article(file));
+                        try {
+                            articlesArray.add(new Article(file));
+                        } catch (StreamCorruptedException e) {
+                            // we skip this file, it will be reloaded next time
+                        }
                     }
                 }
             }
@@ -276,7 +274,7 @@ public class Issue implements Parcelable {
 
                 }
 
-                if(callback!=null) {
+                if (callback != null) {
                     callback.onLoadBackground(payload);
                 }
             }

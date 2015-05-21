@@ -20,6 +20,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.StreamCorruptedException;
 import java.io.Writer;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -173,7 +174,11 @@ public enum Publisher {
                     // do something here with the file
                     if (file.getName().equals("issue.json")) {
                         // Add to array
-                        issuesArray.add(new Issue(file));
+                        try {
+                            issuesArray.add(new Issue(file));
+                        } catch (StreamCorruptedException e) {
+                            // don't add it
+                        }
                     }
                 }
             }
@@ -191,7 +196,13 @@ public enum Publisher {
 
         if (issueJson.exists()) {
             // Return parsed issue.json as JsonObject
-            return parseJsonFile(issueJson);
+
+            try {
+                return parseJsonFile(issueJson);
+            } catch (StreamCorruptedException e) {
+                return null;
+            }
+
         } else {
             // We don't have the issue.json, something went wrong with the initial download. HELP!
             // TODO: Download issues.json and re-save to filesystem
@@ -209,7 +220,11 @@ public enum Publisher {
 
         if (articleJson.exists()) {
             // Return parsed issue.json as JsonObject
-            return parseJsonFile(articleJson);
+            try {
+                return parseJsonFile(articleJson);
+            } catch (StreamCorruptedException e) {
+                return null;
+            }
         } else {
             // We don't have the issue.json, something went wrong with the initial download. HELP!
             // TODO: Download article.json and re-save to filesystem
@@ -230,7 +245,7 @@ public enum Publisher {
         return newestIssue;
     }
 
-    public static JsonObject parseJsonFile(Object jsonFile) {
+    public static JsonObject parseJsonFile(File jsonFile) throws StreamCorruptedException {
         JsonElement root = null;
         try {
             root = new JsonParser().parse(new FileReader((File) jsonFile));
@@ -238,12 +253,13 @@ public enum Publisher {
             e.printStackTrace();
         }
 
-
-        if (root != null) {
-            return root.getAsJsonObject();
-        } else {
-            return null;
+        if (root == null || root.isJsonNull()) {
+            jsonFile.delete();
+            throw new StreamCorruptedException(jsonFile.toString() + " was badly formed json");
         }
+
+        return root.getAsJsonObject();
+
     }
 
     public static Date parseDateFromString(String inputString) {
