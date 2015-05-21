@@ -66,7 +66,6 @@ public class Issue implements Parcelable {
         issueJson = root.getAsJsonObject();
         coverCacheStreamFactory = new FileCacheStreamFactory(getCoverLocationOnFilesystem(), new URLCacheStreamFactory(getCoverURL()));
         editorsImageCacheStreamFactory = new FileCacheStreamFactory(getEditorsLetterLocationOnFilesystem(), new URLCacheStreamFactory(getEditorsPhotoURL()));
-
         thumbnailCacheStreamFactorySparseArray = new SparseArray<>();
 
         /*
@@ -89,6 +88,7 @@ public class Issue implements Parcelable {
         articles = getArticles();
         coverCacheStreamFactory = new FileCacheStreamFactory(getCoverLocationOnFilesystem(), new URLCacheStreamFactory(getCoverURL()));
         editorsImageCacheStreamFactory = new FileCacheStreamFactory(getEditorsLetterLocationOnFilesystem(), new URLCacheStreamFactory(getEditorsPhotoURL()));
+        thumbnailCacheStreamFactorySparseArray = new SparseArray<>();
     }
 
     public static ArrayList<Article> buildArticlesFromDir (File dir) {
@@ -315,6 +315,7 @@ public class Issue implements Parcelable {
         articles = getArticles();
         coverCacheStreamFactory = new FileCacheStreamFactory(getCoverLocationOnFilesystem(), new URLCacheStreamFactory(getCoverURL()));
         editorsImageCacheStreamFactory = new FileCacheStreamFactory(getEditorsLetterLocationOnFilesystem(), new URLCacheStreamFactory(getEditorsPhotoURL()));
+        thumbnailCacheStreamFactorySparseArray = new SparseArray<>();
     }
 
     @Override
