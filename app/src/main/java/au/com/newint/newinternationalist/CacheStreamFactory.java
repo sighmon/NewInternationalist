@@ -122,8 +122,9 @@ public abstract class CacheStreamFactory {
     void preload(String startingAt, String stoppingAt, CachePreloadCallback callback) {
         Log.i("CacheStreamFactory", this+"->preload(...,"+startingAt+","+stoppingAt+")");
         PreloadTask preloadTask = new PreloadTask();
-        //preloadTask.callback = callback;
-        preloadTask.execute(new PreloadParameters(this,callback,startingAt,stoppingAt));
+        //preloadTask.execute(new PreloadParameters(this,callback,startingAt,stoppingAt));
+        preloadTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,new PreloadParameters(this,callback,startingAt,stoppingAt));
+
     }
 
     InputStream createInputStream() {
