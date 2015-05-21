@@ -41,7 +41,7 @@ public class TableOfContentsActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_table_of_contents);
-        Fragment tableOfContentsFragment = new TableOfContentsFragment();
+        final Fragment tableOfContentsFragment = new TableOfContentsFragment();
 
         issue = getIntent().getParcelableExtra("issue");
 
@@ -60,7 +60,7 @@ public class TableOfContentsActivity extends ActionBarActivity {
         setTitle("Home");
 
 
-        issue.preloadArticles();
+
     }
 
     @Override
@@ -144,30 +144,17 @@ public class TableOfContentsActivity extends ActionBarActivity {
             final TableOfContentsAdapter adapter = new TableOfContentsAdapter(issueFromActivity);
             recList.setAdapter(adapter);
 
-            // Register for DownloadComplete listener
-            Publisher.ArticlesDownloadCompleteListener listener = new Publisher.ArticlesDownloadCompleteListener() {
-
+            issueFromActivity.preloadArticles(new CacheStreamFactory.CachePreloadCallback() {
                 @Override
-                public void onArticlesDownloadComplete(JsonArray articles) {
-                    Log.i("ArticlesReady", "Received listener, refreshing articles view.");
-                    // Refresh adapter data
+                public void onLoad(byte[] payload) {
                     adapter.notifyDataSetChanged();
-                    Publisher.articleListeners.clear();
                 }
-            };
-            Publisher.INSTANCE.setOnArticlesDownloadCompleteListener(listener);
 
-            // Register for editors photo complete listener.
-            // Register for DownloadComplete listener
-            Publisher.UpdateListener editorImageListener = new Publisher.UpdateListener() {
                 @Override
-                public void onUpdate(Object object) {
+                public void onLoadBackground(byte[] payload) {
 
-                    // Tell the adapter to update the footer view so it loads the editor image
-                    adapter.notifyItemChanged(adapter.getItemCount() - 1);
                 }
-            };
-            Publisher.INSTANCE.setOnDownloadCompleteListener(editorImageListener);
+            });
 
             return rootView;
         }
@@ -259,6 +246,7 @@ public class TableOfContentsActivity extends ActionBarActivity {
                             if (payload != null && payload.length > 0) {
                                 Bitmap coverBitmap = BitmapFactory.decodeByteArray(payload,0,payload.length);
                                 coverImageView.setImageBitmap(coverBitmap);
+
                             }
                         }
 
@@ -291,6 +279,7 @@ public class TableOfContentsActivity extends ActionBarActivity {
                                 if (payload != null && payload.length > 0) {
                                     Bitmap coverBitmap = BitmapFactory.decodeByteArray(payload,0,payload.length);
                                     articleImageView.setImageBitmap(coverBitmap);
+
                                 }
                             }
 
@@ -315,6 +304,7 @@ public class TableOfContentsActivity extends ActionBarActivity {
                                 if (payload != null && payload.length > 0) {
                                     Bitmap editorsImageBitmap = BitmapFactory.decodeByteArray(payload, 0, payload.length);
                                     editorImageView.setImageDrawable(Helpers.roundDrawableFromBitmap(editorsImageBitmap));
+                                    TableOfContentsAdapter.this.notifyItemChanged(TableOfContentsAdapter.this.getItemCount()-1);
                                 }
                             }
 

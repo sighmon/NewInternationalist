@@ -198,7 +198,12 @@ public class Issue implements Parcelable {
         return uri.build();
     }
 
+
     public void preloadArticles() {
+        preloadArticles(null);
+    }
+
+    public void preloadArticles(final CacheStreamFactory.CachePreloadCallback callback) {
 
         // Get SITE_URL
         String siteURLString = (String) Helpers.getSiteURL();
@@ -220,6 +225,9 @@ public class Issue implements Parcelable {
         articlesJSONCacheStreamFactory.preload(new CacheStreamFactory.CachePreloadCallback() {
             @Override
             public void onLoad(byte[] payload) {
+                if (callback != null) {
+                    callback.onLoad(payload);
+                }
             }
 
             @Override
@@ -266,6 +274,10 @@ public class Issue implements Parcelable {
                     // make issue reload articles from disk
                     Issue.this.articles = null;
 
+                }
+
+                if(callback!=null) {
+                    callback.onLoadBackground(payload);
                 }
             }
         });
