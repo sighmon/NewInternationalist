@@ -94,6 +94,7 @@ public class Article implements Parcelable {
     }
 
     public int getID() {
+        // TODO: Fix this crash...
         return articleJson.get("id").getAsInt();
     }
 

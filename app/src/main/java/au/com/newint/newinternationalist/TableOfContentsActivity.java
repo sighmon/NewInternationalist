@@ -145,8 +145,10 @@ public class TableOfContentsActivity extends ActionBarActivity {
             issueFromActivity.preloadArticles(new CacheStreamFactory.CachePreloadCallback() {
                 @Override
                 public void onLoad(byte[] payload) {
-                    // TODO: Fix the double loading...
-                    adapter.notifyDataSetChanged();
+                    // Articles have preloaded, so notify the view.
+                    // Item 0 is the cover, so notify adapter of item 1.
+                    adapter.notifyItemChanged(1);
+                    Log.i("PreloadArticles", "Articles ready, so refreshing first article.");
                 }
 
                 @Override
