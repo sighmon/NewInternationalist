@@ -104,5 +104,9 @@
     <string name="subscribe_already_purchased_read_issue_button">Read this issue</string>
     <string name="login_dialog_purchase_button">Subscribe</string>
     <string name="image_zoom_default_title">Back</string>
+    <string name="toc_dialog_delete_cache_message">Would you like to delete this issue\'s cache to free up some space on your device?</string>
+    <string name="toc_dialog_delete_cache_title">Delete cache?</string>
+    <string name="toc_dialog_delete_cache_ok_button">Delete</string>
+    <string name="toc_dialog_delete_cache_cancel_button">Cancel</string>
 
 </resources>

@@ -2,7 +2,9 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:gravity="center_horizontal" >
+    android:gravity="center_horizontal"
+    android:layout_marginLeft="@dimen/toc_margin"
+    android:layout_marginRight="@dimen/toc_margin">
 
     <ImageView
         android:id="@+id/toc_editor_image"

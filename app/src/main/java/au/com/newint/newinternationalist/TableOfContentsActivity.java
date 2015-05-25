@@ -1,5 +1,7 @@
 package au.com.newint.newinternationalist;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -347,7 +349,7 @@ public class TableOfContentsActivity extends ActionBarActivity {
                 }
             }
 
-            public class TableOfContentsHeaderViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+            public class TableOfContentsHeaderViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnLongClickListener {
 
                 public ImageView issueCoverImageView;
                 public TextView issueNumberDateTextView;
@@ -357,6 +359,7 @@ public class TableOfContentsActivity extends ActionBarActivity {
                     issueCoverImageView = (ImageView) itemView.findViewById(R.id.toc_cover);
                     issueNumberDateTextView = (TextView) itemView.findViewById(R.id.toc_issue_number_date);
                     issueCoverImageView.setOnClickListener(this);
+                    issueCoverImageView.setOnLongClickListener(this);
                 }
 
                 @Override
@@ -366,6 +369,32 @@ public class TableOfContentsActivity extends ActionBarActivity {
                     imageIntent.putExtra("url", issue.getCoverLocationOnFilesystem().getAbsolutePath());
                     imageIntent.putExtra("issue", issue);
                     startActivity(imageIntent);
+                }
+
+                @Override
+                public boolean onLongClick(View v) {
+                    Log.i("TOC", "Long click detected!");
+                    // Ask the user if they'd like to delete this issue's cache
+                    AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                    builder.setMessage(R.string.toc_dialog_delete_cache_message).setTitle(R.string.toc_dialog_delete_cache_title);
+                    builder.setPositiveButton(R.string.toc_dialog_delete_cache_ok_button, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            // User clicked OK button
+                            // Delete this issue cache
+                            Publisher.INSTANCE.deleteCacheForIssue(issue);
+                            getActivity().finish();
+                        }
+                    });
+                    builder.setNegativeButton(R.string.toc_dialog_delete_cache_cancel_button, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            // User cancelled the dialog, so do nothing.
+                        }
+                    });
+                    AlertDialog dialog = builder.create();
+                    dialog.show();
+
+                    // Return true to consume the click
+                    return true;
                 }
             }
 
