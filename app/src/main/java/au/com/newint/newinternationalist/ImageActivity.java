@@ -30,7 +30,14 @@ public class ImageActivity extends ActionBarActivity {
 
         url = getIntent().getStringExtra("url");
         Article article = getIntent().getParcelableExtra("article");
-        setTitle(article.getTitle());
+        Issue issue = getIntent().getParcelableExtra("issue");
+        if (article != null) {
+            setTitle(article.getTitle());
+        } else if (issue != null) {
+            setTitle(issue.getTitle());
+        } else {
+            setTitle(R.string.image_zoom_default_title);
+        }
     }
 
 

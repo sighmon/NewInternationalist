@@ -347,7 +347,7 @@ public class TableOfContentsActivity extends ActionBarActivity {
                 }
             }
 
-            public class TableOfContentsHeaderViewHolder extends RecyclerView.ViewHolder {
+            public class TableOfContentsHeaderViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
                 public ImageView issueCoverImageView;
                 public TextView issueNumberDateTextView;
@@ -356,10 +356,20 @@ public class TableOfContentsActivity extends ActionBarActivity {
                     super(itemView);
                     issueCoverImageView = (ImageView) itemView.findViewById(R.id.toc_cover);
                     issueNumberDateTextView = (TextView) itemView.findViewById(R.id.toc_issue_number_date);
+                    issueCoverImageView.setOnClickListener(this);
+                }
+
+                @Override
+                public void onClick(View v) {
+                    Intent imageIntent = new Intent(MainActivity.applicationContext, ImageActivity.class);
+                    // Pass image url through as a Parcel
+                    imageIntent.putExtra("url", issue.getCoverLocationOnFilesystem().getAbsolutePath());
+                    imageIntent.putExtra("issue", issue);
+                    startActivity(imageIntent);
                 }
             }
 
-            public class TableOfContentsFooterViewHolder extends RecyclerView.ViewHolder {
+            public class TableOfContentsFooterViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
                 public ImageView editorImageView;
                 public TextView editorsLetterTextView;
@@ -370,6 +380,16 @@ public class TableOfContentsActivity extends ActionBarActivity {
                     editorImageView = (ImageView) itemView.findViewById(R.id.toc_editor_image);
                     editorsLetterTextView = (TextView) itemView.findViewById(R.id.toc_editors_letter);
                     editorsNameTextView = (TextView) itemView.findViewById(R.id.toc_editors_name);
+                    editorImageView.setOnClickListener(this);
+                }
+
+                @Override
+                public void onClick(View v) {
+                    Intent imageIntent = new Intent(MainActivity.applicationContext, ImageActivity.class);
+                    // Pass image url through as a Parcel
+                    imageIntent.putExtra("url", issue.getEditorsLetterLocationOnFilesystem().getAbsolutePath());
+                    imageIntent.putExtra("issue", issue);
+                    startActivity(imageIntent);
                 }
             }
         }

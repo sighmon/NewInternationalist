@@ -94,7 +94,7 @@ public class Article implements Parcelable {
     }
 
     public int getID() {
-        // TODO: Fix this crash...
+        // TODO: Fix this crash... seems to only happen with the Fracking issue..
         return articleJson.get("id").getAsInt();
     }
 

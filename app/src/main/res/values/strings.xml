@@ -103,5 +103,6 @@
     <string name="subscribe_loading_progress_message">Loading the current subscriptions and magazines available as in-app purchases.</string>
     <string name="subscribe_already_purchased_read_issue_button">Read this issue</string>
     <string name="login_dialog_purchase_button">Subscribe</string>
+    <string name="image_zoom_default_title">Back</string>
 
 </resources>
