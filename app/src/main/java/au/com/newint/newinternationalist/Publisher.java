@@ -274,33 +274,6 @@ public enum Publisher {
         return releaseDate;
     }
 
-    public boolean deleteCacheForIssue(Issue issue) {
-        File dir = new File(MainActivity.applicationContext.getFilesDir().getPath() + "/" + issue.getID());
-
-        boolean success = false;
-
-        if (dir.isDirectory()) {
-            String[] children = dir.list();
-            for (String child : children) {
-                File childFile = new File(dir, child);
-                if (childFile.isDirectory()) {
-                    String[] childDirChildren = childFile.list();
-                    for (String childDirChild : childDirChildren) {
-                        // Delete everything!
-                        success = new File(childFile, childDirChild).delete();
-                    }
-                } else {
-                    if (!child.contains("json")) {
-                        // Don't delete the .json
-                        success = new File(dir, child).delete();
-                    }
-                }
-            }
-        }
-
-        return success;
-    }
-
     // DEBUG FUNCTIONS
 
     public boolean deleteDirectory(Issue issue) {

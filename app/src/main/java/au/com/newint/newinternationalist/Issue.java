@@ -15,6 +15,19 @@ import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.protocol.ClientContext;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicHeader;
+import org.apache.http.protocol.BasicHttpContext;
+import org.apache.http.protocol.HTTP;
+import org.apache.http.protocol.HttpContext;
+import org.apache.http.util.EntityUtils;
+
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -24,6 +37,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StreamCorruptedException;
+import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -32,6 +46,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+
+import au.com.newint.newinternationalist.util.Purchase;
 
 /**
  * Created by New Internationalist on 4/02/15.
@@ -343,6 +359,238 @@ public class Issue implements Parcelable {
 
         return new ThumbnailCacheStreamFactory(width, height, getEditorsLetterLocationOnFilesystem(), editorsImageCacheStreamFactory);
     }
+
+    public boolean deleteCache() {
+        File dir = new File(MainActivity.applicationContext.getFilesDir().getPath() + "/" + this.getID());
+
+        boolean success = false;
+
+        if (dir.isDirectory()) {
+            String[] children = dir.list();
+            for (String child : children) {
+                File childFile = new File(dir, child);
+                if (childFile.isDirectory()) {
+                    String[] childDirChildren = childFile.list();
+                    for (String childDirChild : childDirChildren) {
+                        // Delete everything!
+                        success = new File(childFile, childDirChild).delete();
+                    }
+                } else {
+                    if (!child.contains("json")) {
+                        // Don't delete the .json
+                        success = new File(dir, child).delete();
+                    }
+                }
+            }
+        }
+
+        return success;
+    }
+
+    public URL getIssueJsonURL() {
+        try {
+            return new URL(Helpers.getSiteURL() + "issues/" + getID() + ".json");
+        } catch (MalformedURLException e) {
+            return null;
+        }
+    }
+
+    public void downloadZip(ArrayList<Purchase> purchases) {
+
+        // TODO: Attempt to get zip URL from rails
+
+        new DownloadZipTask().execute(purchases);
+    }
+
+    // Download body async task
+    private class DownloadZipTask extends AsyncTask<Object, Integer, ArrayList> {
+
+        @Override
+        protected ArrayList doInBackground(Object... objects) {
+
+            // Pass in purchases
+            ArrayList<Purchase> purchases = (ArrayList<Purchase>) objects[0];
+
+            // Get the zip url from rails
+            DefaultHttpClient httpclient = new DefaultHttpClient();
+
+            // Setup post request
+            HttpContext ctx = new BasicHttpContext();
+            ctx.setAttribute(ClientContext.COOKIE_STORE, Publisher.INSTANCE.cookieStore);
+            HttpPost post = new HttpPost(getIssueJsonURL().toString());
+            post.setHeader("Content-Type", "application/json");
+
+            // Add in-app purchase JSON data
+            if (purchases != null && purchases.size() > 0) {
+                JsonArray purchasesJsonArray = new JsonArray();
+                for (Purchase purchase : purchases) {
+                    // Send each purchase JSON data to rails to validate with Google Play
+                    JsonParser parser = new JsonParser();
+                    JsonObject purchaseJsonObject = (JsonObject)parser.parse(purchase.getOriginalJson());
+                    purchasesJsonArray.add(purchaseJsonObject);
+
+                }
+                StringEntity stringEntity = null;
+                try {
+                    stringEntity = new StringEntity(purchasesJsonArray.toString());
+                    stringEntity.setContentEncoding(new BasicHeader(HTTP.CONTENT_TYPE, "application/json"));
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                }
+                post.setEntity(stringEntity);
+            }
+
+            HttpResponse zipURLresponse = null;
+
+            try {
+                // Execute HTTP Post Request
+                zipURLresponse = httpclient.execute(post, ctx);
+
+            } catch (ClientProtocolException e) {
+                Log.i("TOC", "Zip URL download: ClientProtocolException: " + e);
+            } catch (IOException e) {
+                Log.i("TOC", "Zip URL download: IOException: " + e);
+            }
+
+            int zipURLresponseStatusCode;
+            boolean zipURLsuccess = false;
+            ArrayList<Object> responseList = new ArrayList<>();
+
+            if (zipURLresponse != null) {
+                // Add it to the response list
+                responseList.add(zipURLresponse);
+
+                zipURLresponseStatusCode = zipURLresponse.getStatusLine().getStatusCode();
+
+                if (zipURLresponseStatusCode >= 200 && zipURLresponseStatusCode < 300) {
+                    // We have the ZipURL JSON
+                    Log.i("TOC", "Zip URL success: " + zipURLresponse.getStatusLine());
+                    zipURLsuccess = true;
+
+                } else if (zipURLresponseStatusCode > 400 && zipURLresponseStatusCode < 500) {
+                    // Zip request failed
+                    Log.i("TOC", "Zip URL request failed with code: " + zipURLresponseStatusCode);
+
+                } else {
+                    // Server error.
+                    Log.i("TOC", "Zip URL request failed with code: " + zipURLresponseStatusCode + " and response: " + zipURLresponse.getStatusLine());
+                }
+
+            } else {
+                // Error getting zipURL
+                Log.i("TOC", "Zip URL request failed! Response is null");
+            }
+
+            if (zipURLsuccess) {
+                Log.i("TOC", "Success! ZipURL found.");
+
+                // Download the zip file
+
+                String zipURLresponseJSONstring = "";
+                JsonObject zipURLJson;
+                String zipURL = "";
+                HttpResponse zipFileResponse = null;
+                try {
+                    zipURLresponseJSONstring = EntityUtils.toString(zipURLresponse.getEntity());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                if (zipURLresponseJSONstring.length() > 0) {
+                    zipURLJson = new JsonParser().parse(zipURLresponseJSONstring).getAsJsonObject();
+                    zipURL = zipURLJson.get("zipURL").getAsString();
+                }
+
+                if (zipURL != null && zipURL.length() > 0) {
+                    // Setup post request
+                    HttpContext zipContext = new BasicHttpContext();
+                    HttpGet zipGet = new HttpGet(zipURL);
+
+                    try {
+                        // Execute HTTP Post Request
+                        zipFileResponse = httpclient.execute(zipGet, zipContext);
+
+                    } catch (ClientProtocolException e) {
+                        Log.i("TOC", "Zip file download: ClientProtocolException: " + e);
+                    } catch (IOException e) {
+                        Log.i("TOC", "Zip file download: IOException: " + e);
+                    }
+                }
+
+                int zipFileResponseStatusCode;
+                boolean zipFileSuccess = false;
+
+                if (zipFileResponse != null) {
+
+                    // Add it to the response list
+                    responseList.add(zipFileResponse);
+
+                    zipFileResponseStatusCode = zipFileResponse.getStatusLine().getStatusCode();
+
+                    if (zipFileResponseStatusCode >= 200 && zipFileResponseStatusCode < 300) {
+                        // We have the ZipURL JSON
+                        Log.i("TOC", "Zip file success: " + zipFileResponse.getStatusLine());
+                        zipFileSuccess = true;
+
+                    } else if (zipFileResponseStatusCode > 400 && zipFileResponseStatusCode < 500) {
+                        // Zip request failed
+                        Log.i("TOC", "Zip file request failed with code: " + zipFileResponseStatusCode);
+
+                    } else {
+                        // Server error.
+                        Log.i("TOC", "Zip file request failed with code: " + zipFileResponseStatusCode + " and response: " + zipFileResponse.getStatusLine());
+                    }
+
+                } else {
+                    Log.i("TOC", "Zip file download response is null, sorry.");
+                }
+
+                if (zipFileSuccess) {
+                    // TODO: Unzip the zip and move it into place
+
+                    Log.i("TOC", "Zip file: " + zipFileResponse);
+                }
+
+//                try {
+                // OLD CODE......
+                
+//                    bodyHTML = Helpers.wrapInHTML(EntityUtils.toString(response.getEntity(), "UTF-8"));
+//
+//                    File dir = new File(MainActivity.applicationContext.getFilesDir() + "/" + Integer.toString(getIssueID()) + "/", Integer.toString(getID()));
+//
+//                    dir.mkdirs();
+//
+//                    File file = new File(dir, "body.html");
+//
+//                    try {
+//                        Writer w = new FileWriter(file);
+//                        w.write(bodyHTML);
+//                        w.close();
+//                    } catch (IOException e) {
+//                        e.printStackTrace();
+//                        Log.e("ArticleBody", "Error writing body to filesystem.");
+//                    }
+
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+            }
+
+            return responseList;
+        }
+
+        @Override
+        protected void onPostExecute(ArrayList responseList) {
+            super.onPostExecute(responseList);
+
+            // Post listener
+//            Publisher.ArticleBodyDownloadCompleteListener listener = Publisher.INSTANCE.articleBodyDownloadCompleteListener;
+//            if (listener != null) {
+//                listener.onArticleBodyDownloadComplete(responseList);
+//            }
+        }
+    }
+
 
     // PARCELABLE delegate methods
 

@@ -17,6 +17,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.WebView;
 import android.widget.Button;
 import android.widget.GridView;
 import android.widget.ImageView;
@@ -34,10 +35,27 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Locale;
 
+import au.com.newint.newinternationalist.util.IabException;
+import au.com.newint.newinternationalist.util.IabHelper;
+import au.com.newint.newinternationalist.util.IabResult;
+import au.com.newint.newinternationalist.util.Inventory;
+import au.com.newint.newinternationalist.util.Purchase;
+
 
 public class TableOfContentsActivity extends ActionBarActivity {
 
     Issue issue;
+    static IabHelper mHelper;
+    static Inventory inventory = null;
+    static ArrayList<Purchase> purchases = null;
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        // Dispose of the in-app helper
+        if (mHelper != null) mHelper.dispose();
+        mHelper = null;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,6 +79,39 @@ public class TableOfContentsActivity extends ActionBarActivity {
         // Set title to Home screen
         setTitle("Home");
 
+        // Setup in-app billing
+        mHelper = Helpers.setupIabHelper(getApplicationContext());
+
+        mHelper.startSetup(new IabHelper.OnIabSetupFinishedListener() {
+            public void onIabSetupFinished(IabResult result) {
+                if (!result.isSuccess()) {
+                    // Oh noes, there was a problem.
+                    Log.d("TOC", "Problem setting up In-app Billing: " + result);
+                }
+                // Hooray, IAB is fully set up!
+                Log.i("TOC", "In-app billing setup result: " + result);
+
+                // Make a products list of the subscriptions and this issue
+                final ArrayList<String> skuList = new ArrayList<String>();
+                skuList.add(Helpers.TWELVE_MONTH_SUBSCRIPTION_ID);
+                skuList.add(Helpers.ONE_MONTH_SUBSCRIPTION_ID);
+                skuList.add(Helpers.singleIssuePurchaseID(issue.getNumber()));
+
+                try {
+                    purchases = new ArrayList<>();
+                    inventory = mHelper.queryInventory(true, skuList);
+                    // Is there a subscription purchase in the inventory?
+                    for (String sku : skuList) {
+                        Purchase purchase = inventory.getPurchase(sku);
+                        if (purchase != null) {
+                            purchases.add(purchase);
+                        }
+                    }
+                } catch (IabException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
     }
 
     @Override
@@ -373,16 +424,22 @@ public class TableOfContentsActivity extends ActionBarActivity {
 
                 @Override
                 public boolean onLongClick(View v) {
-                    Log.i("TOC", "Long click detected!");
+                    Log.i("TOC", "Cover long click detected!");
                     // Ask the user if they'd like to delete this issue's cache
                     AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
                     builder.setMessage(R.string.toc_dialog_delete_cache_message).setTitle(R.string.toc_dialog_delete_cache_title);
-                    builder.setPositiveButton(R.string.toc_dialog_delete_cache_ok_button, new DialogInterface.OnClickListener() {
+                    builder.setNeutralButton(R.string.toc_dialog_delete_cache_ok_button, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
                             // User clicked OK button
                             // Delete this issue cache
-                            Publisher.INSTANCE.deleteCacheForIssue(issue);
+                            issue.deleteCache();
                             getActivity().finish();
+                        }
+                    });
+                    builder.setPositiveButton(R.string.toc_dialog_download_zip_button, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            // TODO: Download the zip from Rails and unpack it...
+                            issue.downloadZip(purchases);
                         }
                     });
                     builder.setNegativeButton(R.string.toc_dialog_delete_cache_cancel_button, new DialogInterface.OnClickListener() {
