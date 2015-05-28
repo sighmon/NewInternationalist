@@ -30,8 +30,10 @@ import org.apache.http.util.EntityUtils;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -46,6 +48,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 import au.com.newint.newinternationalist.util.Purchase;
 
@@ -549,31 +553,75 @@ public class Issue implements Parcelable {
                     // TODO: Unzip the zip and move it into place
 
                     Log.i("TOC", "Zip file: " + zipFileResponse);
-                }
 
-//                try {
-                // OLD CODE......
-                
-//                    bodyHTML = Helpers.wrapInHTML(EntityUtils.toString(response.getEntity(), "UTF-8"));
-//
-//                    File dir = new File(MainActivity.applicationContext.getFilesDir() + "/" + Integer.toString(getIssueID()) + "/", Integer.toString(getID()));
-//
-//                    dir.mkdirs();
-//
-//                    File file = new File(dir, "body.html");
-//
+                    ZipInputStream zipInputStream = null;
+                    try {
+                        zipInputStream = new ZipInputStream(new BufferedInputStream(zipFileResponse.getEntity().getContent()));
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+                    File saveDir = new File(MainActivity.applicationContext.getFilesDir() + "/" + Integer.toString(getID()));
+
+                    if (zipInputStream != null) {
+                        try {
+                            ZipEntry entry;
+                            while ((entry = zipInputStream.getNextEntry()) != null) {
+                                Log.i("TOC","Zip file entry: " + entry.getName() + ", " + entry.getSize());
+
+                                // TODO: Handle Directories.. it breaks when it gets to dirs.
+
+                                // Read the bytes for this entry
+                                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                                byte[] buffer = new byte[1024];
+                                int count;
+                                while ((count = zipInputStream.read(buffer)) != -1) {
+                                    baos.write(buffer, 0, count);
+                                }
+                                String filename = entry.getName();
+                                byte[] bytes = baos.toByteArray();
+
+                                // Write the bytes to the filesystem
+                                File file = new File(saveDir, filename);
+                                FileOutputStream fos = new FileOutputStream(file);
+                                fos.write(bytes);
+                                fos.close();
+                            }
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        } finally {
+                            try {
+                                zipInputStream.close();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+
+
+                    // while there are entries I process them
 //                    try {
-//                        Writer w = new FileWriter(file);
-//                        w.write(bodyHTML);
-//                        w.close();
+//                        if (zipInputStream != null) {
+//                            while ((entry = zipInputStream.getNextEntry()) != null) {
+//                                Log.i("TOC","Zip file entry: " + entry.getName() + ", " + entry.getSize());
+//                                // consume all the data from this entry
+//                                while (zipInputStream.available() > 0) {
+//                                    File file = new File(saveDir, entry.getName());
+//                                    try {
+//                                        Writer w = new FileWriter(file);
+//                                        w.write(zipInputStream.read());
+//                                        w.close();
+//                                    } catch (IOException e) {
+//                                        e.printStackTrace();
+//                                        Log.e("TOC", "Error writing zip file to filesystem:" + entry.getName());
+//                                    }
+//                                }
+//                            }
+//                        }
 //                    } catch (IOException e) {
 //                        e.printStackTrace();
-//                        Log.e("ArticleBody", "Error writing body to filesystem.");
 //                    }
-
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                }
+                }
             }
 
             return responseList;
