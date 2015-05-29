@@ -550,7 +550,7 @@ public class Issue implements Parcelable {
                 }
 
                 if (zipFileSuccess) {
-                    // TODO: Unzip the zip and move it into place
+                    // Unzip the zip and move it into place
 
                     Log.i("TOC", "Zip file: " + zipFileResponse);
 
@@ -569,24 +569,30 @@ public class Issue implements Parcelable {
                             while ((entry = zipInputStream.getNextEntry()) != null) {
                                 Log.i("TOC","Zip file entry: " + entry.getName() + ", " + entry.getSize());
 
-                                // TODO: Handle Directories.. it breaks when it gets to dirs.
-
-                                // Read the bytes for this entry
-                                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                                byte[] buffer = new byte[1024];
-                                int count;
-                                while ((count = zipInputStream.read(buffer)) != -1) {
-                                    baos.write(buffer, 0, count);
-                                }
+                                // If it's a directory, make it.
                                 String filename = entry.getName();
-                                byte[] bytes = baos.toByteArray();
-
-                                // Write the bytes to the filesystem
                                 File file = new File(saveDir, filename);
-                                FileOutputStream fos = new FileOutputStream(file);
-                                fos.write(bytes);
-                                fos.close();
+
+                                if (file.isDirectory()) {
+                                    file.mkdir();
+                                } else {
+                                    // Read the bytes for this entry
+                                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                                    byte[] buffer = new byte[1024];
+                                    int count;
+                                    while ((count = zipInputStream.read(buffer)) != -1) {
+                                        baos.write(buffer, 0, count);
+                                    }
+
+                                    byte[] bytes = baos.toByteArray();
+
+                                    // Write the bytes to the filesystem
+                                    FileOutputStream fos = new FileOutputStream(file);
+                                    fos.write(bytes);
+                                    fos.close();
+                                }
                             }
+
                         } catch (IOException e) {
                             e.printStackTrace();
                         } finally {
@@ -597,30 +603,6 @@ public class Issue implements Parcelable {
                             }
                         }
                     }
-
-
-                    // while there are entries I process them
-//                    try {
-//                        if (zipInputStream != null) {
-//                            while ((entry = zipInputStream.getNextEntry()) != null) {
-//                                Log.i("TOC","Zip file entry: " + entry.getName() + ", " + entry.getSize());
-//                                // consume all the data from this entry
-//                                while (zipInputStream.available() > 0) {
-//                                    File file = new File(saveDir, entry.getName());
-//                                    try {
-//                                        Writer w = new FileWriter(file);
-//                                        w.write(zipInputStream.read());
-//                                        w.close();
-//                                    } catch (IOException e) {
-//                                        e.printStackTrace();
-//                                        Log.e("TOC", "Error writing zip file to filesystem:" + entry.getName());
-//                                    }
-//                                }
-//                            }
-//                        }
-//                    } catch (IOException e) {
-//                        e.printStackTrace();
-//                    }
                 }
             }
 
@@ -632,9 +614,9 @@ public class Issue implements Parcelable {
             super.onPostExecute(responseList);
 
             // Post listener
-//            Publisher.ArticleBodyDownloadCompleteListener listener = Publisher.INSTANCE.articleBodyDownloadCompleteListener;
+//            Publisher.IssueZipDownloadCompleteListener listener = Publisher.INSTANCE.issueZipDownloadCompleteListener;
 //            if (listener != null) {
-//                listener.onArticleBodyDownloadComplete(responseList);
+//                listener.onIssueZipDownloadComplete(responseList);
 //            }
         }
     }
