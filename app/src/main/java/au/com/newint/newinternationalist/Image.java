@@ -1,6 +1,7 @@
 package au.com.newint.newinternationalist;
 
 import com.google.gson.JsonElement;
+import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 
 import java.io.File;
@@ -57,7 +58,7 @@ public class Image {
 
     public String getCaption() {
         JsonElement element = imageJson.get("caption");
-        if (element == null) {
+        if (element == null || element.isJsonNull()) {
             return "";
         }
         return element.getAsString();
@@ -65,7 +66,7 @@ public class Image {
 
     public String getCredit() {
         JsonElement element = imageJson.get("credit");
-        if (element == null) {
+        if (element == null || element.isJsonNull()) {
             return "";
         }
         return element.getAsString();
