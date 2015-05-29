@@ -614,10 +614,10 @@ public class Issue implements Parcelable {
             super.onPostExecute(responseList);
 
             // Post listener
-//            Publisher.IssueZipDownloadCompleteListener listener = Publisher.INSTANCE.issueZipDownloadCompleteListener;
-//            if (listener != null) {
-//                listener.onIssueZipDownloadComplete(responseList);
-//            }
+            Publisher.IssueZipDownloadCompleteListener listener = Publisher.INSTANCE.issueZipDownloadCompleteListener;
+            if (listener != null) {
+                listener.onIssueZipDownloadComplete(responseList);
+            }
         }
     }
 

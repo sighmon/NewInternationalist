@@ -101,6 +101,9 @@ public enum Publisher {
         void onArticleBodyDownloadComplete(ArrayList responseList);
     }
 
+    public interface IssueZipDownloadCompleteListener {
+        void onIssueZipDownloadComplete(ArrayList responseList);
+    }
 
     public void setOnDownloadCompleteListener(UpdateListener listener) {
         // Store the listener object
@@ -114,6 +117,10 @@ public enum Publisher {
 
     public void removeArticleBodyDownloadCompleteListener(ArticleBodyDownloadCompleteListener listener) {
         listeners.remove(listener);
+    }
+
+    public void removeIssueZipDownloadCompleteListener(IssueZipDownloadCompleteListener zipListener) {
+        listeners.remove(zipListener);
     }
 
     public void setLoggedInListener(LoginListener listener) {
@@ -134,10 +141,16 @@ public enum Publisher {
     }
 
     ArticleBodyDownloadCompleteListener articleBodyDownloadCompleteListener;
+    IssueZipDownloadCompleteListener issueZipDownloadCompleteListener;
 
     public void setOnArticleBodyDownloadCompleteListener(ArticleBodyDownloadCompleteListener listener) {
         // Store the listener object
         articleBodyDownloadCompleteListener = listener;
+    }
+
+    public void setOnIssueZipDownloadCompleteListener(IssueZipDownloadCompleteListener listener) {
+        // Store the listener object
+        issueZipDownloadCompleteListener = listener;
     }
 
     public int numberOfIssues() {

@@ -54,7 +54,7 @@
     <string name="article_teaser">Article teaser</string>
     <string name="article_categories">Category, category</string>
     <string name="login_dialog_title_article_body">Subscribe?</string>
-    <string name="login_dialog_message_article_body">It doesn\'t look like you\'re a subscriber or if you are, perhaps you haven\'t logged in yet. What would you like to do?</string>
+    <string name="login_dialog_message_article_body">It doesn\'t look like you\'re a subscriber or if you are, perhaps your subscription has expired or you haven\'t logged in yet. What would you like to do?</string>
     <string name="login_dialog_ok_button">Login</string>
     <string name="login_dialog_cancel_button">Cancel</string>
     <string name="no_internet_dialog_title_article_body">No internet?</string>
@@ -109,5 +109,12 @@
     <string name="toc_dialog_delete_cache_ok_button">Delete</string>
     <string name="toc_dialog_delete_cache_cancel_button">Cancel</string>
     <string name="toc_dialog_download_zip_button">Download</string>
+    <string name="zip_download_dialog_title">Download failed!</string>
+    <string name="zip_download_dialog_message">Sorry, something went wrong with the download. The error was: </string>
+    <string name="zip_download_dialog_ok_button">OK</string>
+    <string name="zip_download_dialog_email_dev_button">Email us</string>
+    <string name="zip_download_dialog_email_subject">Android app magazine download failed</string>
+    <string name="zip_download_dialog_email_body">Hi, the magazine download failed with errors:</string>
+    <string name="zip_download_dialog_email_chooser">Send email</string>
 
 </resources>

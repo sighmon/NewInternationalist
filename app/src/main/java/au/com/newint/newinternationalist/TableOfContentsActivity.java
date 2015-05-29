@@ -27,6 +27,8 @@ import android.widget.TextView;
 
 import com.google.gson.JsonArray;
 
+import org.apache.http.HttpResponse;
+
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -209,6 +211,109 @@ public class TableOfContentsActivity extends ActionBarActivity {
 
                 }
             });
+
+            // Register for the listener when the zip file has downloaded and unzipped
+            Publisher.IssueZipDownloadCompleteListener issueZipDownloadCompleteListener = new Publisher.IssueZipDownloadCompleteListener() {
+
+                @Override
+                public void onIssueZipDownloadComplete(ArrayList responseList) {
+                    Log.i("TOC", "Received listener, handling zip download response.");
+                    // Check response, and respond with dialog
+
+                    // TODO: loop through responses instead of just getting the first one...
+
+                    final HttpResponse response;
+                    int responseStatusCode;
+
+                    if (responseList != null && responseList.size() > 0) {
+                        response = (HttpResponse) responseList.get(0);
+                    } else {
+                        response = null;
+                    }
+
+                    if (response != null) {
+                        responseStatusCode = response.getStatusLine().getStatusCode();
+
+                        if (responseStatusCode >= 200 && responseStatusCode < 300) {
+                            // The zip downloaded and completed!
+                            // TODO: Let the user know.
+
+                        } else if (responseStatusCode > 400 && responseStatusCode < 500) {
+                            // Article request failed
+                            Log.i("TOC", "Zip download failed with code: " + responseStatusCode);
+                            // Alert and intent to login.
+                            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                            builder.setMessage(R.string.login_dialog_message_article_body).setTitle(R.string.login_dialog_title_article_body);
+                            builder.setPositiveButton(R.string.login_dialog_ok_button, new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                    // User clicked OK button
+                                    Intent loginIntent = new Intent(rootView.getContext(), LoginActivity.class);
+                                    startActivity(loginIntent);
+                                }
+                            });
+                            builder.setNeutralButton(R.string.login_dialog_purchase_button, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int id) {
+                                    // User clicked Purchase button
+                                    Intent subscribeIntent = new Intent(rootView.getContext(), SubscribeActivity.class);
+                                    startActivity(subscribeIntent);
+                                }
+                            });
+                            builder.setNegativeButton(R.string.login_dialog_cancel_button, new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                    // User cancelled the dialog
+                                }
+                            });
+                            AlertDialog dialog = builder.create();
+                            dialog.show();
+
+                        } else {
+                            // Some other error.
+                            Log.i("TOC", "Zip download failed with code: " + responseStatusCode + " and response: " + response.getStatusLine());
+                            // Alert the user of the error.
+                            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                            builder.setMessage(getResources().getString(R.string.zip_download_dialog_message) + response.getStatusLine()).setTitle(R.string.zip_download_dialog_title);
+                            builder.setPositiveButton(R.string.zip_download_dialog_ok_button, new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                    // User clicked OK button
+                                }
+                            });
+                            builder.setNeutralButton(R.string.zip_download_dialog_email_dev_button, new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int id) {
+                                    // User wants to let us know about it...
+                                    Intent intent = new Intent(Intent.ACTION_SEND);
+                                    String[] email = new String[] {Helpers.getVariableFromConfig("EMAIL_ADDRESS")};
+                                    intent.setType("text/plain");
+                                    intent.putExtra(Intent.EXTRA_EMAIL, email);
+                                    intent.putExtra(Intent.EXTRA_SUBJECT, getResources().getString(R.string.zip_download_dialog_email_subject));
+                                    intent.putExtra(Intent.EXTRA_TEXT, getResources().getString(R.string.zip_download_dialog_email_body)
+                                            + " '" + response.getStatusLine()
+                                            + "' For IssueID: " + issueFromActivity.getID());
+
+                                    startActivity(Intent.createChooser(intent, getResources().getString(R.string.zip_download_dialog_email_chooser)));
+                                }
+                            });
+                            AlertDialog dialog = builder.create();
+                            dialog.show();
+                        }
+
+                    } else {
+                        // Error getting zip
+                        Log.i("TOC", "Zip download failed! Response is null");
+                        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                        builder.setMessage(R.string.no_internet_dialog_message_article_body).setTitle(R.string.no_internet_dialog_title_article_body);
+                        builder.setNegativeButton(R.string.no_internet_dialog_ok_button, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                // User cancelled the dialog
+                            }
+                        });
+                        AlertDialog dialog = builder.create();
+                        dialog.show();
+                    }
+                }
+            };
+            Publisher.INSTANCE.setOnIssueZipDownloadCompleteListener(issueZipDownloadCompleteListener);
 
             return rootView;
         }
