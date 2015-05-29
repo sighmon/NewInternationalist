@@ -27,6 +27,7 @@ import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.GridView;
 import android.widget.ListAdapter;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -198,8 +199,12 @@ public class ArticleActivity extends ActionBarActivity {
 
                     // Now attempt to get the expanded article body sending any in-app purchases
                     String articleBodyHTML = article.getExpandedBody(purchases);
+                    ProgressBar articleBodyLoadingSpinner = (ProgressBar) rootView.findViewById(R.id.article_body_loading_spinner);
                     if (articleBodyHTML == null) {
-                        articleBodyHTML = Helpers.wrapInHTML("<p>Loading...</p>");
+                        articleBodyHTML = Helpers.wrapInHTML("");
+                        articleBodyLoadingSpinner.setVisibility(View.VISIBLE);
+                    } else {
+                        articleBodyLoadingSpinner.setVisibility(View.GONE);
                     }
                     final WebView articleBody = (WebView) rootView.findViewById(R.id.article_body);
                     articleBody.loadDataWithBaseURL("file:///android_asset/", articleBodyHTML, "text/html", "utf-8", null);
@@ -215,6 +220,7 @@ public class ArticleActivity extends ActionBarActivity {
                 articleBody.setWebViewClient(new WebViewClient() {
                     @Override
                     public void onPageFinished (WebView view, String url) {
+
                         // Insert the images from the cache onPageFinished loading
                         ArrayList<Image> images = article.getImages();
                         for (final Image image : images) {
@@ -285,6 +291,7 @@ public class ArticleActivity extends ActionBarActivity {
             TextView articleTitle = (TextView) rootView.findViewById(R.id.article_title);
             TextView articleTeaser = (TextView) rootView.findViewById(R.id.article_teaser);
             final WebView articleBody = (WebView) rootView.findViewById(R.id.article_body);
+            final ProgressBar articleBodyLoadingSpinner = (ProgressBar) rootView.findViewById(R.id.article_body_loading_spinner);
 
             articleTitle.setText(article.getTitle());
             String teaserString = article.getTeaser();
@@ -311,6 +318,9 @@ public class ArticleActivity extends ActionBarActivity {
                 @Override
                 public void onArticleBodyDownloadComplete(ArrayList responseList) {
                     Log.i("ArticleBody", "Received listener, refreshing article body.");
+
+                    articleBodyLoadingSpinner.setVisibility(View.GONE);
+
                     // Check response, and respond with dialog or refresh body
                     HttpResponse response = (HttpResponse) responseList.get(0);
                     String bodyHTML = "";

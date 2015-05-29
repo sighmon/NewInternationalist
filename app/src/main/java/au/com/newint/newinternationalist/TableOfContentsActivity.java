@@ -22,6 +22,7 @@ import android.widget.Button;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
@@ -220,6 +221,9 @@ public class TableOfContentsActivity extends ActionBarActivity {
                     Log.i("TOC", "Received listener, handling zip download response.");
                     // Check response, and respond with dialog
 
+                    ProgressBar progressSpinner = (ProgressBar) rootView.findViewById(R.id.toc_zip_loading_spinner);
+                    progressSpinner.setVisibility(View.GONE);
+
                     // TODO: loop through responses instead of just getting the first one...
 
                     final HttpResponse response;
@@ -236,7 +240,16 @@ public class TableOfContentsActivity extends ActionBarActivity {
 
                         if (responseStatusCode >= 200 && responseStatusCode < 300) {
                             // The zip downloaded and completed!
-                            // TODO: Let the user know.
+                            // Alert the user that it was a success!
+                            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                            builder.setMessage(R.string.zip_download_success_dialog_message).setTitle(R.string.zip_download_success_dialog_title);
+                            builder.setPositiveButton(R.string.zip_download_dialog_ok_button, new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                    // User clicked OK button
+                                }
+                            });
+                            AlertDialog dialog = builder.create();
+                            dialog.show();
 
                         } else if (responseStatusCode > 400 && responseStatusCode < 500) {
                             // Article request failed
@@ -509,11 +522,13 @@ public class TableOfContentsActivity extends ActionBarActivity {
 
                 public ImageView issueCoverImageView;
                 public TextView issueNumberDateTextView;
+                public ProgressBar zipDownloadProgressSpinner;
 
                 public TableOfContentsHeaderViewHolder(View itemView) {
                     super(itemView);
                     issueCoverImageView = (ImageView) itemView.findViewById(R.id.toc_cover);
                     issueNumberDateTextView = (TextView) itemView.findViewById(R.id.toc_issue_number_date);
+                    zipDownloadProgressSpinner = (ProgressBar) itemView.findViewById(R.id.toc_zip_loading_spinner);
                     issueCoverImageView.setOnClickListener(this);
                     issueCoverImageView.setOnLongClickListener(this);
                 }
@@ -543,8 +558,9 @@ public class TableOfContentsActivity extends ActionBarActivity {
                     });
                     builder.setPositiveButton(R.string.toc_dialog_download_zip_button, new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int id) {
-                            // TODO: Download the zip from Rails and unpack it...
+                            // Download the zip from Rails and unpack it...
                             issue.downloadZip(purchases);
+                            zipDownloadProgressSpinner.setVisibility(View.VISIBLE);
                         }
                     });
                     builder.setNegativeButton(R.string.toc_dialog_delete_cache_cancel_button, new DialogInterface.OnClickListener() {

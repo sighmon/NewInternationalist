@@ -16,6 +16,13 @@
         android:layout_centerHorizontal="true"
         android:contentDescription="@string/toc_cover_description" />
 
+    <ProgressBar
+        android:id="@+id/toc_zip_loading_spinner"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:visibility="gone" />
+
     <TextView
         android:text="@string/toc_issue_number_date"
         android:id="@+id/toc_issue_number_date"

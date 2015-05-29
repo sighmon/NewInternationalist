@@ -116,5 +116,7 @@
     <string name="zip_download_dialog_email_subject">Android app magazine download failed</string>
     <string name="zip_download_dialog_email_body">Hi, the magazine download failed with errors:</string>
     <string name="zip_download_dialog_email_chooser">Send email</string>
+    <string name="zip_download_success_dialog_title">Complete!</string>
+    <string name="zip_download_success_dialog_message">This magazine has finished downloading and is on your device for ready for reading now or off-line.</string>
 
 </resources>
