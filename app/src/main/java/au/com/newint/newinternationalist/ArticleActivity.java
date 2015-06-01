@@ -4,8 +4,10 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.ApplicationInfo;
 import android.database.DataSetObserver;
 import android.graphics.PorterDuff;
+import android.os.Build;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v4.app.Fragment;
@@ -216,6 +218,14 @@ public class ArticleActivity extends ActionBarActivity {
 
                 // When the article webView body has finished loading, insert the images.
                 final WebView articleBody = (WebView) rootView.findViewById(R.id.article_body);
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                    if (0 != (MainActivity.applicationContext.getApplicationInfo().flags &= ApplicationInfo.FLAG_DEBUGGABLE)) {
+                        // Allow debugging via chrome if app is in debug build
+                        WebView.setWebContentsDebuggingEnabled(true);
+                    }
+                }
+
                 articleBody.getSettings().setJavaScriptEnabled(true);
                 articleBody.setWebViewClient(new WebViewClient() {
                     @Override

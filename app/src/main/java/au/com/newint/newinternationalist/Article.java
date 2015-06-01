@@ -45,6 +45,7 @@ import java.lang.reflect.Array;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -179,6 +180,7 @@ public class Article implements Parcelable {
 
     private String expandImageTagsInBody(String body) {
 
+        ArrayList<Image> images = getImages();
         Pattern regex = Pattern.compile("\\[File:(\\d+)(?:\\|([^\\]]*))?]");
         Matcher regexMatcher = regex.matcher(body);
         String imageID = null;
@@ -191,7 +193,7 @@ public class Article implements Parcelable {
             imageID = regexMatcher.group(1);
             String[] options = new String[0];
             if (regexMatcher.group(2) != null) {
-                options = regexMatcher.group(2).split("|");
+                options = regexMatcher.group(2).split("\\|");
             }
             String cssClass = "article-image";
             String imageWidth = "300";
@@ -209,15 +211,13 @@ public class Article implements Parcelable {
                     cssClass = "article-image article-image-small";
                     imageWidth = "150";
                 }
+            }
 
-                // TODO: Is no-shadow actually working???
-                if (option.equalsIgnoreCase("ns")) {
-                    cssClass += " no-shadow";
-                }
-
-                if (option.equalsIgnoreCase("left")) {
-                    cssClass += " article-image-float-none";
-                }
+            // Check for no shadow and left options
+            if (Arrays.asList(options).contains("ns")) {
+                cssClass += " no-shadow";
+            } else if (Arrays.asList(options).contains("left")) {
+                cssClass += " article-image-float-none";
             }
 
             String credit_div = null;
@@ -226,7 +226,7 @@ public class Article implements Parcelable {
             String imageCaption = null;
             String imageSource = "file:///android_res/drawable/loading_image.png";
             String imageZoomURI = "#";
-            ArrayList<Image> images = getImages();
+
             Image image = null;
             for (Image anImage : images) {
                 if (anImage.getID() == Integer.valueOf(imageID)) {
@@ -246,11 +246,38 @@ public class Article implements Parcelable {
                 caption_div = String.format("<div class='new-image-caption'>%1$s</div>", imageCaption);
             }
 
-            // TODO: Add the image zoom functionality here...
             replacement = String.format("<div class='%1$s'><a href='%2$s'><img id='image%3$s' width='%4$s' src='%5$s'/></a>%6$s%7$s</div>", cssClass, imageZoomURI, imageID, imageWidth, imageSource, caption_div, credit_div);
 
             body = body.substring(0, matchResult.start()) + replacement + body.substring(matchResult.end());
             regexMatcher.reset(body);
+        }
+
+        if (imageID == null && images != null && images.size() > 0) {
+            // There are images that haven't been embedded in the body
+            String imageStringOfMissingImages = "";
+            for (Image missedImage : images) {
+                // Build up new string of images
+                imageStringOfMissingImages += String.format("[File:%1$s]", Integer.toString(missedImage.getID()));
+            }
+            // Add image [File: xx|full] tag to body and recursively try again
+            if (!imageStringOfMissingImages.equals("")) {
+                // Searching for article-body tag.. could do this better???
+                String emptyArticleBodyString = "<div class=\"article-body\">\\s*<p(.*)>\\s*</p>\\s*</div>";
+                Pattern emptyBodyRegex = Pattern.compile(emptyArticleBodyString);
+                Matcher emptyBodyRegexMatcher = emptyBodyRegex.matcher(body);
+                boolean matchFound = false;
+                while (emptyBodyRegexMatcher.find()) {
+                    MatchResult emptyMatchResult = emptyBodyRegexMatcher.toMatchResult();
+                    body = body.substring(0, emptyMatchResult.start()) + imageStringOfMissingImages + body.substring(emptyMatchResult.end());
+                    emptyBodyRegexMatcher.reset(body);
+                    matchFound = true;
+                }
+                // Am I doing the recursion right here?
+                // TODO: Seems to be returning twice.. but works.
+                if (matchFound) {
+                    return expandImageTagsInBody(body);
+                }
+            }
         }
 
         return body;
