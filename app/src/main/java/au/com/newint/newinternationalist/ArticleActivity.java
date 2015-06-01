@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.database.DataSetObserver;
 import android.graphics.PorterDuff;
+import android.net.Uri;
 import android.os.Build;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.ActionBarActivity;
@@ -268,8 +269,8 @@ public class ArticleActivity extends ActionBarActivity {
                     public boolean shouldOverrideUrlLoading(WebView  view, String  url) {
                         String[] pathComponents = url.split("\\.");
                         String fileExtension = pathComponents[pathComponents.length - 1];
-                        Log.i("Article", "Image tapped: " + fileExtension);
-                        if ( fileExtension.equals("jpeg") || fileExtension.equals("jpg") || fileExtension.equals("png") || fileExtension.equals("gif") ){
+                        Log.i("Article", "Link tapped: " + url);
+                        if ( fileExtension.equals("jpeg") || fileExtension.equals("jpg") || fileExtension.equals("png") || fileExtension.equals("gif") ) {
                             // An image was tapped
                             Intent imageIntent = new Intent(MainActivity.applicationContext, ImageActivity.class);
 //                          // Pass the image url through
@@ -277,8 +278,24 @@ public class ArticleActivity extends ActionBarActivity {
                             imageIntent.putExtra("article", article);
                             startActivity(imageIntent);
                             return true;
+                        } else if (url.matches("(.*)/issues/(\\d+)/articles/(\\d+)")) {
+                            // It's a link to another article
+                            // TODO: Handle this
+
+                            return true;
+                        } else if (url.matches("(.*)/issues/(\\d+)")) {
+                            // It's a link to another issue
+                            int issueID = Integer.parseInt(url.replaceAll("\\D+",""));
+                            Issue issueInUrl = new Issue(issueID);
+                            Intent tableOfContentsIntent = new Intent(rootView.getContext(), TableOfContentsActivity.class);
+                            // Pass issue through as a Parcel
+                            tableOfContentsIntent.putExtra("issue", issueInUrl);
+                            startActivity(tableOfContentsIntent);
+                            return true;
                         } else {
-                            // TODO: Something else tapped
+                            // An external link tapped
+                            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                            startActivity(browserIntent);
                             return true;
                         }
                     }
