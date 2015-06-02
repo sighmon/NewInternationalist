@@ -323,6 +323,19 @@ public class Issue implements Parcelable {
         return articles;
     }
 
+    public Article getArticleWithID(int articleID) {
+        
+        Article articleMatched = null;
+        if (articles != null && articles.size() > 0) {
+            for (Article article : articles) {
+                if (article.getID() == articleID) {
+                    articleMatched = article;
+                }
+            }
+        }
+        return articleMatched;
+    }
+
     public ThumbnailCacheStreamFactory getCoverCacheStreamFactoryForSize(int width) {
         //store in a hash, only make once for each width
         ThumbnailCacheStreamFactory tcsf = thumbnailCacheStreamFactorySparseArray.get(width);

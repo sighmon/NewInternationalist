@@ -210,7 +210,14 @@ public class ArticleActivity extends ActionBarActivity {
                         articleBodyLoadingSpinner.setVisibility(View.GONE);
                     }
                     final WebView articleBody = (WebView) rootView.findViewById(R.id.article_body);
-                    articleBody.loadDataWithBaseURL("file:///android_asset/", articleBodyHTML, "text/html", "utf-8", null);
+                    if (articleBody.getContentHeight() == 0) {
+                        // Load the body if there isn't any content
+                        articleBody.loadDataWithBaseURL("file:///android_asset/", articleBodyHTML, "text/html", "utf-8", null);
+                    } else {
+                        // If the content height is > 0, We're returning from another article so don't reload the body
+                        Log.w("Article", "Intent from another article, so not re-loading body...");
+                    }
+
                 }
             });
 
@@ -280,8 +287,29 @@ public class ArticleActivity extends ActionBarActivity {
                             return true;
                         } else if (url.matches("(.*)/issues/(\\d+)/articles/(\\d+)")) {
                             // It's a link to another article
-                            // TODO: Handle this
-
+                            String[] components = url.split("/");
+                            ArrayList<String> issueArticleIDs = new ArrayList<String>();
+                            for (String component : components) {
+                                if (component.matches("(\\d+)")) {
+                                    // It's a digit, add it to our ID array
+                                    issueArticleIDs.add(component);
+                                }
+                            }
+                            if (issueArticleIDs.size() == 2) {
+                                Issue issueInUrl = new Issue(Integer.parseInt(issueArticleIDs.get(0)));
+                                Article articleInUrl = issueInUrl.getArticleWithID(Integer.parseInt(issueArticleIDs.get(1)));
+                                if (issueInUrl != null && articleInUrl != null) {
+                                    Intent articleIntent = new Intent(rootView.getContext(), ArticleActivity.class);
+                                    articleIntent.putExtra("issue", issueInUrl);
+                                    articleIntent.putExtra("article", articleInUrl);
+                                    startActivity(articleIntent);
+                                    Log.i("Article", "Opening article: " + articleInUrl.getTitle() + " (" + articleInUrl.getID() + ")");
+                                } else {
+                                    Log.e("Article", "Error: issue or article in URL is null, so can't open article.");
+                                }
+                            } else {
+                                Log.e("Article", "Error parsing issue or article ID in link.");
+                            }
                             return true;
                         } else if (url.matches("(.*)/issues/(\\d+)")) {
                             // It's a link to another issue
