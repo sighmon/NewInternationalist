@@ -76,6 +76,12 @@ import au.com.newint.newinternationalist.util.Inventory;
 import au.com.newint.newinternationalist.util.Purchase;
 import au.com.newint.newinternationalist.util.SkuDetails;
 
+import com.parse.Parse;
+import com.parse.ParseException;
+import com.parse.ParseInstallation;
+import com.parse.ParsePush;
+import com.parse.SaveCallback;
+
 public class MainActivity extends ActionBarActivity {
 
     static boolean newIssueAdded = false;
@@ -174,8 +180,22 @@ public class MainActivity extends ActionBarActivity {
             }
         });
 
+        // Setup push notifications
+        Parse.initialize(this, Helpers.getVariableFromConfig("PARSE_APP_ID"), Helpers.getVariableFromConfig("PARSE_CLIENT_KEY"));
+        ParseInstallation.getCurrentInstallation().saveInBackground();
+        ParsePush.subscribeInBackground("", new SaveCallback() {
+            @Override
+            public void done(ParseException e) {
+                if (e == null) {
+                    Log.d("com.parse.push", "Successfully subscribed to the broadcast channel.");
+                } else {
+                    Log.e("com.parse.push", "Failed to subscribe for push", e);
+                }
+            }
+        });
+
         // Download the latest issues.json list of magazines
-        Publisher.INSTANCE.issuesJSONCacheStreamFactory.preload("net",null,new CacheStreamFactory.CachePreloadCallback() {
+        Publisher.INSTANCE.issuesJSONCacheStreamFactory.preload("net", null, new CacheStreamFactory.CachePreloadCallback() {
             @Override
             public void onLoadBackground(byte[] payload) {
 
@@ -183,7 +203,7 @@ public class MainActivity extends ActionBarActivity {
 
                 JsonArray magazines = null;
 
-                if(payload.length>0) {
+                if (payload.length > 0) {
 
                     JsonElement root = new JsonParser().parse(new String(payload));
                     //TODO: throws an exception (which one?) if the payload is empty instead of returning null
@@ -194,7 +214,7 @@ public class MainActivity extends ActionBarActivity {
 
                 Issue latestIssueOnFile = null;
 
-                if (magazines!=null) {
+                if (magazines != null) {
                     JsonObject latestIssueOnlineJson = magazines.get(0).getAsJsonObject();
                     //latestIssue = new Issue()
 
@@ -262,7 +282,7 @@ public class MainActivity extends ActionBarActivity {
                 //if latestIssueOnFile==null we probably have no internet, and this is the first run
                 //TODO: DRY this up, maybe make a helper?
 
-                if(latestIssueOnFile==null) {
+                if (latestIssueOnFile == null) {
                     Log.i("ArticleBody", "Failed! Response is null");
                     AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
                     builder.setMessage(R.string.no_internet_dialog_message_article_body).setTitle(R.string.no_internet_dialog_title_article_body);

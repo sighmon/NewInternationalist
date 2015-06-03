@@ -299,15 +299,12 @@ public class Issue implements Parcelable {
                 }
             }
         });
-
-
-
     }
 
     public ArrayList<Article> getArticles() {
         // articles is nulled by the DownloadArticlesJSONTask.onPostExecute in Publisher
 
-        if (articles == null) {
+        if (articles == null || articles.size() == 0) {
             // assumes that all articles have been downloaded..
             File dir = new File(MainActivity.applicationContext.getFilesDir() + "/" + Integer.toString(getID()) + "/");
             articles = buildArticlesFromDir(dir);
@@ -324,8 +321,11 @@ public class Issue implements Parcelable {
     }
 
     public Article getArticleWithID(int articleID) {
-        
+        // TODO: Need to do a syncronous loadArticles version of preloadArticles for in-app links
         Article articleMatched = null;
+        if (articles == null || articles.size() == 0) {
+            articles = getArticles();
+        }
         if (articles != null && articles.size() > 0) {
             for (Article article : articles) {
                 if (article.getID() == articleID) {
