@@ -1,13 +1,23 @@
 package au.com.newint.newinternationalist;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.webkit.WebView;
 import android.widget.TextView;
+
+import com.parse.Parse;
+import com.parse.ParseInstallation;
+import com.parse.ParseObject;
+import com.parse.ParseQuery;
+import com.parse.ParseUser;
 
 
 public class AboutActivity extends ActionBarActivity {
@@ -32,6 +42,26 @@ public class AboutActivity extends ActionBarActivity {
         WebView webview = (WebView) findViewById(R.id.about_web_view);
         webview.setBackgroundColor(0x00000000);
         webview.loadUrl("file:///android_asset/about.html");
+
+        // Display Parse Id for debugging
+        versionTextView.setOnLongClickListener(new View.OnLongClickListener() {
+
+            @Override
+            public boolean onLongClick(View v) {
+                // Show the parse ID
+                String parseID = ParseInstallation.getCurrentInstallation().getObjectId();
+                AlertDialog.Builder builder = new AlertDialog.Builder(v.getContext());
+                builder.setMessage(parseID).setTitle(R.string.parse_id_dialog_title);
+                builder.setPositiveButton(R.string.parse_id_dialog_ok_button, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        // User clicked OK button
+                    }
+                });
+                AlertDialog dialog = builder.create();
+                dialog.show();
+                return true;
+            }
+        });
     }
 
 
