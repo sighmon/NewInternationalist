@@ -321,7 +321,6 @@ public class Issue implements Parcelable {
     }
 
     public Article getArticleWithID(int articleID) {
-        // TODO: Need to do a syncronous loadArticles version of preloadArticles for in-app links
         Article articleMatched = null;
         if (articles == null || articles.size() == 0) {
             articles = getArticles();

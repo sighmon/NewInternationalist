@@ -118,5 +118,7 @@
     <string name="zip_download_dialog_email_chooser">Send email</string>
     <string name="zip_download_success_dialog_title">Complete!</string>
     <string name="zip_download_success_dialog_message">This magazine has finished downloading and is on your device for ready for reading now or off-line.</string>
+    <string name="article_link_loading_progress_title">Loading...</string>
+    <string name="article_link_loading_progress_message">We\'re downloading this article for you now, shouldn\'t be too long.</string>
 
 </resources>

@@ -1,6 +1,7 @@
 package au.com.newint.newinternationalist;
 
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -288,7 +289,7 @@ public class ArticleActivity extends ActionBarActivity {
                         } else if (url.matches("(.*)/issues/(\\d+)/articles/(\\d+)")) {
                             // It's a link to another article
                             String[] components = url.split("/");
-                            ArrayList<String> issueArticleIDs = new ArrayList<String>();
+                            final ArrayList<String> issueArticleIDs = new ArrayList<String>();
                             for (String component : components) {
                                 if (component.matches("(\\d+)")) {
                                     // It's a digit, add it to our ID array
@@ -296,17 +297,32 @@ public class ArticleActivity extends ActionBarActivity {
                                 }
                             }
                             if (issueArticleIDs.size() == 2) {
-                                Issue issueInUrl = new Issue(Integer.parseInt(issueArticleIDs.get(0)));
-                                Article articleInUrl = issueInUrl.getArticleWithID(Integer.parseInt(issueArticleIDs.get(1)));
-                                if (issueInUrl != null && articleInUrl != null) {
-                                    Intent articleIntent = new Intent(rootView.getContext(), ArticleActivity.class);
-                                    articleIntent.putExtra("issue", issueInUrl);
-                                    articleIntent.putExtra("article", articleInUrl);
-                                    startActivity(articleIntent);
-                                    Log.i("Article", "Opening article: " + articleInUrl.getTitle() + " (" + articleInUrl.getID() + ")");
-                                } else {
-                                    Log.e("Article", "Error: issue or article in URL is null, so can't open article.");
-                                }
+                                final Issue issueInUrl = new Issue(Integer.parseInt(issueArticleIDs.get(0)));
+                                final ProgressDialog progress = new ProgressDialog(getActivity());
+                                progress.setTitle(getResources().getString(R.string.article_link_loading_progress_title));
+                                progress.setMessage(getResources().getString(R.string.article_link_loading_progress_message));
+                                progress.show();
+                                issueInUrl.preloadArticles(new CacheStreamFactory.CachePreloadCallback() {
+                                    @Override
+                                    public void onLoad(byte[] payload) {
+                                        Article articleInUrl = issueInUrl.getArticleWithID(Integer.parseInt(issueArticleIDs.get(1)));
+                                        if (issueInUrl != null && articleInUrl != null) {
+                                            Intent articleIntent = new Intent(rootView.getContext(), ArticleActivity.class);
+                                            articleIntent.putExtra("issue", issueInUrl);
+                                            articleIntent.putExtra("article", articleInUrl);
+                                            startActivity(articleIntent);
+                                            progress.dismiss();
+                                            Log.i("Article", "Opening article: " + articleInUrl.getTitle() + " (" + articleInUrl.getID() + ")");
+                                        } else {
+                                            Log.e("Article", "Error: issue or article in URL is null, so can't open article.");
+                                        }
+                                    }
+
+                                    @Override
+                                    public void onLoadBackground(byte[] payload) {
+
+                                    }
+                                });
                             } else {
                                 Log.e("Article", "Error parsing issue or article ID in link.");
                             }
