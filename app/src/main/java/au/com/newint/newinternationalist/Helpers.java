@@ -151,7 +151,7 @@ public class Helpers {
     }
 
     public static String wrapInHTML(String htmlToWrap) {
-        // TODO: Load CSS from file and throw it in the HTML returned
+        // Load CSS from file and wrap it in HTML
         return "<html><head><link href='article-body.css' type='text/css' rel='stylesheet'/></head><body>" + htmlToWrap + "</body></html>";
     }
 

@@ -137,6 +137,8 @@ public class CategoryActivity extends ActionBarActivity {
                 // Article
                 Article article = category.getArticles().get(position);
                 // TODO: This calls getArticles() that hits the filesystem Pix to fix.
+                // Do we want to do this though, as we don't want to download
+                // every article for every issue.. or do we???
                 Issue issue = new Issue(article.issueID);
                 CategoryViewHolder categoryViewHolder = ((CategoryViewHolder) holder);
                 categoryViewHolder.articleTitleTextView.setText(article.getTitle());

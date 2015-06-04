@@ -432,7 +432,7 @@ public class TableOfContentsActivity extends ActionBarActivity {
                     // Article
                     Article article = getArticle(position);
                     ArrayList<Image> images = article.getImages();
-                            ((TableOfContentsViewHolder) holder).articleTitleTextView.setText(article.getTitle());
+                    ((TableOfContentsViewHolder) holder).articleTitleTextView.setText(article.getTitle());
                     String articleTeaser = article.getTeaser();
                     TableOfContentsViewHolder tableOfContentsViewHolder = ((TableOfContentsViewHolder) holder);
                     if (articleTeaser != null && !articleTeaser.isEmpty()) {

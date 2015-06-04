@@ -76,9 +76,6 @@ public class Article implements Parcelable {
     JsonObject articleJson;
     int issueID;
 
-    // TODO: create Images class
-//    ArrayList<Images> images;
-
     public Article(File jsonFile) throws StreamCorruptedException {
         JsonElement root = Publisher.parseJsonFile(jsonFile);
 

@@ -273,8 +273,6 @@ public class MainActivity extends ActionBarActivity {
 
             }
 
-            //TODO: does this have to be in the foreground? .. maybe because of the UI stuff?
-
             @Override
             public void onLoad(byte[] payload) {
                 Issue latestIssueOnFile = Publisher.INSTANCE.latestIssue();

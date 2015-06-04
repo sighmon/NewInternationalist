@@ -93,9 +93,9 @@ public enum Publisher {
     }
 
     //TODO: shouldn't this be in Issue?
-    public interface ArticlesDownloadCompleteListener {
-        void onArticlesDownloadComplete(JsonArray articles);
-    }
+//    public interface ArticlesDownloadCompleteListener {
+//        void onArticlesDownloadComplete(JsonArray articles);
+//    }
 
     public interface ArticleBodyDownloadCompleteListener {
         void onArticleBodyDownloadComplete(ArrayList responseList);
@@ -133,12 +133,13 @@ public enum Publisher {
         subscriptionListeners.add(listener);
     }
 
-    static ArrayList <ArticlesDownloadCompleteListener> articleListeners = new ArrayList <ArticlesDownloadCompleteListener> ();
-
-    public void setOnArticlesDownloadCompleteListener(ArticlesDownloadCompleteListener listener) {
-        // Store the listener object
-        articleListeners.add(listener);
-    }
+    // Done using preloadArticles now.. no listeners needed
+//    static ArrayList <ArticlesDownloadCompleteListener> articleListeners = new ArrayList <ArticlesDownloadCompleteListener> ();
+//
+//    public void setOnArticlesDownloadCompleteListener(ArticlesDownloadCompleteListener listener) {
+//        // Store the listener object
+//        articleListeners.add(listener);
+//    }
 
     ArticleBodyDownloadCompleteListener articleBodyDownloadCompleteListener;
     IssueZipDownloadCompleteListener issueZipDownloadCompleteListener;

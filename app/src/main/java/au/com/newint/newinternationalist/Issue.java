@@ -413,7 +413,7 @@ public class Issue implements Parcelable {
 
     public void downloadZip(ArrayList<Purchase> purchases) {
 
-        // TODO: Attempt to get zip URL from rails
+        // Attempt to get zip URL from rails
 
         new DownloadZipTask().execute(purchases);
     }
