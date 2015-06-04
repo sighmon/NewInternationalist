@@ -16,6 +16,7 @@
     <uses-permission android:name="au.com.newint.newinternationalist.permission.C2D_MESSAGE" />
 
     <application
+        android:name=".App"
         android:allowBackup="true"
         android:icon="@drawable/ni_launcher"
         android:label="@string/app_label"
@@ -150,7 +151,7 @@
                 <category android:name="au.com.newint.newinternationalist" />
             </intent-filter>
         </receiver>
-        <receiver android:name="com.parse.ParsePushBroadcastReceiver" android:exported="false">
+        <receiver android:name="au.com.newint.newinternationalist.util.PushNotificationReceiver" android:exported="false">
             <intent-filter>
                 <action android:name="com.parse.push.intent.RECEIVE" />
                 <action android:name="com.parse.push.intent.DELETE" />
