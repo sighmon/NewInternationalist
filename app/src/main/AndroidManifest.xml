@@ -158,7 +158,7 @@
             </intent-filter>
         </receiver>
         <!-- Push icon identifier -->
-        <!--<meta-data android:name="com.parse.push.notification_icon" android:resource="@drawable/push_icon"/>-->
+        <meta-data android:name="com.parse.push.notification_icon" android:resource="@drawable/ni_notification"/>
 
     </application>
 
