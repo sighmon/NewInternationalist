@@ -270,8 +270,13 @@ public class Issue implements Parcelable {
                             ArticleJsonCacheStreamFactory articleJsonCacheStreamFactory = new ArticleJsonCacheStreamFactory(id, Issue.this);
                             OutputStream outputStream = articleJsonCacheStreamFactory.createCacheOutputStream();
                             //FIXME: this doesn't seem to create an actual output file...
-                            new Gson().toJson(jsonObject, new OutputStreamWriter(outputStream));
+                            OutputStreamWriter outputStreamWriter = new OutputStreamWriter(outputStream);
+                            new Gson().toJson(jsonObject, outputStreamWriter);
                             try {
+                                // paranoia...
+                                outputStreamWriter.flush();
+                                outputStreamWriter.close();
+                                outputStream.flush();
                                 outputStream.close();
                             } catch (IOException e) {
                                 Log.e("Issue", "error closing articleJsonCacheStreamFactory output stream: " + e);
