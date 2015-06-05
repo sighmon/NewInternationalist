@@ -38,6 +38,8 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.StreamCorruptedException;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
@@ -72,37 +74,42 @@ public class Issue implements Parcelable {
     JsonObject issueJson;
     CacheStreamFactory coverCacheStreamFactory;
     CacheStreamFactory editorsImageCacheStreamFactory;
+    // issues/<issueID>.json
+    CacheStreamFactory articlesJSONCacheStreamFactory;
 
     SparseArray<ThumbnailCacheStreamFactory> thumbnailCacheStreamFactorySparseArray;
 
     public Issue(File jsonFile) throws StreamCorruptedException {
-
-        issueJson = Publisher.parseJsonFile(jsonFile).getAsJsonObject();
-        coverCacheStreamFactory = new FileCacheStreamFactory(getCoverLocationOnFilesystem(), new URLCacheStreamFactory(getCoverURL()));
-        editorsImageCacheStreamFactory = new FileCacheStreamFactory(getEditorsLetterLocationOnFilesystem(), new URLCacheStreamFactory(getEditorsPhotoURL()));
-        thumbnailCacheStreamFactorySparseArray = new SparseArray<>();
-
-        /*
-        title = getTitle();
-        id = getID();
-        number = getNumber();
-        release = getRelease();
-        editors_name = getEditorsName();
-        editors_letter_html = getEditorsLetterHtml();
-        editors_photo = getEditorsPhotoURL();
-        cover = getCoverURL();
-
-        issueJson = null; // ugh...
-        */
+        this(Publisher.parseJsonFile(jsonFile).getAsJsonObject());
     }
 
     public Issue(int issueID) {
-        //TODO: dry up Issue(File), Issue(int) and Issue(Parcel)
-        issueJson = Publisher.getIssueJsonForId(issueID);
-        articles = getArticles();
+        this(Publisher.getIssueJsonForId(issueID));
+
+    }
+
+    public Issue(JsonObject issueJson) {
+        this.issueJson = issueJson;
         coverCacheStreamFactory = new FileCacheStreamFactory(getCoverLocationOnFilesystem(), new URLCacheStreamFactory(getCoverURL()));
         editorsImageCacheStreamFactory = new FileCacheStreamFactory(getEditorsLetterLocationOnFilesystem(), new URLCacheStreamFactory(getEditorsPhotoURL()));
         thumbnailCacheStreamFactorySparseArray = new SparseArray<>();
+
+        // Get SITE_URL
+        String siteURLString = (String) Helpers.getSiteURL();
+
+        URL articlesURL = null;
+        try {
+            articlesURL = new URL(siteURLString + "issues/" + this.getID() + ".json");
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+
+        File cacheDir = MainActivity.applicationContext.getCacheDir();
+
+        File cacheFile = new File(cacheDir, this.getID() + ".json");
+
+        articlesJSONCacheStreamFactory = new FileCacheStreamFactory(cacheFile, new URLCacheStreamFactory(articlesURL));
+
     }
 
     public static ArrayList<Article> buildArticlesFromDir (File dir) {
@@ -119,6 +126,8 @@ public class Issue implements Parcelable {
                         try {
                             articlesArray.add(new Article(file));
                         } catch (StreamCorruptedException e) {
+
+                            e.printStackTrace();
                             // we skip this file, it will be reloaded next time
                         }
                     }
@@ -223,22 +232,10 @@ public class Issue implements Parcelable {
 
     public void preloadArticles(final CacheStreamFactory.CachePreloadCallback callback) {
 
-        // Get SITE_URL
-        String siteURLString = (String) Helpers.getSiteURL();
 
-        // Get articles.json (actually issueID.json) and save/update our cache
-        URL articlesURL = null;
-        try {
-            articlesURL = new URL(siteURLString + "issues/" + this.getID() + ".json");
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        }
 
-        File cacheDir = MainActivity.applicationContext.getCacheDir();
-        File cacheFile = new File(cacheDir, this.getID() + ".json");
 
         // new way..
-        CacheStreamFactory articlesJSONCacheStreamFactory = new FileCacheStreamFactory(cacheFile, new URLCacheStreamFactory(articlesURL));
 
         articlesJSONCacheStreamFactory.preload(new CacheStreamFactory.CachePreloadCallback() {
             @Override
@@ -270,21 +267,16 @@ public class Issue implements Parcelable {
 
                             int id = jsonObject.get("id").getAsInt();
 
-                            File dir = new File(MainActivity.applicationContext.getFilesDir() + "/" + Integer.toString(Issue.this.getID()) + "/", Integer.toString(id));
-
-                            dir.mkdirs();
-
-                            File file = new File(dir, "article.json");
-
+                            ArticleJsonCacheStreamFactory articleJsonCacheStreamFactory = new ArticleJsonCacheStreamFactory(id, Issue.this);
+                            OutputStream outputStream = articleJsonCacheStreamFactory.createCacheOutputStream();
+                            //FIXME: this doesn't seem to create an actual output file...
+                            new Gson().toJson(jsonObject, new OutputStreamWriter(outputStream));
                             try {
-                                Writer w = new FileWriter(file);
-
-                                new Gson().toJson(jsonObject, w);
-
-                                w.close();
+                                outputStream.close();
                             } catch (IOException e) {
-                                e.printStackTrace();
+                                Log.e("Issue", "error closing articleJsonCacheStreamFactory output stream: " + e);
                             }
+
                         }
                     }
 
@@ -637,11 +629,7 @@ public class Issue implements Parcelable {
     // PARCELABLE delegate methods
 
     private Issue(Parcel in) {
-        issueJson = Publisher.getIssueJsonForId(in.readInt());
-        articles = getArticles();
-        coverCacheStreamFactory = new FileCacheStreamFactory(getCoverLocationOnFilesystem(), new URLCacheStreamFactory(getCoverURL()));
-        editorsImageCacheStreamFactory = new FileCacheStreamFactory(getEditorsLetterLocationOnFilesystem(), new URLCacheStreamFactory(getEditorsPhotoURL()));
-        thumbnailCacheStreamFactorySparseArray = new SparseArray<>();
+        this(in.readInt());
     }
 
     @Override

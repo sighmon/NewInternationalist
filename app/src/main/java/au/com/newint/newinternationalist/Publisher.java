@@ -193,6 +193,7 @@ public enum Publisher {
                         try {
                             issuesArray.add(new Issue(file));
                         } catch (StreamCorruptedException e) {
+                            e.printStackTrace();
                             // don't add it
                         }
                     }
@@ -220,6 +221,7 @@ public enum Publisher {
             try {
                 return parseJsonFile(issueJson);
             } catch (StreamCorruptedException e) {
+                e.printStackTrace();
                 return null;
             }
 
@@ -227,30 +229,6 @@ public enum Publisher {
             // We don't have the issue.json, something went wrong with the initial download. HELP!
             // TODO: Download issues.json and re-save to filesystem
             return null;
-        }
-    }
-
-    public static JsonObject getArticleJsonForId(int id, int issueID) {
-        // Return article.json for id handed in
-        File articleJson;
-
-        File dir = new File(MainActivity.applicationContext.getFilesDir(), Integer.toString(issueID) + "/" + Integer.toString(id));
-
-        articleJson = new File(dir,"article.json");
-
-        if (articleJson.exists()) {
-            // Return parsed issue.json as JsonObject
-            try {
-                return parseJsonFile(articleJson);
-            } catch (StreamCorruptedException e) {
-                Log.e("Publisher", "Stream corrupted for articleJson: " + articleJson);
-                return null;
-            }
-        } else {
-            // We don't have the issueID.json, something went wrong with the initial download. HELP!
-            // TODO: Download article.json and re-save to filesystem
-            return null;
-
         }
     }
 

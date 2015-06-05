@@ -108,6 +108,8 @@ public class MainActivity extends ActionBarActivity {
         // Set default preferences, the false on the end means it's only set once
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
 
+
+
         // Setup in-app billing
         mHelper = Helpers.setupIabHelper(this);
 

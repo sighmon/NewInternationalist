@@ -1,13 +1,10 @@
 package au.com.newint.newinternationalist;
 
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.os.AsyncTask;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.Log;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -17,7 +14,6 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.protocol.ClientContext;
-import org.apache.http.entity.BasicHttpEntity;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicHeader;
@@ -25,23 +21,17 @@ import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HTTP;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.util.EntityUtils;
-import org.json.JSONArray;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StreamCorruptedException;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
-import java.lang.reflect.Array;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -49,9 +39,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
 import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -76,19 +63,22 @@ public class Article implements Parcelable {
     JsonObject articleJson;
     int issueID;
 
-    public Article(File jsonFile) throws StreamCorruptedException {
-        JsonElement root = Publisher.parseJsonFile(jsonFile);
 
-        // TODO: Work out why this is crashing sometimes when root is JsonNull here.
-        // Maybe that the article.json half gets downloaded and never saved?
-        // So file exists but data was never saved?
-        articleJson = root.getAsJsonObject();
-        issueID = Integer.parseInt(jsonFile.getPath().split("/")[5]);
-    }
 
     public Article(JsonObject jsonObject, int issueID) {
         this.articleJson = jsonObject;
         this.issueID = issueID;
+    }
+
+
+    public Article(File jsonFile) throws StreamCorruptedException {
+        this(Publisher.parseJsonFile(jsonFile).getAsJsonObject(),Integer.parseInt(jsonFile.getPath().split("/")[5]));
+    }
+
+    public static JsonObject getArticleJsonForId(int id, int issueID) {
+        ArticleJsonCacheStreamFactory articleJsonCacheStreamFactory = new ArticleJsonCacheStreamFactory(id,new Issue(issueID));
+
+        return (new JsonParser()).parse(new InputStreamReader(articleJsonCacheStreamFactory.createCacheInputStream())).getAsJsonObject();
     }
 
     public int getID() {
@@ -355,10 +345,10 @@ public class Article implements Parcelable {
     // PARCELABLE delegate methods
 
     private Article(Parcel in) {
-        int[] intArray = in.createIntArray();
-        articleJson = Publisher.getArticleJsonForId(intArray[0], intArray[1]);
-        issueID = intArray[1];
+        this(getArticleJsonForId(in.createIntArray()[0], in.createIntArray()[1]),in.createIntArray()[1]);
     }
+
+
 
     public static final Parcelable.Creator<Article> CREATOR
             = new Parcelable.Creator<Article>() {

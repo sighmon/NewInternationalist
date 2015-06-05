@@ -150,5 +150,6 @@ public class ThumbnailCacheStreamFactory extends CacheStreamFactory {
     @Override
     protected void invalidateCache() {
         cacheFile.delete();
+        source.invalidate();
     }
 }
