@@ -90,6 +90,7 @@ public class MainActivity extends ActionBarActivity {
     static Resources applicationResources;
 
     IabHelper mHelper;
+    static Issue latestIssueOnFileBeforeUpdate;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -297,51 +298,33 @@ public class MainActivity extends ActionBarActivity {
                     dialog.show();
                 } else {
 
-                    latestIssueOnFile.coverCacheStreamFactory.preload(new CacheStreamFactory.CachePreloadCallback() {
+                    if (latestIssueOnFileBeforeUpdate != null && latestIssueOnFileBeforeUpdate != latestIssueOnFile) {
 
-                        @Override
-                        public void onLoad(byte[] payload) {
+                        latestIssueOnFile.coverCacheStreamFactory.preload(new CacheStreamFactory.CachePreloadCallback() {
 
-                            Log.i("coverCSF..onLoad", "Received listener, showing cover.");
+                            @Override
+                            public void onLoad(byte[] payload) {
 
-                            // Show cover
-                            final ImageButton home_cover = (ImageButton) MainActivity.this.findViewById(R.id.home_cover);
-                            if (home_cover != null) {
-                                Log.i("coverCSF..onLoad", "calling decodeStream");
+                                Log.i("Cover", "New issue cover available, showing cover.");
 
-                                final Bitmap coverBitmap = BitmapFactory.decodeByteArray(payload, 0, payload.length);
-                                Log.i("coverCSF..onLoad", "decodeStream returned");
-                                Animation fadeOutAnimation = new AlphaAnimation(1.0f, 0.0f);
-                                final Animation fadeInAnimation = new AlphaAnimation(0.0f, 1.0f);
-                                fadeOutAnimation.setDuration(300);
-                                fadeInAnimation.setDuration(300);
-                                fadeOutAnimation.setAnimationListener(new Animation.AnimationListener() {
-                                    @Override
-                                    public void onAnimationStart(Animation animation) {
+                                // Show cover
+                                final ImageButton home_cover = (ImageButton) MainActivity.this.findViewById(R.id.home_cover);
+                                if (home_cover != null) {
+                                    Log.i("coverCSF..onLoad", "calling decodeStream");
+                                    final Bitmap coverBitmap = BitmapFactory.decodeByteArray(payload, 0, payload.length);
+                                    Log.i("coverCSF..onLoad", "decodeStream returned");
+                                    animateUpdateImageButtonWithBitmap(home_cover, coverBitmap);
+                                }
 
-                                    }
-
-                                    @Override
-                                    public void onAnimationEnd(Animation animation) {
-                                        home_cover.setImageBitmap(coverBitmap);
-                                        home_cover.setScaleType(ImageView.ScaleType.FIT_CENTER);
-                                        home_cover.startAnimation(fadeInAnimation);
-                                    }
-
-                                    @Override
-                                    public void onAnimationRepeat(Animation animation) {
-
-                                    }
-                                });
-                                home_cover.startAnimation(fadeOutAnimation);
                             }
 
-                        }
-
-                        @Override
-                        public void onLoadBackground(byte[] payload) {
-                        }
-                    });
+                            @Override
+                            public void onLoadBackground(byte[] payload) {
+                            }
+                        });
+                    } else {
+                        Log.i("LatestIssue", "No new issue available.");
+                    }
                 }
             }
         });
@@ -359,6 +342,35 @@ public class MainActivity extends ActionBarActivity {
         if (username != null && !username.equals("")) {
             // Try logging in!
             new SilentUserLoginTask(Helpers.getFromPrefs(Helpers.LOGIN_USERNAME_KEY, ""), Helpers.getPassword("")).execute();
+        }
+    }
+
+    private static void animateUpdateImageButtonWithBitmap(final ImageButton imageButton, final Bitmap bitmap) {
+
+        if (imageButton != null && bitmap != null) {
+            Animation fadeOutAnimation = new AlphaAnimation(1.0f, 0.0f);
+            final Animation fadeInAnimation = new AlphaAnimation(0.0f, 1.0f);
+            fadeOutAnimation.setDuration(300);
+            fadeInAnimation.setDuration(300);
+            fadeOutAnimation.setAnimationListener(new Animation.AnimationListener() {
+                @Override
+                public void onAnimationStart(Animation animation) {
+
+                }
+
+                @Override
+                public void onAnimationEnd(Animation animation) {
+                    imageButton.setImageBitmap(bitmap);
+                    imageButton.setScaleType(ImageView.ScaleType.FIT_CENTER);
+                    imageButton.startAnimation(fadeInAnimation);
+                }
+
+                @Override
+                public void onAnimationRepeat(Animation animation) {
+
+                }
+            });
+            imageButton.startAnimation(fadeOutAnimation);
         }
     }
 
@@ -538,6 +550,31 @@ public class MainActivity extends ActionBarActivity {
                 public void onClick(View v) {
                     Intent loginIntent = new Intent(rootView.getContext(), LoginActivity.class);
                     startActivity(loginIntent);
+                }
+            });
+
+            // If cover is already on filesystem, show it before updating issues.json
+            latestIssueOnFileBeforeUpdate = Publisher.INSTANCE.latestIssue();
+            latestIssueOnFileBeforeUpdate.coverCacheStreamFactory.preload(null, "net", new CacheStreamFactory.CachePreloadCallback() {
+
+                @Override
+                public void onLoad(byte[] payload) {
+
+                    Log.i("coverCSF..onLoad", "Received listener, showing cover.");
+
+                    // Show cover
+                    final ImageButton home_cover = (ImageButton) rootView.findViewById(R.id.home_cover);
+                    if (home_cover != null) {
+                        Log.i("coverCSF..onLoad", "calling decodeStream");
+                        final Bitmap coverBitmap = BitmapFactory.decodeByteArray(payload, 0, payload.length);
+                        Log.i("coverCSF..onLoad", "decodeStream returned");
+                        animateUpdateImageButtonWithBitmap(home_cover, coverBitmap);
+                    }
+
+                }
+
+                @Override
+                public void onLoadBackground(byte[] payload) {
                 }
             });
 

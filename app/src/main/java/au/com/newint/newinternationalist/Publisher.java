@@ -237,10 +237,11 @@ public enum Publisher {
             try {
                 return parseJsonFile(articleJson);
             } catch (StreamCorruptedException e) {
+                Log.e("Publisher", "Stream corrupted for articleJson: " + articleJson);
                 return null;
             }
         } else {
-            // We don't have the issue.json, something went wrong with the initial download. HELP!
+            // We don't have the issueID.json, something went wrong with the initial download. HELP!
             // TODO: Download article.json and re-save to filesystem
             return null;
         }
