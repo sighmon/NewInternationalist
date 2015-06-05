@@ -81,7 +81,7 @@ public class Image {
     }
 
     public File getImageLocationOnFilesystem() {
-        Article article = new Article(Publisher.getArticleJsonForId(getArticleID(), issueID), issueID);
+        Article article = (new Issue(issueID)).getArticleWithID(getArticleID());
         File articleDir =  new File(MainActivity.applicationContext.getFilesDir(), Integer.toString(article.getIssueID()) + "/" + article.getID() + "/");
         String[] pathComponents = getFullsizeImageURL().getPath().split("/");
         String imageFilename = pathComponents[pathComponents.length - 1];

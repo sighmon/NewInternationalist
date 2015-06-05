@@ -8,6 +8,8 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.gson.JsonSyntaxException;
+import com.google.gson.stream.MalformedJsonException;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.impl.client.BasicCookieStore;
@@ -200,6 +202,10 @@ public enum Publisher {
         return issuesArray;
     }
 
+    public Issue getIssueForId(int id) {
+        return new Issue(id);
+    }
+
     public static JsonObject getIssueJsonForId(int id) {
         // Return issue.json for id handed in
         File issueJson;
@@ -244,6 +250,7 @@ public enum Publisher {
             // We don't have the issueID.json, something went wrong with the initial download. HELP!
             // TODO: Download article.json and re-save to filesystem
             return null;
+
         }
     }
 
@@ -264,7 +271,7 @@ public enum Publisher {
         JsonElement root = null;
         try {
             root = new JsonParser().parse(new FileReader((File) jsonFile));
-        } catch (FileNotFoundException e) {
+        } catch (FileNotFoundException|JsonSyntaxException e) {
             e.printStackTrace();
         }
 
