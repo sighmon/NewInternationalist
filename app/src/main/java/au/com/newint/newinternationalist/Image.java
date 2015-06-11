@@ -25,11 +25,13 @@ public class Image {
     // hidden
     // position
 
+    Article parentArticle;
     JsonObject imageJson;
     int issueID;
     CacheStreamFactory fullImageCacheStreamFactory;
 
-    public Image(JsonObject imageJson, int issueID) {
+    public Image(JsonObject imageJson, int issueID, Article parentArticle) {
+        this.parentArticle = parentArticle;
         this.imageJson = imageJson;
         this.issueID = issueID;
         fullImageCacheStreamFactory = new FileCacheStreamFactory(getImageLocationOnFilesystem(), new URLCacheStreamFactory(getFullsizeImageURL()));
@@ -81,7 +83,7 @@ public class Image {
     }
 
     public File getImageLocationOnFilesystem() {
-        Article article = (new Issue(issueID)).getArticleWithID(getArticleID());
+        Article article = this.parentArticle;
         File articleDir =  new File(MainActivity.applicationContext.getFilesDir(), Integer.toString(article.getIssueID()) + "/" + article.getID() + "/");
         String[] pathComponents = getFullsizeImageURL().getPath().split("/");
         String imageFilename = pathComponents[pathComponents.length - 1];

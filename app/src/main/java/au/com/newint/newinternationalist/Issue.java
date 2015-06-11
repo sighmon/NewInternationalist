@@ -113,6 +113,7 @@ public class Issue implements Parcelable {
     }
 
     public static ArrayList<Article> buildArticlesFromDir (File dir) {
+        Log.i("Issue","buildArticlesFromDir("+dir+")");
         ArrayList<Article> articlesArray = new ArrayList<Article>();
         if (dir.exists()) {
             File[] files = dir.listFiles();
@@ -318,19 +319,23 @@ public class Issue implements Parcelable {
     }
 
     public Article getArticleWithID(int articleID) {
-        Article articleMatched = null;
-        if (articles == null || articles.size() == 0) {
-            articles = getArticles();
-        }
-        if (articles != null && articles.size() > 0) {
-            for (Article article : articles) {
-                if (article.getID() == articleID) {
-                    articleMatched = article;
-                }
-            }
-        }
-        return articleMatched;
+        return new Article(Article.getArticleJsonForId(articleID,this.getID()),this.getID());
     }
+
+//    public Article getArticleWithID(int articleID) {
+//        Article articleMatched = null;
+//        if (articles == null || articles.size() == 0) {
+//            articles = getArticles();
+//        }
+//        if (articles != null && articles.size() > 0) {
+//            for (Article article : articles) {
+//                if (article.getID() == articleID) {
+//                    articleMatched = article;
+//                }
+//            }
+//        }
+//        return articleMatched;
+//    }
 
     public ThumbnailCacheStreamFactory getCoverCacheStreamFactoryForSize(int width) {
         //store in a hash, only make once for each width

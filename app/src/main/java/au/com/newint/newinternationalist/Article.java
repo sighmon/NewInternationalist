@@ -317,7 +317,7 @@ public class Article implements Parcelable {
             for (JsonElement aRootArray : rootArray) {
                 JsonObject jsonObject = aRootArray.getAsJsonObject();
                 if (jsonObject != null) {
-                    Image image = new Image(jsonObject, issueID);
+                    Image image = new Image(jsonObject, issueID, this);
                     images.add(image);
                 }
             }
