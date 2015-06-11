@@ -1,8 +1,10 @@
 package au.com.newint.newinternationalist;
 
+import android.app.ProgressDialog;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
@@ -15,6 +17,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Adapter;
 import android.widget.TextView;
 
 import java.lang.reflect.Array;
@@ -24,6 +27,8 @@ import java.util.Comparator;
 
 
 public class CategoriesActivity extends ActionBarActivity {
+
+    static ProgressDialog loadingProgressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,6 +46,11 @@ public class CategoriesActivity extends ActionBarActivity {
             String query = intent.getStringExtra(SearchManager.QUERY);
             Log.i("Search","Searching for: " + query);
         }
+
+        loadingProgressDialog = new ProgressDialog(this);
+        loadingProgressDialog.setTitle(getResources().getString(R.string.categories_loading_progress_title));
+        loadingProgressDialog.setMessage(getResources().getString(R.string.categories_loading_progress_message));
+        loadingProgressDialog.show();
     }
 
 
@@ -141,43 +151,60 @@ public class CategoriesActivity extends ActionBarActivity {
             private static final int TYPE_CATEGORY = 1;
 
             public CategoriesAdapter() {
-                sectionsList = new ArrayList<>();
-                ArrayList<Category> unfilteredCategoriesList = new ArrayList<>();
-                // Add unsorted categories to this list
-                issuesList = Publisher.INSTANCE.getIssuesFromFilesystem();
-                for (Issue issue : issuesList) {
-                    ArrayList<Article> articlesList = issue.getArticles();
-                    for (Article article : articlesList) {
-                        ArrayList<Category> articleCategories = article.getCategories();
-                        for (Category category : articleCategories) {
-                            unfilteredCategoriesList.add(category);
-                        }
-                    }
-                }
 
-                // Sort by name
-                Collections.sort(unfilteredCategoriesList, new Comparator<Category>() {
-                    @Override
-                    public int compare(Category lhs, Category rhs) {
-                        return lhs.getName().compareTo(rhs.getName());
-                    }
-                });
+                // Load in AsyncTask so that the ProgressDialog shows
 
-                // Add unique elements to categoriesList
-                Category lastCategory = null;
-                Section currentSection = null;
-                for (Category category : unfilteredCategoriesList) {
-                    if (lastCategory == null || !lastCategory.equals(category)) {
-                        // We have a new unique category
-                        String sectionName = category.getSectionName();
-                        if (currentSection == null || !currentSection.name.equals(sectionName)) {
-                            currentSection = new Section(sectionName);
-                            sectionsList.add(currentSection);
+                new AsyncTask<Void, Void, Void>() {
+
+                    protected Void doInBackground(Void... unused) {
+                        // Load Categories from file system in the background
+
+                        sectionsList = new ArrayList<>();
+                        ArrayList<Category> unfilteredCategoriesList = new ArrayList<>();
+                        // Add unsorted categories to this list
+                        issuesList = Publisher.INSTANCE.getIssuesFromFilesystem();
+                        for (Issue issue : issuesList) {
+                            ArrayList<Article> articlesList = issue.getArticles();
+                            for (Article article : articlesList) {
+                                ArrayList<Category> articleCategories = article.getCategories();
+                                for (Category category : articleCategories) {
+                                    unfilteredCategoriesList.add(category);
+                                }
+                            }
                         }
-                        currentSection.categories.add(category);
+
+                        // Sort by name
+                        Collections.sort(unfilteredCategoriesList, new Comparator<Category>() {
+                            @Override
+                            public int compare(Category lhs, Category rhs) {
+                                return lhs.getName().compareTo(rhs.getName());
+                            }
+                        });
+
+                        // Add unique elements to categoriesList
+                        Category lastCategory = null;
+                        Section currentSection = null;
+                        for (Category category : unfilteredCategoriesList) {
+                            if (lastCategory == null || !lastCategory.equals(category)) {
+                                // We have a new unique category
+                                String sectionName = category.getSectionName();
+                                if (currentSection == null || !currentSection.name.equals(sectionName)) {
+                                    currentSection = new Section(sectionName);
+                                    sectionsList.add(currentSection);
+                                }
+                                currentSection.categories.add(category);
+                            }
+                            lastCategory = category;
+                        }
+
+                        return null;
                     }
-                    lastCategory = category;
-                }
+                    protected void onPostExecute(Void unused) {
+                        // After loading finishes dismiss the loading dialog
+                        loadingProgressDialog.dismiss();
+                        notifyDataSetChanged();
+                    }
+                }.execute();
             }
 
             @Override
