@@ -1,10 +1,12 @@
 package au.com.newint.newinternationalist;
 
+import android.app.ProgressDialog;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.AsyncTask;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
@@ -36,6 +38,8 @@ public class SearchActivity extends ActionBarActivity {
     static String searchQuery;
     static ArrayList<Issue> issuesArray;
     static ArrayList<ArrayList<Article>> filteredIssueArticlesArray;
+    static ProgressDialog loadingProgressDialog;
+    static Intent intent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,20 +51,11 @@ public class SearchActivity extends ActionBarActivity {
                     .commit();
         }
 
-        // Build up the issuesArray
-        issuesArray = Publisher.INSTANCE.getIssuesFromFilesystem();
+        intent = getIntent();
+        searchQuery = intent.getStringExtra(SearchManager.QUERY);
 
-        // Get the intent, verify the action and get the query
-        Intent intent = getIntent();
-        if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
-            searchQuery = intent.getStringExtra(SearchManager.QUERY);
-
-            // Set the activity title
-            setTitle("Results for: " + searchQuery);
-
-            // Perform the search
-            filterArticlesForSearchQuery(searchQuery);
-        }
+        // Set the activity title
+        setTitle("Results for: " + searchQuery);
     }
 
 
@@ -143,17 +138,53 @@ public class SearchActivity extends ActionBarActivity {
             private static final int TYPE_ARTICLE = 1;
 
             public SearchAdapter() {
+
                 listElements = new ArrayList<>();
-                for (ArrayList<Article> articleList : filteredIssueArticlesArray) {
-                    if (articleList.size() <= 0) {
-                        continue;
+
+                // Set a loading indicator going
+                loadingProgressDialog = new ProgressDialog(getActivity());
+                loadingProgressDialog.setTitle(getResources().getString(R.string.search_loading_progress_title));
+                loadingProgressDialog.setMessage(getResources().getString(R.string.search_loading_progress_message));
+                loadingProgressDialog.show();
+
+                // Perform the serach in an AsyncTask
+
+                new AsyncTask<Void, Void, Void>() {
+
+                    @Override
+                    protected Void doInBackground(Void... params) {
+
+                        // Build up the issuesArray
+                        issuesArray = Publisher.INSTANCE.getIssuesFromFilesystem();
+
+                        // Get the intent, verify the action and get the query
+                        if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
+
+                            // Perform the search
+                            filterArticlesForSearchQuery(searchQuery);
+                        }
+
+                        for (ArrayList<Article> articleList : filteredIssueArticlesArray) {
+                            if (articleList.size() <= 0) {
+                                continue;
+                            }
+                            Issue issue = new Issue(articleList.get(0).getIssueID());
+                            listElements.add(issue);
+                            for (Article article : articleList) {
+                                listElements.add(article);
+                            }
+                        }
+
+                        return null;
                     }
-                    Issue issue = new Issue(articleList.get(0).getIssueID());
-                    listElements.add(issue);
-                    for (Article article : articleList) {
-                        listElements.add(article);
+
+                    @Override
+                    protected void onPostExecute(Void unused) {
+                        // After loading finishes dismiss the loading dialog
+                        loadingProgressDialog.dismiss();
+                        notifyDataSetChanged();
                     }
-                }
+                }.execute();
             }
 
             @Override
@@ -301,7 +332,7 @@ public class SearchActivity extends ActionBarActivity {
 
     // Search logic
 
-    public void filterArticlesForSearchQuery(String query) {
+    static public void filterArticlesForSearchQuery(String query) {
 //        Log.i("Search", "Search for " + query);
 
         // TODO: This is an OR search not an AND search.. TOFIX?
