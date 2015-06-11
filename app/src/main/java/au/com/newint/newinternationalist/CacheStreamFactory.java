@@ -20,7 +20,7 @@ public abstract class CacheStreamFactory {
     private final String name;
     protected final CacheStreamFactory fallback;
 
-    private PreloadTask preloadTask;
+    public PreloadTask preloadTask;
 
     CacheStreamFactory(CacheStreamFactory fallback, String name) {
         Log.i("CacheStreamFactory", "creating factory of type " + name + ", fallback is " + ((fallback != null) ? "not" : "") + " null");
@@ -121,7 +121,7 @@ public abstract class CacheStreamFactory {
 
     void preload(String startingAt, String stoppingAt, CachePreloadCallback callback) {
         Log.i("CacheStreamFactory", this+"->preload(...,"+startingAt+","+stoppingAt+")");
-        PreloadTask preloadTask = new PreloadTask();
+        //PreloadTask preloadTask = new PreloadTask();
         //preloadTask.execute(new PreloadParameters(this,callback,startingAt,stoppingAt));
         preloadTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,new PreloadParameters(this,callback,startingAt,stoppingAt));
 
