@@ -24,6 +24,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import java.io.File;
+import java.lang.reflect.Array;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -335,7 +336,7 @@ public class SearchActivity extends ActionBarActivity {
     static public void filterArticlesForSearchQuery(String query) {
 //        Log.i("Search", "Search for " + query);
 
-        // TODO: This is an OR search not an AND search.. TOFIX?
+        // This is an AND search by default.
 
         // Split the search terms so they can be searched without being in sequence
         ArrayList<String> quotedTerms = new ArrayList<String>();
@@ -354,46 +355,56 @@ public class SearchActivity extends ActionBarActivity {
             }
         }
 
-        for (String term : query.split("\\s+")) {
-            quotedTerms.add(Pattern.quote(term));
-        }
-        String searchString = "(" + TextUtils.join("|", quotedTerms) + ")";
-
         filteredIssueArticlesArray = new ArrayList<>();
-        // Create a pattern to match
-        Pattern pattern = Pattern.compile(searchString, Pattern.CASE_INSENSITIVE);
-//        Log.i("Search", pattern.toString());
 
         for (Issue issue : issuesArray) {
-            ArrayList <Article> articlesArray = issue.getArticles();
-            ArrayList <Article> filteredArticlesArray = new ArrayList<Article>();
+            filteredIssueArticlesArray.add(issue.getArticles());
+        }
+
+        for (String term : quotedTerms) {
+            filteredIssueArticlesArray = filterArticleList(term, filteredIssueArticlesArray);
+        }
+    }
+
+    static ArrayList<ArrayList<Article>> filterArticleList(String searchTerm, ArrayList<ArrayList<Article>> arrayOfArticleArrays) {
+
+        ArrayList<ArrayList<Article>> filteredArrayOfArticleArrays = new ArrayList<>();
+
+        // Create a pattern to match
+        Pattern pattern = Pattern.compile(searchTerm, Pattern.CASE_INSENSITIVE);
+//        Log.i("Search", pattern.toString());
+
+        for (ArrayList<Article> articlesArray : arrayOfArticleArrays) {
+
+            ArrayList <Article> filteredArticles = new ArrayList<Article>();
 
             for (Article article : articlesArray) {
                 // Search title
                 Matcher titleMatcher = pattern.matcher(article.getTitle());
                 if (titleMatcher.find()) {
-                    filteredArticlesArray.add(article);
+                    filteredArticles.add(article);
                 } else {
                     // Search teaser
                     Matcher teaserMatcher = pattern.matcher(article.getTeaser());
                     if (teaserMatcher.find()) {
-                        filteredArticlesArray.add(article);
+                        filteredArticles.add(article);
                     } else {
                         // Search the body if it exists on file
                         if (article.isBodyOnFilesystem()) {
                             Matcher bodyMatcher = pattern.matcher(article.getExpandedBody(null));
                             if (bodyMatcher.find()) {
-                                filteredArticlesArray.add(article);
+                                filteredArticles.add(article);
                             }
                         }
                     }
                 }
             }
 
-            if (filteredArticlesArray.size() > 0) {
-                filteredIssueArticlesArray.add(filteredArticlesArray);
+            if (filteredArticles.size() > 0) {
+                filteredArrayOfArticleArrays.add(filteredArticles);
             }
         }
-//        Log.i("Search", "Filtered issue articles array: " + filteredIssueArticlesArray);
+
+        return filteredArrayOfArticleArrays;
     }
 }
