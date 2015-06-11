@@ -61,22 +61,25 @@ public class Article implements Parcelable {
     ArrayList images; */
 
     JsonObject articleJson;
-    int issueID;
+    Issue parentIssue;
 
 
+    public Article(int id, Issue parentIssue) {
+        this(getArticleJsonForId(id, parentIssue), parentIssue);
+    }
 
-    public Article(JsonObject jsonObject, int issueID) {
+    public Article(JsonObject jsonObject, Issue parentIssue) {
         this.articleJson = jsonObject;
-        this.issueID = issueID;
+        this.parentIssue = parentIssue;
     }
 
 
-    public Article(File jsonFile) throws StreamCorruptedException {
-        this(Publisher.parseJsonFile(jsonFile).getAsJsonObject(),Integer.parseInt(jsonFile.getPath().split("/")[5]));
+    public Article(File jsonFile, Issue parentIssue) throws StreamCorruptedException {
+        this(Publisher.parseJsonFile(jsonFile).getAsJsonObject(),parentIssue);
     }
 
-    public static JsonObject getArticleJsonForId(int id, int issueID) {
-        ArticleJsonCacheStreamFactory articleJsonCacheStreamFactory = new ArticleJsonCacheStreamFactory(id,new Issue(issueID));
+    public static JsonObject getArticleJsonForId(int id, Issue parentIssue) {
+        ArticleJsonCacheStreamFactory articleJsonCacheStreamFactory = new ArticleJsonCacheStreamFactory(id,parentIssue);
 
         return (new JsonParser()).parse(new InputStreamReader(articleJsonCacheStreamFactory.createCacheInputStream())).getAsJsonObject();
     }
@@ -87,7 +90,7 @@ public class Article implements Parcelable {
     }
 
     public int getIssueID() {
-        return issueID;
+        return parentIssue.getID();
     }
 
     public String getTitle() {
@@ -317,7 +320,7 @@ public class Article implements Parcelable {
             for (JsonElement aRootArray : rootArray) {
                 JsonObject jsonObject = aRootArray.getAsJsonObject();
                 if (jsonObject != null) {
-                    Image image = new Image(jsonObject, issueID, this);
+                    Image image = new Image(jsonObject, parentIssue.getID(), this);
                     images.add(image);
                 }
             }
@@ -344,8 +347,19 @@ public class Article implements Parcelable {
 
     // PARCELABLE delegate methods
 
+
     private Article(Parcel in) {
-        this(getArticleJsonForId(in.createIntArray()[0], in.createIntArray()[1]),in.createIntArray()[1]);
+        //int articleID = in.createIntArray()[0];
+        //int issueID = in.createIntArray()[1];
+        
+        // strange behaviour occurs if we call createIntArray() twice,
+        // so we have yet-another-constructor that takes the int array
+        this(in.createIntArray());
+    }
+
+    // ... and then call the Article(articleID, parentIssue) constructor
+    private Article(int[] intArray) {
+        this(intArray[0], new Issue(intArray[1]));
     }
 
 

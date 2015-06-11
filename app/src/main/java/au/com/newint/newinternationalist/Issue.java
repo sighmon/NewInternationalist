@@ -112,7 +112,7 @@ public class Issue implements Parcelable {
 
     }
 
-    public static ArrayList<Article> buildArticlesFromDir (File dir) {
+    public ArrayList<Article> buildArticlesFromDir (File dir) {
         Log.i("Issue","buildArticlesFromDir("+dir+")");
         ArrayList<Article> articlesArray = new ArrayList<Article>();
         if (dir.exists()) {
@@ -125,7 +125,7 @@ public class Issue implements Parcelable {
                     if (file.getName().equals("article.json")) {
                         // Add to array
                         try {
-                            articlesArray.add(new Article(file));
+                            articlesArray.add(new Article(file, this));
                         } catch (StreamCorruptedException e) {
 
                             e.printStackTrace();
@@ -319,7 +319,7 @@ public class Issue implements Parcelable {
     }
 
     public Article getArticleWithID(int articleID) {
-        return new Article(Article.getArticleJsonForId(articleID,this.getID()),this.getID());
+        return new Article(articleID,this);
     }
 
 //    public Article getArticleWithID(int articleID) {
