@@ -4,6 +4,7 @@ import android.app.ProgressDialog;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v4.app.Fragment;
@@ -15,6 +16,7 @@ import android.view.ContextThemeWrapper;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Adapter;
@@ -290,10 +292,33 @@ public class CategoriesActivity extends ActionBarActivity {
 
                 public TextView categoryTitleTextView;
 
-                public CategoryViewHolder(View itemView) {
+                public CategoryViewHolder(final View itemView) {
                     super(itemView);
                     categoryTitleTextView = (TextView) itemView.findViewById(R.id.category_name);
                     itemView.setOnClickListener(this);
+
+                    itemView.setOnTouchListener(new View.OnTouchListener() {
+                        @Override
+                        public boolean onTouch(View v, MotionEvent event) {
+                            switch (event.getAction()) {
+                                case MotionEvent.ACTION_DOWN:
+                                    // Set 50% black overlay
+                                    itemView.setBackgroundColor(Color.argb(125, 0, 0, 0));
+                                    return false;
+                                case MotionEvent.ACTION_UP:
+                                    // Remove overlay
+                                    itemView.setBackgroundColor(Color.argb(0, 0, 0, 0));
+                                    return false;
+                                case MotionEvent.ACTION_CANCEL:
+                                    // Remove overlay
+                                    itemView.setBackgroundColor(Color.argb(0, 0, 0, 0));
+                                    return false;
+                                default:
+                                    // Do nothing
+                                    return false;
+                            }
+                        }
+                    });
                 }
 
                 @Override
