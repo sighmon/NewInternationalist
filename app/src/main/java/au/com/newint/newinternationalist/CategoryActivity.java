@@ -1,6 +1,8 @@
 package au.com.newint.newinternationalist;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
@@ -13,6 +15,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.google.gson.JsonObject;
@@ -29,6 +32,7 @@ import java.util.Locale;
 public class CategoryActivity extends ActionBarActivity {
 
     static Category category;
+    static ArrayList<Article> articles;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,6 +49,7 @@ public class CategoryActivity extends ActionBarActivity {
         JsonObject jsonObject = (JsonObject)parser.parse(getIntent().getStringExtra("categoryJson"));
 
         category = new Category(jsonObject);
+        articles = category.getArticles();
 
         setTitle(category.getDisplayName());
     }
@@ -134,12 +139,11 @@ public class CategoryActivity extends ActionBarActivity {
             @Override
             public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
 
+                holder.setIsRecyclable(false);
+
                 // Article
-                Article article = category.getArticles().get(position);
-                // TODO: This calls getArticles() that hits the filesystem Pix to fix.
-                // Do we want to do this though, as we don't want to download
-                // every article for every issue.. or do we???
-                Issue issue = new Issue(article.parentIssue.getID());
+                Article article = articles.get(position);
+                Issue issue = article.parentIssue;
                 CategoryViewHolder categoryViewHolder = ((CategoryViewHolder) holder);
                 categoryViewHolder.articleTitleTextView.setText(article.getTitle());
                 String articleTeaser = article.getTeaser();
@@ -151,20 +155,31 @@ public class CategoryActivity extends ActionBarActivity {
                     categoryViewHolder.articleTeaserTextView.setVisibility(View.GONE);
                 }
 
+                ArrayList<Image> images = article.getImages();
+                final ImageView articleImageView = categoryViewHolder.articleImageView;
+                if (images.size() > 0) {
+                    images.get(0).getImageCacheStreamFactoryForSize(MainActivity.applicationContext.getResources().getDisplayMetrics().widthPixels).preload(new CacheStreamFactory.CachePreloadCallback() {
+                        @Override
+                        public void onLoad(byte[] payload) {
+                            if (payload != null && payload.length > 0) {
+                                Bitmap coverBitmap = BitmapFactory.decodeByteArray(payload, 0, payload.length);
+                                articleImageView.setImageBitmap(coverBitmap);
+
+                            }
+                        }
+
+                        @Override
+                        public void onLoadBackground(byte[] payload) {
+
+                        }
+                    });
+                } else {
+                    articleImageView.setVisibility(View.GONE);
+                }
+
                 DateFormat dateFormat = new SimpleDateFormat("MMMM, yyyy", Locale.getDefault());
                 String issueInformation = Integer.toString(issue.getNumber()) + " - " + dateFormat.format(issue.getRelease());
                 categoryViewHolder.articleIssueInformationTextView.setText(issueInformation);
-
-                String categoriesTemporaryString = "";
-                String separator = "";
-                ArrayList<Category> categories = article.getCategories();
-                for (Category category : categories) {
-                    categoriesTemporaryString += separator;
-                    categoriesTemporaryString += category.getName();
-                    separator = "\n";
-                }
-
-                ((CategoryViewHolder) holder).articleCategoriesTextView.setText(categoriesTemporaryString);
             }
 
 
@@ -172,15 +187,15 @@ public class CategoryActivity extends ActionBarActivity {
 
                 public TextView articleTitleTextView;
                 public TextView articleTeaserTextView;
+                public ImageView articleImageView;
                 public TextView articleIssueInformationTextView;
-                public TextView articleCategoriesTextView;
 
                 public CategoryViewHolder(View itemView) {
                     super(itemView);
-                    articleTitleTextView = (TextView) itemView.findViewById(R.id.toc_article_title);
-                    articleTeaserTextView = (TextView) itemView.findViewById(R.id.toc_article_teaser);
+                    articleTitleTextView = (TextView) itemView.findViewById(R.id.category_article_title);
+                    articleTeaserTextView = (TextView) itemView.findViewById(R.id.category_article_teaser);
+                    articleImageView = (ImageView) itemView.findViewById(R.id.category_article_image);
                     articleIssueInformationTextView = (TextView) itemView.findViewById(R.id.category_article_issue_information);
-                    articleCategoriesTextView = (TextView) itemView.findViewById(R.id.toc_article_categories);
                     itemView.setOnClickListener(this);
                 }
 
@@ -188,8 +203,8 @@ public class CategoryActivity extends ActionBarActivity {
                 public void onClick(View v) {
 //                    Toast.makeText(MainActivity.applicationContext, "View clicked at position: " + getPosition(), Toast.LENGTH_SHORT).show();
                     Intent articleIntent = new Intent(MainActivity.applicationContext, ArticleActivity.class);
-                    Article article = category.getArticles().get(getPosition());
-                    Issue issue = new Issue(article.getIssueID());
+                    Article article = articles.get(getPosition());
+                    Issue issue = article.parentIssue;
                     // Pass issue through as a Parcel
                     articleIntent.putExtra("article", article);
                     articleIntent.putExtra("issue", issue);

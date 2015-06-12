@@ -262,9 +262,9 @@ public class SearchActivity extends ActionBarActivity {
                 } else if (holder instanceof SearchArticleViewHolder) {
                     // Article
                     Article article = (Article) listElements.get(position);
-                    ((SearchArticleViewHolder) holder).articleTitleTextView.setText(article.getTitle());
-                    String articleTeaser = article.getTeaser();
                     SearchArticleViewHolder searchArticleViewHolder = ((SearchArticleViewHolder) holder);
+                    searchArticleViewHolder.articleTitleTextView.setText(article.getTitle());
+                    String articleTeaser = article.getTeaser();
                     if (articleTeaser != null && !articleTeaser.isEmpty()) {
                         searchArticleViewHolder.articleTeaserTextView.setVisibility(View.VISIBLE);
                         searchArticleViewHolder.articleTeaserTextView.setText(Html.fromHtml(articleTeaser));
@@ -273,17 +273,27 @@ public class SearchActivity extends ActionBarActivity {
                         searchArticleViewHolder.articleTeaserTextView.setVisibility(View.GONE);
                     }
 
-                    String categoriesTemporaryString = "";
-                    String separator = "";
-                    ArrayList<Category> categories = article.getCategories();
-                    for (Category category : categories) {
-                        categoriesTemporaryString += separator;
-                        categoriesTemporaryString += category.getName();
-                        separator = "\n";
+                    ArrayList<Image> images = article.getImages();
+                    final ImageView articleImageView = searchArticleViewHolder.articleImageView;
+                    if (images.size() > 0) {
+                        images.get(0).getImageCacheStreamFactoryForSize(MainActivity.applicationContext.getResources().getDisplayMetrics().widthPixels).preload(new CacheStreamFactory.CachePreloadCallback() {
+                            @Override
+                            public void onLoad(byte[] payload) {
+                                if (payload != null && payload.length > 0) {
+                                    Bitmap coverBitmap = BitmapFactory.decodeByteArray(payload, 0, payload.length);
+                                    articleImageView.setImageBitmap(coverBitmap);
+
+                                }
+                            }
+
+                            @Override
+                            public void onLoadBackground(byte[] payload) {
+
+                            }
+                        });
+                    } else {
+                        articleImageView.setVisibility(View.GONE);
                     }
-
-                    ((SearchArticleViewHolder) holder).articleCategoriesTextView.setText(categoriesTemporaryString);
-
                 }
             }
 
@@ -292,13 +302,13 @@ public class SearchActivity extends ActionBarActivity {
 
                 public TextView articleTitleTextView;
                 public TextView articleTeaserTextView;
-                public TextView articleCategoriesTextView;
+                public ImageView articleImageView;
 
                 public SearchArticleViewHolder(View itemView) {
                     super(itemView);
                     articleTitleTextView = (TextView) itemView.findViewById(R.id.search_article_title);
                     articleTeaserTextView = (TextView) itemView.findViewById(R.id.search_article_teaser);
-                    articleCategoriesTextView = (TextView) itemView.findViewById(R.id.search_article_categories);
+                    articleImageView = (ImageView) itemView.findViewById(R.id.search_article_image);
                     itemView.setOnClickListener(this);
                 }
 
