@@ -6,6 +6,7 @@ import android.content.pm.ApplicationInfo;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.os.Build;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
@@ -44,6 +45,8 @@ public class Helpers {
     public static final int GOOGLE_PLAY_MAX_SKU_LIST_SIZE = 16;
 
     public static final boolean debugMode = (MainActivity.applicationContext.getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0;
+
+    public static boolean emulator = Build.FINGERPRINT.contains("generic");
 
     public static RoundedBitmapDrawable roundDrawableFromBitmap(Bitmap bitmap) {
         RoundedBitmapDrawable roundedBitmapDrawable = RoundedBitmapDrawableFactory.create(MainActivity.applicationResources, bitmap);

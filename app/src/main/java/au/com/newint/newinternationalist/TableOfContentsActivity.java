@@ -85,36 +85,39 @@ public class TableOfContentsActivity extends ActionBarActivity {
         // Setup in-app billing
         mHelper = Helpers.setupIabHelper(getApplicationContext());
 
-        mHelper.startSetup(new IabHelper.OnIabSetupFinishedListener() {
-            public void onIabSetupFinished(IabResult result) {
-                if (!result.isSuccess()) {
-                    // Oh noes, there was a problem.
-                    Log.d("TOC", "Problem setting up In-app Billing: " + result);
-                }
-                // Hooray, IAB is fully set up!
-                Log.i("TOC", "In-app billing setup result: " + result);
-
-                // Make a products list of the subscriptions and this issue
-                final ArrayList<String> skuList = new ArrayList<String>();
-                skuList.add(Helpers.TWELVE_MONTH_SUBSCRIPTION_ID);
-                skuList.add(Helpers.ONE_MONTH_SUBSCRIPTION_ID);
-                skuList.add(Helpers.singleIssuePurchaseID(issue.getNumber()));
-
-                try {
-                    purchases = new ArrayList<>();
-                    inventory = mHelper.queryInventory(true, skuList);
-                    // Is there a subscription purchase in the inventory?
-                    for (String sku : skuList) {
-                        Purchase purchase = inventory.getPurchase(sku);
-                        if (purchase != null) {
-                            purchases.add(purchase);
-                        }
+        if (!Helpers.emulator) {
+            // Only startSetup if not running in an emulator
+            mHelper.startSetup(new IabHelper.OnIabSetupFinishedListener() {
+                public void onIabSetupFinished(IabResult result) {
+                    if (!result.isSuccess()) {
+                        // Oh noes, there was a problem.
+                        Log.d("TOC", "Problem setting up In-app Billing: " + result);
                     }
-                } catch (IabException e) {
-                    e.printStackTrace();
+                    // Hooray, IAB is fully set up!
+                    Log.i("TOC", "In-app billing setup result: " + result);
+
+                    // Make a products list of the subscriptions and this issue
+                    final ArrayList<String> skuList = new ArrayList<String>();
+                    skuList.add(Helpers.TWELVE_MONTH_SUBSCRIPTION_ID);
+                    skuList.add(Helpers.ONE_MONTH_SUBSCRIPTION_ID);
+                    skuList.add(Helpers.singleIssuePurchaseID(issue.getNumber()));
+
+                    try {
+                        purchases = new ArrayList<>();
+                        inventory = mHelper.queryInventory(true, skuList);
+                        // Is there a subscription purchase in the inventory?
+                        for (String sku : skuList) {
+                            Purchase purchase = inventory.getPurchase(sku);
+                            if (purchase != null) {
+                                purchases.add(purchase);
+                            }
+                        }
+                    } catch (IabException e) {
+                        e.printStackTrace();
+                    }
                 }
-            }
-        });
+            });
+        }
     }
 
     @Override

@@ -12,6 +12,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.preference.PreferenceManager;
@@ -113,75 +114,78 @@ public class MainActivity extends ActionBarActivity {
         // Setup in-app billing
         mHelper = Helpers.setupIabHelper(this);
 
-        mHelper.startSetup(new IabHelper.OnIabSetupFinishedListener() {
-            public void onIabSetupFinished(IabResult result) {
-                if (!result.isSuccess()) {
-                    // Oh noes, there was a problem.
-                    Log.d("InApp", "Problem setting up In-app Billing: " + result);
-                }
-                // Hooray, IAB is fully set up!
-                Log.i("InApp", "In-app billing setup result: " + result);
-
-                // Ask Google Play for a products list on a background thread
-                ArrayList<String> additionalSkuList = new ArrayList<String>();
-                additionalSkuList.add("12monthauto");
-                additionalSkuList.add("1monthauto");
-                IabHelper.QueryInventoryFinishedListener mQueryFinishedListener = new IabHelper.QueryInventoryFinishedListener() {
-                    public void onQueryInventoryFinished(IabResult result, Inventory inventory) {
-                        if (result.isFailure()) {
-                            // handle error
-                            Log.i("InApp", "Query failed: " + result);
-                            return;
-                        }
-
-                        // Check subscription inventory
-                        Log.i("InApp", "Inventory: " + inventory);
-                        SkuDetails yearlyAutomaticSubscription = inventory.getSkuDetails("12monthauto");
-                        SkuDetails monthlyAutomaticSubscription = inventory.getSkuDetails("1monthauto");
-                        Log.i("InApp", "12monthauto: " + yearlyAutomaticSubscription.getTitle() + yearlyAutomaticSubscription.getPrice());
-                        Log.i("InApp", "1monthauto: " + monthlyAutomaticSubscription.getTitle() + monthlyAutomaticSubscription.getPrice());
-
-                        // Check if the user has purchased the inventory
-                        if (inventory.hasPurchase("12monthauto")) {
-                            // TODO: See how multiple purchases work.. and renewals
-                            Purchase purchase = inventory.getPurchase("12monthauto");
-                            Log.i("InApp", "Purchase: " + purchase.toString());
-
-                            Date purchaseDate = new Date(purchase.getPurchaseTime());
-
-                            if (Helpers.isSubscriptionValid(purchaseDate, 12)) {
-                                // User has a valid subscription
-                                Publisher.INSTANCE.hasValidSubscription = true;
-                                for (Publisher.SubscriptionListener listener : Publisher.INSTANCE.subscriptionListeners) {
-                                    Log.i("InApp", "Sending listener subscription valid.");
-                                    // Pass in login success boolean
-                                    listener.onUpdate(purchase);
-                                }
-                                Log.i("InApp", "Subscription expiry date: " + Helpers.subscriptionExpiryDate(purchaseDate, 12));
-                            }
-                        } else if (inventory.hasPurchase("1monthauto")) {
-                            // TODO: See how multiple purchases work.. and renewals
-                            Purchase purchase = inventory.getPurchase("1monthauto");
-                            Log.i("InApp", "Purchase: " + purchase.toString());
-
-                            Date purchaseDate = new Date(purchase.getPurchaseTime());
-
-                            if (Helpers.isSubscriptionValid(purchaseDate, 1)) {
-                                // User has a valid subscription
-                                Publisher.INSTANCE.hasValidSubscription = true;
-                                for (Publisher.SubscriptionListener listener : Publisher.INSTANCE.subscriptionListeners) {
-                                    Log.i("InApp", "Sending listener subscription valid.");
-                                    // Pass in purchase if needed
-                                    listener.onUpdate(purchase);
-                                }
-                                Log.i("InApp", "Subscription expiry date: " + Helpers.subscriptionExpiryDate(purchaseDate, 1));
-                            }
-                        }
+        if (!Helpers.emulator) {
+            // Only startSetup if not running in an emulator
+            mHelper.startSetup(new IabHelper.OnIabSetupFinishedListener() {
+                public void onIabSetupFinished(IabResult result) {
+                    if (!result.isSuccess()) {
+                        // Oh noes, there was a problem.
+                        Log.d("InApp", "Problem setting up In-app Billing: " + result);
                     }
-                };
-                mHelper.queryInventoryAsync(true, additionalSkuList, mQueryFinishedListener);
-            }
-        });
+                    // Hooray, IAB is fully set up!
+                    Log.i("InApp", "In-app billing setup result: " + result);
+
+                    // Ask Google Play for a products list on a background thread
+                    ArrayList<String> additionalSkuList = new ArrayList<String>();
+                    additionalSkuList.add("12monthauto");
+                    additionalSkuList.add("1monthauto");
+                    IabHelper.QueryInventoryFinishedListener mQueryFinishedListener = new IabHelper.QueryInventoryFinishedListener() {
+                        public void onQueryInventoryFinished(IabResult result, Inventory inventory) {
+                            if (result.isFailure()) {
+                                // handle error
+                                Log.i("InApp", "Query failed: " + result);
+                                return;
+                            }
+
+                            // Check subscription inventory
+                            Log.i("InApp", "Inventory: " + inventory);
+                            SkuDetails yearlyAutomaticSubscription = inventory.getSkuDetails("12monthauto");
+                            SkuDetails monthlyAutomaticSubscription = inventory.getSkuDetails("1monthauto");
+                            Log.i("InApp", "12monthauto: " + yearlyAutomaticSubscription.getTitle() + yearlyAutomaticSubscription.getPrice());
+                            Log.i("InApp", "1monthauto: " + monthlyAutomaticSubscription.getTitle() + monthlyAutomaticSubscription.getPrice());
+
+                            // Check if the user has purchased the inventory
+                            if (inventory.hasPurchase("12monthauto")) {
+                                // TODO: See how multiple purchases work.. and renewals
+                                Purchase purchase = inventory.getPurchase("12monthauto");
+                                Log.i("InApp", "Purchase: " + purchase.toString());
+
+                                Date purchaseDate = new Date(purchase.getPurchaseTime());
+
+                                if (Helpers.isSubscriptionValid(purchaseDate, 12)) {
+                                    // User has a valid subscription
+                                    Publisher.INSTANCE.hasValidSubscription = true;
+                                    for (Publisher.SubscriptionListener listener : Publisher.INSTANCE.subscriptionListeners) {
+                                        Log.i("InApp", "Sending listener subscription valid.");
+                                        // Pass in login success boolean
+                                        listener.onUpdate(purchase);
+                                    }
+                                    Log.i("InApp", "Subscription expiry date: " + Helpers.subscriptionExpiryDate(purchaseDate, 12));
+                                }
+                            } else if (inventory.hasPurchase("1monthauto")) {
+                                // TODO: See how multiple purchases work.. and renewals
+                                Purchase purchase = inventory.getPurchase("1monthauto");
+                                Log.i("InApp", "Purchase: " + purchase.toString());
+
+                                Date purchaseDate = new Date(purchase.getPurchaseTime());
+
+                                if (Helpers.isSubscriptionValid(purchaseDate, 1)) {
+                                    // User has a valid subscription
+                                    Publisher.INSTANCE.hasValidSubscription = true;
+                                    for (Publisher.SubscriptionListener listener : Publisher.INSTANCE.subscriptionListeners) {
+                                        Log.i("InApp", "Sending listener subscription valid.");
+                                        // Pass in purchase if needed
+                                        listener.onUpdate(purchase);
+                                    }
+                                    Log.i("InApp", "Subscription expiry date: " + Helpers.subscriptionExpiryDate(purchaseDate, 1));
+                                }
+                            }
+                        }
+                    };
+                    mHelper.queryInventoryAsync(true, additionalSkuList, mQueryFinishedListener);
+                }
+            });
+        }
 
         // Setup push notifications
         Parse.initialize(this, Helpers.getVariableFromConfig("PARSE_APP_ID"), Helpers.getVariableFromConfig("PARSE_CLIENT_KEY"));

@@ -144,141 +144,144 @@ public class SubscribeActivity extends ActionBarActivity {
             // Setup in-app billing
             mHelper = Helpers.setupIabHelper(getActivity().getApplicationContext());
 
-            // Get inventory from Google Play
-            mHelper.startSetup(new IabHelper.OnIabSetupFinishedListener() {
-                public void onIabSetupFinished(IabResult result) {
-                    if (!result.isSuccess()) {
-                        // Oh noes, there was a problem.
-                        Log.d("Subscribe", "Problem setting up In-app Billing: " + result);
-                    }
-                    // Hooray, IAB is fully set up!
-                    Log.i("Subscribe", "In-app billing setup result: " + result);
-
-                    // Consume the test purchase..
-                    if (BuildConfig.DEBUG) {
-                        try {
-                            Inventory inventory = mHelper.queryInventory(false, null);
-                            Purchase purchase = inventory.getPurchase("android.test.purchased");
-                            if (purchase != null) {
-                                mHelper.consumeAsync(inventory.getPurchase("android.test.purchased"), null);
-                            }
-                        } catch (IabException e) {
-                            e.printStackTrace();
+            if (!Helpers.emulator) {
+                // Only startSetup if not running in an emulator
+                // Get inventory from Google Play
+                mHelper.startSetup(new IabHelper.OnIabSetupFinishedListener() {
+                    public void onIabSetupFinished(IabResult result) {
+                        if (!result.isSuccess()) {
+                            // Oh noes, there was a problem.
+                            Log.d("Subscribe", "Problem setting up In-app Billing: " + result);
                         }
-                    }
+                        // Hooray, IAB is fully set up!
+                        Log.i("Subscribe", "In-app billing setup result: " + result);
 
-                    // Ask Google Play for a products list on a background thread
-                    final ArrayList<String> additionalSkuList = new ArrayList<String>();
-                    additionalSkuList.add(Helpers.TWELVE_MONTH_SUBSCRIPTION_ID);
-                    additionalSkuList.add(Helpers.ONE_MONTH_SUBSCRIPTION_ID);
-
-                    mIssueList = Publisher.INSTANCE.getIssuesFromFilesystem();
-                    for (Issue issue : mIssueList) {
-                        additionalSkuList.add(Helpers.singleIssuePurchaseID(issue.getNumber()));
-                    }
-
-                    final ProgressDialog progress = new ProgressDialog(getActivity());
-                    progress.setTitle(getResources().getString(R.string.subscribe_loading_progress_title));
-                    progress.setMessage(getResources().getString(R.string.subscribe_loading_progress_message));
-                    progress.show();
-
-                    new AsyncTask<Void, Integer, Void>() {
-
-                        @Override
-                        protected Void doInBackground(Void... params) {
-
-                            int partitionSize = Helpers.GOOGLE_PLAY_MAX_SKU_LIST_SIZE;
-                            for (int i = 0; i < additionalSkuList.size(); i+=partitionSize) {
-                                final int loopNumber = i;
-                                final List<String> partition = additionalSkuList.subList(i, Math.min(i + partitionSize, additionalSkuList.size()));
-                                try {
-                                    Inventory inventory = mHelper.queryInventory(true, partition);
-
-                                    // Check subscription inventory
-                                    Log.i("Subscribe", "Inventory (" + loopNumber + "): " + inventory);
-
-                                    // Loop through products and add them to mProducts
-                                    for (String sku : partition) {
-                                        SkuDetails product = inventory.getSkuDetails(sku);
-                                        if (product != null) {
-                                            mProducts.add(product);
-                                        }
-                                    }
-                                } catch (IabException e) {
-                                    e.printStackTrace();
+                        // Consume the test purchase..
+                        if (BuildConfig.DEBUG) {
+                            try {
+                                Inventory inventory = mHelper.queryInventory(false, null);
+                                Purchase purchase = inventory.getPurchase("android.test.purchased");
+                                if (purchase != null) {
+                                    mHelper.consumeAsync(inventory.getPurchase("android.test.purchased"), null);
                                 }
+                            } catch (IabException e) {
+                                e.printStackTrace();
+                            }
+                        }
+
+                        // Ask Google Play for a products list on a background thread
+                        final ArrayList<String> additionalSkuList = new ArrayList<String>();
+                        additionalSkuList.add(Helpers.TWELVE_MONTH_SUBSCRIPTION_ID);
+                        additionalSkuList.add(Helpers.ONE_MONTH_SUBSCRIPTION_ID);
+
+                        mIssueList = Publisher.INSTANCE.getIssuesFromFilesystem();
+                        for (Issue issue : mIssueList) {
+                            additionalSkuList.add(Helpers.singleIssuePurchaseID(issue.getNumber()));
+                        }
+
+                        final ProgressDialog progress = new ProgressDialog(getActivity());
+                        progress.setTitle(getResources().getString(R.string.subscribe_loading_progress_title));
+                        progress.setMessage(getResources().getString(R.string.subscribe_loading_progress_message));
+                        progress.show();
+
+                        new AsyncTask<Void, Integer, Void>() {
+
+                            @Override
+                            protected Void doInBackground(Void... params) {
+
+                                int partitionSize = Helpers.GOOGLE_PLAY_MAX_SKU_LIST_SIZE;
+                                for (int i = 0; i < additionalSkuList.size(); i+=partitionSize) {
+                                    final int loopNumber = i;
+                                    final List<String> partition = additionalSkuList.subList(i, Math.min(i + partitionSize, additionalSkuList.size()));
+                                    try {
+                                        Inventory inventory = mHelper.queryInventory(true, partition);
+
+                                        // Check subscription inventory
+                                        Log.i("Subscribe", "Inventory (" + loopNumber + "): " + inventory);
+
+                                        // Loop through products and add them to mProducts
+                                        for (String sku : partition) {
+                                            SkuDetails product = inventory.getSkuDetails(sku);
+                                            if (product != null) {
+                                                mProducts.add(product);
+                                            }
+                                        }
+                                    } catch (IabException e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+
+                                return null;
                             }
 
-                            return null;
-                        }
+                            @Override
+                            protected void onPostExecute(Void nothing) {
+                                super.onPostExecute(nothing);
 
-                        @Override
-                        protected void onPostExecute(Void nothing) {
-                            super.onPostExecute(nothing);
+                                // Update adapter
+                                adapter.notifyDataSetChanged();
+                                progress.dismiss();
+                            }
 
-                            // Update adapter
-                            adapter.notifyDataSetChanged();
-                            progress.dismiss();
-                        }
+                        }.execute();
 
-                    }.execute();
-
-                    mPurchaseFinishedListener = new IabHelper.OnIabPurchaseFinishedListener() {
-                        public void onIabPurchaseFinished(IabResult result, final Purchase purchase)
-                        {
-                            if (result.isFailure()) {
-                                if (result.getResponse() == 7) {
-                                    // Already purchased!
-                                    AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-                                    builder.setMessage(R.string.subscribe_already_purchased_message).setTitle(R.string.subscribe_already_purchased_title);
-                                    builder.setPositiveButton(R.string.subscribe_already_purchased_read_issue_button, new DialogInterface.OnClickListener() {
-                                        public void onClick(DialogInterface dialog, int id) {
-                                            // User clicked Read this issue button
-                                            Intent issueIntent = new Intent(rootView.getContext(), TableOfContentsActivity.class);
-                                            int issueNumber = Integer.parseInt(mProducts.get(mPositionTapped).getSku().replaceAll("[\\D]", ""));
-                                            Issue issueForIntent = null;
-                                            for (Issue issue : mIssueList) {
-                                                if (issue.getNumber() == issueNumber) {
-                                                    issueForIntent = issue;
+                        mPurchaseFinishedListener = new IabHelper.OnIabPurchaseFinishedListener() {
+                            public void onIabPurchaseFinished(IabResult result, final Purchase purchase)
+                            {
+                                if (result.isFailure()) {
+                                    if (result.getResponse() == 7) {
+                                        // Already purchased!
+                                        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                                        builder.setMessage(R.string.subscribe_already_purchased_message).setTitle(R.string.subscribe_already_purchased_title);
+                                        builder.setPositiveButton(R.string.subscribe_already_purchased_read_issue_button, new DialogInterface.OnClickListener() {
+                                            public void onClick(DialogInterface dialog, int id) {
+                                                // User clicked Read this issue button
+                                                Intent issueIntent = new Intent(rootView.getContext(), TableOfContentsActivity.class);
+                                                int issueNumber = Integer.parseInt(mProducts.get(mPositionTapped).getSku().replaceAll("[\\D]", ""));
+                                                Issue issueForIntent = null;
+                                                for (Issue issue : mIssueList) {
+                                                    if (issue.getNumber() == issueNumber) {
+                                                        issueForIntent = issue;
+                                                    }
+                                                }
+                                                if (issueForIntent != null) {
+                                                    issueIntent.putExtra("issue", issueForIntent);
+                                                    startActivity(issueIntent);
                                                 }
                                             }
-                                            if (issueForIntent != null) {
-                                                issueIntent.putExtra("issue", issueForIntent);
-                                                startActivity(issueIntent);
+                                        });
+                                        builder.setNegativeButton(R.string.subscribe_already_purchased_cancel_button, new DialogInterface.OnClickListener() {
+                                            public void onClick(DialogInterface dialog, int id) {
+                                                // User cancelled the dialog
                                             }
-                                        }
-                                    });
-                                    builder.setNegativeButton(R.string.subscribe_already_purchased_cancel_button, new DialogInterface.OnClickListener() {
-                                        public void onClick(DialogInterface dialog, int id) {
-                                            // User cancelled the dialog
-                                        }
-                                    });
-                                    AlertDialog dialog = builder.create();
-                                    dialog.show();
-                                } else {
-                                    Log.d("Subscribe", "Error purchasing: " + result);
-                                }
-                                return;
-                            } else if (result.getResponse() == IabHelper.IABHELPER_USER_CANCELLED) {
-                                // User cancelled the purchase, so ignore, move on
-                                Log.i("Subscribe", "User cancelled purchase.");
-                                return;
-                            } else if (purchase.getSku().equals(Helpers.TWELVE_MONTH_SUBSCRIPTION_ID)) {
-                                // TODO: Update subscription status.
-                                Log.i("Subscribe", "Purchase succeeded: " + purchase.getItemType());
+                                        });
+                                        AlertDialog dialog = builder.create();
+                                        dialog.show();
+                                    } else {
+                                        Log.d("Subscribe", "Error purchasing: " + result);
+                                    }
+                                    return;
+                                } else if (result.getResponse() == IabHelper.IABHELPER_USER_CANCELLED) {
+                                    // User cancelled the purchase, so ignore, move on
+                                    Log.i("Subscribe", "User cancelled purchase.");
+                                    return;
+                                } else if (purchase.getSku().equals(Helpers.TWELVE_MONTH_SUBSCRIPTION_ID)) {
+                                    // TODO: Update subscription status.
+                                    Log.i("Subscribe", "Purchase succeeded: " + purchase.getItemType());
 
-                            } else if (purchase.getSku().equals(Helpers.ONE_MONTH_SUBSCRIPTION_ID)) {
-                                // TODO: Update subscription status.
-                                Log.i("Subscribe", "Purchase succeeded: " + purchase.getItemType());
-                            } else {
-                                // TODO: Handle individual purchases
-                                Log.i("Subscribe", "Individual purchase: " + purchase.getItemType());
-                                adapter.notifyDataSetChanged();
+                                } else if (purchase.getSku().equals(Helpers.ONE_MONTH_SUBSCRIPTION_ID)) {
+                                    // TODO: Update subscription status.
+                                    Log.i("Subscribe", "Purchase succeeded: " + purchase.getItemType());
+                                } else {
+                                    // TODO: Handle individual purchases
+                                    Log.i("Subscribe", "Individual purchase: " + purchase.getItemType());
+                                    adapter.notifyDataSetChanged();
+                                }
                             }
-                        }
-                    };
-                }
-            });
+                        };
+                    }
+                });
+            }
 
             return rootView;
         }
