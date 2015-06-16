@@ -314,12 +314,12 @@ public class MainActivity extends ActionBarActivity {
                                 Log.i("Cover", "New issue cover available, showing cover.");
 
                                 // Show cover
-                                final ImageButton home_cover = (ImageButton) MainActivity.this.findViewById(R.id.home_cover);
+                                final ImageView home_cover = (ImageView) MainActivity.this.findViewById(R.id.home_cover);
                                 if (home_cover != null) {
                                     Log.i("coverCSF..onLoad", "calling decodeStream");
                                     final Bitmap coverBitmap = BitmapFactory.decodeByteArray(payload, 0, payload.length);
                                     Log.i("coverCSF..onLoad", "decodeStream returned");
-                                    animateUpdateImageButtonWithBitmap(home_cover, coverBitmap);
+                                    animateUpdateImageViewWithBitmap(home_cover, coverBitmap);
                                 }
 
                             }
@@ -351,9 +351,9 @@ public class MainActivity extends ActionBarActivity {
         }
     }
 
-    private static void animateUpdateImageButtonWithBitmap(final ImageButton imageButton, final Bitmap bitmap) {
+    private static void animateUpdateImageViewWithBitmap(final ImageView imageView, final Bitmap bitmap) {
 
-        if (imageButton != null && bitmap != null) {
+        if (imageView != null && bitmap != null) {
             Animation fadeOutAnimation = new AlphaAnimation(1.0f, 0.0f);
             final Animation fadeInAnimation = new AlphaAnimation(0.0f, 1.0f);
             fadeOutAnimation.setDuration(300);
@@ -366,9 +366,9 @@ public class MainActivity extends ActionBarActivity {
 
                 @Override
                 public void onAnimationEnd(Animation animation) {
-                    imageButton.setImageBitmap(bitmap);
-                    imageButton.setScaleType(ImageView.ScaleType.FIT_CENTER);
-                    imageButton.startAnimation(fadeInAnimation);
+                    imageView.setImageBitmap(bitmap);
+                    imageView.setScaleType(ImageView.ScaleType.FIT_CENTER);
+                    imageView.startAnimation(fadeInAnimation);
                 }
 
                 @Override
@@ -376,7 +376,7 @@ public class MainActivity extends ActionBarActivity {
 
                 }
             });
-            imageButton.startAnimation(fadeOutAnimation);
+            imageView.startAnimation(fadeOutAnimation);
         }
     }
 
@@ -484,7 +484,7 @@ public class MainActivity extends ActionBarActivity {
             Publisher.INSTANCE.setSubscriptionListener(subscriptionListener);
 
             // Set a listener for home_cover taps
-            final ImageButton home_cover = (ImageButton) rootView.findViewById(R.id.home_cover);
+            final ImageView home_cover = (ImageView) rootView.findViewById(R.id.home_cover);
             home_cover.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
@@ -569,12 +569,12 @@ public class MainActivity extends ActionBarActivity {
                     Log.i("coverCSF..onLoad", "Received listener, showing cover.");
 
                     // Show cover
-                    final ImageButton home_cover = (ImageButton) rootView.findViewById(R.id.home_cover);
+                    final ImageView home_cover = (ImageView) rootView.findViewById(R.id.home_cover);
                     if (home_cover != null) {
                         Log.i("coverCSF..onLoad", "calling decodeStream");
                         final Bitmap coverBitmap = BitmapFactory.decodeByteArray(payload, 0, payload.length);
                         Log.i("coverCSF..onLoad", "decodeStream returned");
-                        animateUpdateImageButtonWithBitmap(home_cover, coverBitmap);
+                        animateUpdateImageViewWithBitmap(home_cover, coverBitmap);
                     }
 
                 }

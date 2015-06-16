@@ -12,6 +12,7 @@ import android.provider.Settings;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.util.Base64;
+import android.util.DisplayMetrics;
 import android.util.Log;
 
 import java.io.IOException;
@@ -47,6 +48,18 @@ public class Helpers {
     public static final boolean debugMode = (MainActivity.applicationContext.getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0;
 
     public static boolean emulator = Build.FINGERPRINT.contains("generic");
+
+    public static float screenHeight() {
+        DisplayMetrics displayMetrics = MainActivity.applicationContext.getResources().getDisplayMetrics();
+
+        return MainActivity.applicationContext.getResources().getDisplayMetrics().heightPixels / displayMetrics.density;
+    }
+
+    public static float screenWidth() {
+        DisplayMetrics displayMetrics = MainActivity.applicationContext.getResources().getDisplayMetrics();
+
+        return MainActivity.applicationContext.getResources().getDisplayMetrics().widthPixels / displayMetrics.density;
+    }
 
     public static RoundedBitmapDrawable roundDrawableFromBitmap(Bitmap bitmap) {
         RoundedBitmapDrawable roundedBitmapDrawable = RoundedBitmapDrawableFactory.create(MainActivity.applicationResources, bitmap);
