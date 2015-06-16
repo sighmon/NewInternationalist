@@ -3,8 +3,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:gravity="center_horizontal"
-    android:layout_marginLeft="@dimen/toc_margin"
-    android:layout_marginRight="@dimen/toc_margin">
+    android:layout_marginLeft="@dimen/toc_margin_left_right"
+    android:layout_marginRight="@dimen/toc_margin_left_right">
 
     <ImageView
         android:id="@+id/toc_editor_image"
