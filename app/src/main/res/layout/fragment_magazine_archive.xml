@@ -9,7 +9,7 @@
         android:id="@+id/magazineArchiveGridView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:columnWidth="@dimen/archive_cover_width"
+        android:columnWidth="@dimen/magazine_archive_column_width"
         android:numColumns="auto_fit"
         android:verticalSpacing="10dp"
         android:horizontalSpacing="10dp"

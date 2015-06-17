@@ -8,7 +8,6 @@
     <dimen name="home_cover_margin_bottom">10dp</dimen>
     <dimen name="magazine_archive_column_width">100dp</dimen>
     <dimen name="magazine_archive_column_height">141dp</dimen>
-    <dimen name="archive_cover_width">100dp</dimen>
     <dimen name="card_corner_radius">4dp</dimen>
     <dimen name="toc_margin">16dp</dimen>
     <dimen name="toc_margin_left_right">16dp</dimen>
@@ -34,6 +33,7 @@
     <dimen name="search_article_padding_container_top_bottom">16dp</dimen>
     <dimen name="search_article_padding_top_bottom">8dp</dimen>
     <dimen name="search_article_padding_left_right">16dp</dimen>
+    <dimen name="search_article_margin_left_right">16dp</dimen>
     <dimen name="search_cover_padding">5dp</dimen>
     <dimen name="search_cover_padding_top">16dp</dimen>
     <dimen name="search_results_cover_width">100dp</dimen>
@@ -41,6 +41,7 @@
     <dimen name="toc_editors_image_width">200dp</dimen>
     <dimen name="toc_editors_image_height">200dp</dimen>
     <dimen name="category_header_padding_top">10dp</dimen>
+    <dimen name="category_margin_left_right">16dp</dimen>
     <dimen name="categories_category_name_padding">8dp</dimen>
     <dimen name="toc_article_image_width">50dp</dimen>
     <dimen name="toc_article_image_height">150dp</dimen>

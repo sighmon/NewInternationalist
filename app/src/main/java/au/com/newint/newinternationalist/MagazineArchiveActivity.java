@@ -133,13 +133,10 @@ public class MagazineArchiveActivity extends ActionBarActivity {
                 return 0;
             }
 
-            // convert the cover size in px to dp
+            // Get the cover size from resources
 
-            int coverWidth = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
-                    (float) 100, getResources().getDisplayMetrics());
-
-            int coverHeight = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,
-                    (float) 141, getResources().getDisplayMetrics());
+            int coverWidth = Math.round(getResources().getDimension(R.dimen.magazine_archive_column_width));
+            int coverHeight = Math.round(getResources().getDimension(R.dimen.magazine_archive_column_height));
 
             // create a new ImageView for each item referenced by the Adapter
             public View getView(final int position, View convertView, ViewGroup parent) {
