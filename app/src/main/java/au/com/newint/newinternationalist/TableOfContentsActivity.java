@@ -47,7 +47,7 @@ import au.com.newint.newinternationalist.util.Purchase;
 
 public class TableOfContentsActivity extends ActionBarActivity {
 
-    Issue issue;
+    static Issue issue;
     static IabHelper mHelper;
     static Inventory inventory = null;
     static ArrayList<Purchase> purchases = null;
@@ -67,11 +67,6 @@ public class TableOfContentsActivity extends ActionBarActivity {
         final Fragment tableOfContentsFragment = new TableOfContentsFragment();
 
         issue = getIntent().getParcelableExtra("issue");
-
-        // Send issue to fragment
-        Bundle bundle = new Bundle();
-        bundle.putParcelable("issue", issue);
-        tableOfContentsFragment.setArguments(bundle);
 
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
@@ -189,32 +184,25 @@ public class TableOfContentsActivity extends ActionBarActivity {
             llm.setOrientation(LinearLayoutManager.VERTICAL);
             recList.setLayoutManager(llm);
 
-            // Get issue from bundle
-            Bundle bundle = this.getArguments();
-            final Issue issueFromActivity;
-            if (bundle != null) {
-                issueFromActivity = bundle.getParcelable("issue");
-            } else {
-                issueFromActivity = new Issue(Publisher.INSTANCE.latestIssue().getID());
-            }
-
-            final TableOfContentsAdapter adapter = new TableOfContentsAdapter(issueFromActivity);
+            final TableOfContentsAdapter adapter = new TableOfContentsAdapter(issue);
             recList.setAdapter(adapter);
 
-            issueFromActivity.preloadArticles(new CacheStreamFactory.CachePreloadCallback() {
-                @Override
-                public void onLoad(byte[] payload) {
-                    // Articles have preloaded, so notify the view.
-                    // Item 0 is the cover, so notify adapter of item 1.
-                    adapter.notifyItemChanged(1);
-                    Log.i("PreloadArticles", "Articles ready, so refreshing first article.");
-                }
+            if (issue != null) {
+                issue.preloadArticles(new CacheStreamFactory.CachePreloadCallback() {
+                    @Override
+                    public void onLoad(byte[] payload) {
+                        // Articles have preloaded, so notify the view.
+                        // Item 0 is the cover, so notify adapter of item 1.
+                        adapter.notifyItemChanged(1);
+                        Log.i("PreloadArticles", "Articles ready, so refreshing first article.");
+                    }
 
-                @Override
-                public void onLoadBackground(byte[] payload) {
+                    @Override
+                    public void onLoadBackground(byte[] payload) {
 
-                }
-            });
+                    }
+                });
+            }
 
             // Register for the listener when the zip file has downloaded and unzipped
             Publisher.IssueZipDownloadCompleteListener issueZipDownloadCompleteListener = new Publisher.IssueZipDownloadCompleteListener() {
@@ -305,7 +293,7 @@ public class TableOfContentsActivity extends ActionBarActivity {
                                     intent.putExtra(Intent.EXTRA_SUBJECT, getResources().getString(R.string.zip_download_dialog_email_subject));
                                     intent.putExtra(Intent.EXTRA_TEXT, getResources().getString(R.string.zip_download_dialog_email_body)
                                             + " '" + response.getStatusLine()
-                                            + "' For IssueID: " + issueFromActivity.getID());
+                                            + "' For IssueID: " + issue.getID());
 
                                     startActivity(Intent.createChooser(intent, getResources().getString(R.string.zip_download_dialog_email_chooser)));
                                 }
