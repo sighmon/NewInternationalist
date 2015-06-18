@@ -4,7 +4,6 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
@@ -17,22 +16,12 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.webkit.WebView;
-import android.widget.Button;
-import android.widget.GridView;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.ProgressBar;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
-
-import com.google.gson.JsonArray;
 
 import org.apache.http.HttpResponse;
 
-import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -419,7 +408,7 @@ public class TableOfContentsActivity extends ActionBarActivity {
                         @Override
                         public void onLoad(byte[] payload) {
                             if (payload != null && payload.length > 0) {
-                                Bitmap coverBitmap = BitmapFactory.decodeByteArray(payload,0,payload.length);
+                                Bitmap coverBitmap = Helpers.bitmapDecode(payload);
                                 coverImageView.setImageBitmap(coverBitmap);
 
                             }
@@ -452,7 +441,7 @@ public class TableOfContentsActivity extends ActionBarActivity {
                             @Override
                             public void onLoad(byte[] payload) {
                                 if (payload != null && payload.length > 0) {
-                                    Bitmap coverBitmap = BitmapFactory.decodeByteArray(payload,0,payload.length);
+                                    Bitmap coverBitmap = Helpers.bitmapDecode(payload);
                                     articleImageView.setImageBitmap(coverBitmap);
 
                                 }
@@ -477,7 +466,7 @@ public class TableOfContentsActivity extends ActionBarActivity {
                             @Override
                             public void onLoad(byte[] payload) {
                                 if (payload != null && payload.length > 0) {
-                                    Bitmap editorsImageBitmap = BitmapFactory.decodeByteArray(payload, 0, payload.length);
+                                    Bitmap editorsImageBitmap = Helpers.bitmapDecode(payload);
                                     editorImageView.setImageDrawable(Helpers.roundDrawableFromBitmap(editorsImageBitmap));
 //                                    TableOfContentsAdapter.this.notifyItemChanged(TableOfContentsAdapter.this.getItemCount()-1);
                                 }

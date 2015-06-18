@@ -2,14 +2,12 @@ package au.com.newint.newinternationalist;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Html;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -20,8 +18,6 @@ import android.widget.TextView;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-
-import org.w3c.dom.Text;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -162,7 +158,7 @@ public class CategoryActivity extends ActionBarActivity {
                         @Override
                         public void onLoad(byte[] payload) {
                             if (payload != null && payload.length > 0) {
-                                Bitmap coverBitmap = BitmapFactory.decodeByteArray(payload, 0, payload.length);
+                                Bitmap coverBitmap = Helpers.bitmapDecode(payload);
                                 articleImageView.setImageBitmap(coverBitmap);
 
                             }

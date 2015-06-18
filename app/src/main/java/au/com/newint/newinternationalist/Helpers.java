@@ -210,4 +210,13 @@ public class Helpers {
 
         return new IabHelper(context, base64EncodedPublicKey);
     }
+    // not actually synchronized any more
+    public static Bitmap bitmapDecode(byte[] bytes) {
+
+        //Log.i("bitmapDecode", "start");
+        Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+        //Log.i("bitmapDecode", "end");
+
+        return bitmap;
+    }
 }

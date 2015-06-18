@@ -2,19 +2,13 @@ package au.com.newint.newinternationalist;
 
 import android.app.AlertDialog;
 import android.app.SearchManager;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.ServiceConnection;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.os.AsyncTask;
-import android.os.Build;
-import android.os.IBinder;
-import android.os.RemoteException;
 import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v4.app.Fragment;
@@ -29,18 +23,14 @@ import android.view.ViewGroup;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.widget.Button;
-import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.SearchView;
 
-import com.android.vending.billing.IInAppBillingService;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.ClientProtocolException;
@@ -53,24 +43,14 @@ import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
 
-import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.Writer;
-import java.lang.reflect.Array;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-import au.com.newint.newinternationalist.util.Base64;
 import au.com.newint.newinternationalist.util.IabHelper;
 import au.com.newint.newinternationalist.util.IabResult;
 import au.com.newint.newinternationalist.util.Inventory;
@@ -317,7 +297,7 @@ public class MainActivity extends ActionBarActivity {
                                 final ImageView home_cover = (ImageView) MainActivity.this.findViewById(R.id.home_cover);
                                 if (home_cover != null) {
                                     Log.i("coverCSF..onLoad", "calling decodeStream");
-                                    final Bitmap coverBitmap = BitmapFactory.decodeByteArray(payload, 0, payload.length);
+                                    final Bitmap coverBitmap = Helpers.bitmapDecode(payload);
                                     Log.i("coverCSF..onLoad", "decodeStream returned");
                                     animateUpdateImageViewWithBitmap(home_cover, coverBitmap);
                                 }
@@ -572,7 +552,7 @@ public class MainActivity extends ActionBarActivity {
                     final ImageView home_cover = (ImageView) rootView.findViewById(R.id.home_cover);
                     if (home_cover != null) {
                         Log.i("coverCSF..onLoad", "calling decodeStream");
-                        final Bitmap coverBitmap = BitmapFactory.decodeByteArray(payload, 0, payload.length);
+                        final Bitmap coverBitmap = Helpers.bitmapDecode(payload);
                         Log.i("coverCSF..onLoad", "decodeStream returned");
                         animateUpdateImageViewWithBitmap(home_cover, coverBitmap);
                     }

@@ -1,7 +1,6 @@
 package au.com.newint.newinternationalist;
 
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.Paint;
@@ -9,7 +8,6 @@ import android.util.Log;
 
 import org.apache.commons.io.FilenameUtils;
 
-import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
