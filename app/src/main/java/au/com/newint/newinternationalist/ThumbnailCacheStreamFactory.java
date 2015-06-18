@@ -1,7 +1,6 @@
 package au.com.newint.newinternationalist;
 
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.Paint;
@@ -9,7 +8,6 @@ import android.util.Log;
 
 import org.apache.commons.io.FilenameUtils;
 
-import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -78,7 +76,7 @@ public class ThumbnailCacheStreamFactory extends CacheStreamFactory {
             // this will block if we haven't seen the full file yet
             // we should be off the main thread here though.
             byte[] data = source.read();
-            Bitmap fullsizeImageBitmap = BitmapFactory.decodeByteArray(data,0,data.length);
+            Bitmap fullsizeImageBitmap = Helpers.scaledBitmapDecode(data,width,height);
 
             Log.i("ThumbnailCSF", "bitmap decoded");
             if (fullsizeImageBitmap != null) {

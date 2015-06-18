@@ -19,6 +19,8 @@ public class Category {
 
     JsonObject categoryJson;
 
+    ArrayList<Article> articles;
+
     public Category(JsonObject categoryJson) {
         this.categoryJson = categoryJson;
     }
@@ -79,15 +81,17 @@ public class Category {
     }
 
     public ArrayList<Article> getArticles() {
-        ArrayList<Issue> issuesList = Publisher.INSTANCE.getIssuesFromFilesystem();
-        ArrayList<Article> articles = new ArrayList<Article>();
-        for (Issue issue : issuesList) {
-            ArrayList<Article> articlesList = issue.getArticles();
-            for (Article article : articlesList) {
-                ArrayList<Category> articleCategories = article.getCategories();
-                for (Category category : articleCategories) {
-                    if (category.equals(this)) {
-                        articles.add(article);
+        if (articles==null) {
+            ArrayList<Issue> issuesList = Publisher.INSTANCE.getIssuesFromFilesystem();
+            articles = new ArrayList<Article>();
+            for (Issue issue : issuesList) {
+                ArrayList<Article> articlesList = issue.getArticles();
+                for (Article article : articlesList) {
+                    ArrayList<Category> articleCategories = article.getCategories();
+                    for (Category category : articleCategories) {
+                        if (category.equals(this)) {
+                            articles.add(article);
+                        }
                     }
                 }
             }

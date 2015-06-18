@@ -2,14 +2,12 @@ package au.com.newint.newinternationalist;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.util.Log;
-import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -20,19 +18,8 @@ import android.view.animation.Animation;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.GridView;
-import android.widget.ImageView;
-import android.widget.ListAdapter;
-import android.widget.Toast;
 
-import com.google.gson.JsonObject;
-
-import org.json.JSONObject;
-
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.HashMap;
 
 
 public class MagazineArchiveActivity extends ActionBarActivity {
@@ -176,7 +163,7 @@ public class MagazineArchiveActivity extends ActionBarActivity {
 
                             long returnTime = System.nanoTime();
 
-                            final Bitmap coverBitmap = BitmapFactory.decodeByteArray(payload, 0, payload.length);
+                            final Bitmap coverBitmap = Helpers.bitmapDecode(payload);
 
                             Log.i("MagazineArchiveActivity", "onLoad delay: " + (returnTime - callTime));
 

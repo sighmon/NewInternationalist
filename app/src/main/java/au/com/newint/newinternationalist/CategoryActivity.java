@@ -2,7 +2,6 @@ package au.com.newint.newinternationalist;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
@@ -20,8 +19,6 @@ import android.widget.TextView;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-
-import org.w3c.dom.Text;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -139,12 +136,13 @@ public class CategoryActivity extends ActionBarActivity {
             @Override
             public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
 
-                holder.setIsRecyclable(false);
+                //holder.setIsRecyclable(false);
 
                 // Article
                 Article article = articles.get(position);
                 Issue issue = article.parentIssue;
-                CategoryViewHolder categoryViewHolder = ((CategoryViewHolder) holder);
+                final CategoryViewHolder categoryViewHolder = ((CategoryViewHolder) holder);
+                categoryViewHolder.setCacheStreamFactory(null);
                 categoryViewHolder.articleTitleTextView.setText(article.getTitle());
                 String articleTeaser = article.getTeaser();
                 if (articleTeaser != null && !articleTeaser.isEmpty()) {
@@ -158,11 +156,27 @@ public class CategoryActivity extends ActionBarActivity {
                 ArrayList<Image> images = article.getImages();
                 final ImageView articleImageView = categoryViewHolder.articleImageView;
                 if (images.size() > 0) {
-                    images.get(0).getImageCacheStreamFactoryForSize(MainActivity.applicationContext.getResources().getDisplayMetrics().widthPixels).preload(new CacheStreamFactory.CachePreloadCallback() {
+
+                    articleImageView.setVisibility(View.VISIBLE);
+
+                    final CacheStreamFactory cacheStreamFactory = images.get(0).getImageCacheStreamFactoryForSize(MainActivity.applicationContext.getResources().getDisplayMetrics().widthPixels);
+
+                    categoryViewHolder.setCacheStreamFactory(cacheStreamFactory);
+
+                    cacheStreamFactory.preload(new CacheStreamFactory.CachePreloadCallback() {
                         @Override
                         public void onLoad(byte[] payload) {
                             if (payload != null && payload.length > 0) {
-                                Bitmap coverBitmap = BitmapFactory.decodeByteArray(payload, 0, payload.length);
+
+
+                                if (categoryViewHolder.hasCacheStreamFactory(cacheStreamFactory))
+                                    Log.i("CategoryActivity", "onBindViewHolder->preload->onLoad: expected callback");
+                                else {
+                                    Log.i("CategoryActivity", "onBindViewHolder->preload->onLoad: not expecting this callback");
+                                    return;
+                                }
+
+                                Bitmap coverBitmap = Helpers.bitmapDecode(payload);
                                 articleImageView.setImageBitmap(coverBitmap);
 
                             }
@@ -190,6 +204,8 @@ public class CategoryActivity extends ActionBarActivity {
                 public ImageView articleImageView;
                 public TextView articleIssueInformationTextView;
 
+                public CacheStreamFactory cacheStreamFactory;
+
                 public CategoryViewHolder(View itemView) {
                     super(itemView);
                     articleTitleTextView = (TextView) itemView.findViewById(R.id.category_article_title);
@@ -198,6 +214,20 @@ public class CategoryActivity extends ActionBarActivity {
                     articleIssueInformationTextView = (TextView) itemView.findViewById(R.id.category_article_issue_information);
                     itemView.setOnClickListener(this);
                 }
+
+                public void setCacheStreamFactory(CacheStreamFactory cacheStreamFactory) {
+                    // find last cacheStreamFactory and kill it's process
+                    if(this.cacheStreamFactory!=null) {
+                        this.cacheStreamFactory.preloadTask.cancel(false);
+                    }
+                    this.cacheStreamFactory = cacheStreamFactory;
+                }
+
+                public boolean hasCacheStreamFactory(CacheStreamFactory cacheStreamFactory) {
+                    return this.cacheStreamFactory==cacheStreamFactory;
+                }
+
+
 
                 @Override
                 public void onClick(View v) {

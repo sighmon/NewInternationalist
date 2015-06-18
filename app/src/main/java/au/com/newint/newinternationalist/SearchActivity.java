@@ -5,7 +5,6 @@ import android.app.SearchManager;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v4.app.Fragment;
@@ -13,7 +12,6 @@ import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Html;
-import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -23,12 +21,9 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import java.io.File;
-import java.lang.reflect.Array;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -248,7 +243,7 @@ public class SearchActivity extends ActionBarActivity {
                     issue.getCoverCacheStreamFactoryForSize((int) getResources().getDimension(R.dimen.search_results_cover_width)).preload(new CacheStreamFactory.CachePreloadCallback() {
                         @Override
                         public void onLoad(byte[] payload) {
-                            Bitmap coverBitmap = BitmapFactory.decodeByteArray(payload,0,payload.length);
+                            Bitmap coverBitmap = Helpers.bitmapDecode(payload);
                             coverImageView.setImageBitmap(coverBitmap);
 
                         }
@@ -280,7 +275,7 @@ public class SearchActivity extends ActionBarActivity {
                             @Override
                             public void onLoad(byte[] payload) {
                                 if (payload != null && payload.length > 0) {
-                                    Bitmap coverBitmap = BitmapFactory.decodeByteArray(payload, 0, payload.length);
+                                    Bitmap coverBitmap = Helpers.bitmapDecode(payload);
                                     articleImageView.setImageBitmap(coverBitmap);
 
                                 }
