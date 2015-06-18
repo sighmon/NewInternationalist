@@ -52,6 +52,8 @@ public class TableOfContentsActivity extends ActionBarActivity {
     static Inventory inventory = null;
     static ArrayList<Purchase> purchases = null;
 
+    static ArrayList<Object> layoutList = null;
+
     @Override
     public void onDestroy() {
         super.onDestroy();
@@ -187,12 +189,17 @@ public class TableOfContentsActivity extends ActionBarActivity {
             final TableOfContentsAdapter adapter = new TableOfContentsAdapter(issue);
             recList.setAdapter(adapter);
 
+            layoutList = new ArrayList<Object>();
+
             if (issue != null) {
                 issue.preloadArticles(new CacheStreamFactory.CachePreloadCallback() {
                     @Override
                     public void onLoad(byte[] payload) {
-                        // Articles have preloaded, so notify the view.
-                        // Item 0 is the cover, so notify adapter of item 1.
+                        // Articles have preloaded, so sort them into the layoutList
+                        ArrayList<Article> articles = issue.getArticles();
+
+                        populateLayoutListFromArticles(articles);
+
                         adapter.notifyItemChanged(1);
                         Log.i("PreloadArticles", "Articles ready, so refreshing first article.");
                     }
@@ -322,13 +329,95 @@ public class TableOfContentsActivity extends ActionBarActivity {
             return rootView;
         }
 
+        private void populateLayoutListFromArticles(ArrayList<Article> articles) {
+
+            // TODO: WATCH FOR MULTIPLES, AND EMPTY TITLES
+
+            // Add category articles
+            layoutList.add("Features");
+            addArticlesToLayoutListWithCategoryName(articles, "features");
+
+            // Add category articles
+            layoutList.add("Agenda");
+            addArticlesToLayoutListWithCategoryName(articles, "agenda");
+
+            // Add category articles
+            layoutList.add("Currents");
+            addArticlesToLayoutListWithCategoryName(articles, "currents");
+
+            // Add category articles
+            layoutList.add("Film, Book & Music reviews");
+            addArticlesToLayoutListWithCategoryNameWithExclusions(articles, "media",
+                    new String[] {
+                            "agenda",
+                            "currents",
+                            "viewfrom",
+                            "mark-engler",
+                            "steve-parry",
+                            "kate-smurthwaite",
+                            "finally",
+                            "features"
+                    });
+
+            // Add category articles
+            layoutList.add("Opinion");
+            addArticlesToLayoutListWithCategoryName(articles, "argument");
+            addArticlesToLayoutListWithCategoryName(articles, "viewfrom");
+            addArticlesToLayoutListWithCategoryName(articles, "steve-parry");
+            addArticlesToLayoutListWithCategoryName(articles, "mark-engler");
+            addArticlesToLayoutListWithCategoryName(articles, "kate-smurthwaite");
+
+            // Add category articles
+            layoutList.add("Alternatives");
+            addArticlesToLayoutListWithCategoryName(articles, "alternatives");
+
+            // Add category articles
+            layoutList.add("Regulars");
+            addArticlesToLayoutListWithCategoryNameWithExclusions(articles, "columns",
+                    new String[]{
+                            "columns/currents",
+                            "columns/media",
+                            "columns/viewfrom",
+                            "columns/mark-engler",
+                            "columns/steve-parry",
+                            "columns/kate-smurthwaite"
+                    });
+        }
+
+        private void addArticlesToLayoutListWithCategoryNameWithExclusions(ArrayList<Article> articles, String categoryName, String[] exclusions) {
+            for (Article article : articles) {
+                Category : for (Category category : article.getCategories()) {
+                    String thisCategoryName = category.getName();
+                    for (String exclusion : exclusions) {
+                        if (thisCategoryName.contains(exclusion)) {
+                            continue Category;
+                        }
+                    }
+                    if (thisCategoryName.contains(categoryName)) {
+                        layoutList.add(article);
+                    }
+                }
+            }
+        }
+
+        private void addArticlesToLayoutListWithCategoryName(ArrayList<Article> articles, String categoryName) {
+            for (Article article : articles) {
+                for (Category category : article.getCategories()) {
+                    if (category.getName().contains(categoryName)) {
+                        layoutList.add(article);
+                    }
+                }
+            }
+        }
+
         // Adapter for CardView
         public class TableOfContentsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
             public Issue issue;
             private static final int TYPE_HEADER = 0;
-            private static final int TYPE_ARTICLE = 1;
-            private static final int TYPE_FOOTER = 2;
+            private static final int TYPE_CATEGORY = 1;
+            private static final int TYPE_ARTICLE = 2;
+            private static final int TYPE_FOOTER = 3;
 
             public TableOfContentsAdapter(Issue issue) {
                 this.issue = issue;
@@ -345,13 +434,20 @@ public class TableOfContentsActivity extends ActionBarActivity {
                     return new TableOfContentsHeaderViewHolder(itemView);
 
                 } else if (viewType == 1) {
+                    // Category title
+                    itemView = LayoutInflater.
+                            from(parent.getContext()).
+                            inflate(R.layout.fragment_table_of_contents_category_view, parent, false);
+                    return new TableOfContentsCategoryViewHolder(itemView);
+
+                } else if (viewType == 2) {
                     // Article
                     itemView = LayoutInflater.
                             from(parent.getContext()).
                             inflate(R.layout.fragment_table_of_contents_card_view, parent, false);
                     return new TableOfContentsViewHolder(itemView);
 
-                } else if (viewType == 2) {
+                } else if (viewType == 3) {
                     // Footer
                     itemView = LayoutInflater.
                             from(parent.getContext()).
@@ -365,7 +461,7 @@ public class TableOfContentsActivity extends ActionBarActivity {
 
             @Override
             public int getItemCount() {
-                return issue.getArticles().size() + 2; // 2 = header + footer
+                return layoutList.size() + 2; // 2 = header + footer
             }
 
             @Override
@@ -374,6 +470,8 @@ public class TableOfContentsActivity extends ActionBarActivity {
                     return TYPE_HEADER;
                 } else if (isPositionFooter(position)) {
                     return TYPE_FOOTER;
+                } else if (isPositionCategory(position)) {
+                    return TYPE_CATEGORY;
                 }
                 return TYPE_ARTICLE;
             }
@@ -383,11 +481,11 @@ public class TableOfContentsActivity extends ActionBarActivity {
             }
 
             private boolean isPositionFooter(int position) {
-                return position == issue.getArticles().size() + 1;
+                return position == layoutList.size() + 1;
             }
 
-            private Article getArticle(int position) {
-                return issue.getArticles().get(position - 1); // Header
+            private boolean isPositionCategory(int position) {
+                return layoutList.get(position - 1) instanceof String;
             }
 
             @Override
@@ -419,9 +517,14 @@ public class TableOfContentsActivity extends ActionBarActivity {
                         }
                     });
 
+                } else if (holder instanceof TableOfContentsCategoryViewHolder) {
+                    // Category title
+                    String categoryTitle = (String) layoutList.get(position - 1); // Header
+                    ((TableOfContentsCategoryViewHolder) holder).categoryNameTextView.setText(categoryTitle);
+
                 } else if (holder instanceof TableOfContentsViewHolder) {
                     // Article
-                    Article article = getArticle(position);
+                    Article article = (Article) layoutList.get(position - 1); // Header
                     ArrayList<Image> images = article.getImages();
                     ((TableOfContentsViewHolder) holder).articleTitleTextView.setText(article.getTitle());
                     String articleTeaser = article.getTeaser();
@@ -503,9 +606,19 @@ public class TableOfContentsActivity extends ActionBarActivity {
 //                    Toast.makeText(MainActivity.applicationContext, "View clicked at position: " + getPosition(), Toast.LENGTH_SHORT).show();
                     Intent articleIntent = new Intent(MainActivity.applicationContext, ArticleActivity.class);
                     // Pass issue through as a Parcel
-                    articleIntent.putExtra("article", issue.articles.get(getPosition() - 1));
+                    articleIntent.putExtra("article", (Article) layoutList.get(getPosition() - 1));
                     articleIntent.putExtra("issue", issue);
                     startActivity(articleIntent);
+                }
+            }
+
+            public class TableOfContentsCategoryViewHolder extends RecyclerView.ViewHolder {
+
+                public TextView categoryNameTextView;
+
+                public TableOfContentsCategoryViewHolder(View itemView) {
+                    super(itemView);
+                    categoryNameTextView = (TextView) itemView.findViewById(R.id.toc_category_name);
                 }
             }
 
