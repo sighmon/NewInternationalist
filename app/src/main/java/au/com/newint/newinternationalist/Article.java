@@ -344,8 +344,31 @@ public class Article implements Parcelable {
         }
     }
 
-    // PARCELABLE delegate methods
+    public URLCacheStreamFactory getGuestPassURLCacheStreamFactory(ArrayList<Purchase> purchases) {
+        String username = Helpers.getFromPrefs(Helpers.LOGIN_USERNAME_KEY, "");
+        URL androidShareURL = null;
 
+        try {
+            androidShareURL = new URL(Helpers.getSiteURL() + "issues/" + getIssueID() + "/articles/" + getID() + "/android_share.json");
+        } catch (MalformedURLException e) {
+            Log.e("Article", "Can't build androidShareURL: " + e);
+        }
+
+        if (androidShareURL != null && (!username.equals("") || (purchases != null && purchases.size() > 0))) {
+            // Try and download the guestPass URL JSON from Rails for this user
+            HttpPost post = new HttpPost(androidShareURL.toString());
+            StringEntity stringEntity = purchasesToStringEntity(purchases);
+            if (stringEntity != null) {
+                post.setEntity(stringEntity);
+            }
+            return new URLCacheStreamFactory(post, null, null);
+        } else {
+            // The user doesn't have a login or any purchases, so just return the webURL
+            return null;
+        }
+    }
+
+    // PARCELABLE delegate methods
 
     private Article(Parcel in) {
         //int articleID = in.createIntArray()[0];
@@ -407,21 +430,7 @@ public class Article implements Parcelable {
 
             // Add in-app purchase JSON data
             if (purchases != null && purchases.size() > 0) {
-                JsonArray purchasesJsonArray = new JsonArray();
-                for (Purchase purchase : purchases) {
-                    // Send each purchase JSON data to rails to validate with Google Play
-                    JsonParser parser = new JsonParser();
-                    JsonObject purchaseJsonObject = (JsonObject)parser.parse(purchase.getOriginalJson());
-                    purchasesJsonArray.add(purchaseJsonObject);
-
-                }
-                StringEntity stringEntity = null;
-                try {
-                    stringEntity = new StringEntity(purchasesJsonArray.toString());
-                    stringEntity.setContentEncoding(new BasicHeader(HTTP.CONTENT_TYPE, "application/json"));
-                } catch (UnsupportedEncodingException e) {
-                    e.printStackTrace();
-                }
+                StringEntity stringEntity = purchasesToStringEntity(purchases);
                 post.setEntity(stringEntity);
             }
 
@@ -507,5 +516,24 @@ public class Article implements Parcelable {
                 listener.onArticleBodyDownloadComplete(responseList);
             }
         }
+    }
+
+    private StringEntity purchasesToStringEntity(ArrayList<Purchase> purchases) {
+        JsonArray purchasesJsonArray = new JsonArray();
+        for (Purchase purchase : purchases) {
+            // Send each purchase JSON data to rails to validate with Google Play
+            JsonParser parser = new JsonParser();
+            JsonObject purchaseJsonObject = (JsonObject)parser.parse(purchase.getOriginalJson());
+            purchasesJsonArray.add(purchaseJsonObject);
+
+        }
+        StringEntity stringEntity = null;
+        try {
+            stringEntity = new StringEntity(purchasesJsonArray.toString());
+            stringEntity.setContentEncoding(new BasicHeader(HTTP.CONTENT_TYPE, "application/json"));
+        } catch (UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        return stringEntity;
     }
 }

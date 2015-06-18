@@ -47,6 +47,7 @@ public class Helpers {
 
     public static final int GOOGLE_PLAY_REQUEST_CODE = 5000;
     public static final int GOOGLE_PLAY_MAX_SKU_LIST_SIZE = 16;
+    public static final String GOOGLE_PLAY_APP_URL = "https://play.google.com/store/apps/details?id=" + MainActivity.applicationContext.getPackageName();
 
     public static final boolean debugMode = (MainActivity.applicationContext.getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0;
 

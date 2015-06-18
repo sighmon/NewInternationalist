@@ -233,11 +233,6 @@ public class Issue implements Parcelable {
 
     public void preloadArticles(final CacheStreamFactory.CachePreloadCallback callback) {
 
-
-
-
-        // new way..
-
         articlesJSONCacheStreamFactory.preload(new CacheStreamFactory.CachePreloadCallback() {
             @Override
             public void onLoad(byte[] payload) {
