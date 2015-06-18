@@ -347,7 +347,7 @@ public class MainActivity extends ActionBarActivity {
 
         if (username != null && !username.equals("")) {
             // Try logging in!
-            new SilentUserLoginTask(Helpers.getFromPrefs(Helpers.LOGIN_USERNAME_KEY, ""), Helpers.getPassword("")).execute();
+            new SilentUserLoginTask(username, Helpers.getPassword("")).execute();
         }
     }
 

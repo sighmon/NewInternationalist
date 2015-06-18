@@ -35,13 +35,20 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
+
 import org.apache.http.HttpResponse;
 import org.apache.http.util.EntityUtils;
 import org.w3c.dom.Text;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.lang.reflect.Array;
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -123,35 +130,86 @@ public class ArticleActivity extends ActionBarActivity {
             startActivity(settingsIntent);
             return true;
         } else if (id == R.id.menu_item_share) {
-            Intent shareIntent = new Intent();
-            shareIntent.setAction(Intent.ACTION_SEND);
-            // Send article share information here...
-            // TODO: Check for a login to generate a guest pass...
-            DateFormat dateFormat = new SimpleDateFormat("MMMM yyyy", Locale.getDefault());
-            String articleInformation = article.getTitle()
-                    + " - New Internationalist magazine "
-                    + dateFormat.format(article.getPublication());
-            shareIntent.putExtra(Intent.EXTRA_TEXT, "I'm reading "
-                    + articleInformation
-                    + ".\n\n"
-                    + "Article link:\n"
-                    + article.getWebURL()
-                    + "\n\nMagazine link:\n"
-                    + issue.getWebURL()
-            );
-            shareIntent.setType("text/plain");
-            // TODO: When time permits, save the image to externalStorage and then share.
-//                shareIntent.putExtra(Intent.EXTRA_STREAM, issue.getCoverUriOnFilesystem());
-//                shareIntent.setType("image/jpeg");
-            shareIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, "New Internationalist magazine, " + dateFormat.format(issue.getRelease()));
-            startActivity(Intent.createChooser(shareIntent, getResources().getText(R.string.action_share_toc)));
+
+            // Check for a login or purchase to generate a guest pass...
+            URLCacheStreamFactory urlCacheStreamFactory = article.getGuestPassURLCacheStreamFactory(purchases);
+            if (urlCacheStreamFactory != null) {
+
+                // Show loading indicator
+                final ProgressDialog loadingGuestPassDialog = new ProgressDialog(this);
+                loadingGuestPassDialog.setTitle(getResources().getString(R.string.article_guest_pass_loading_title));
+                loadingGuestPassDialog.setMessage(getResources().getString(R.string.article_guest_pass_loading_message));
+                loadingGuestPassDialog.show();
+
+                urlCacheStreamFactory.preload(new CacheStreamFactory.CachePreloadCallback() {
+                    @Override
+                    public void onLoad(byte[] payload) {
+                        // JSON parsing of guest pass
+                        String guestPassURLString = null;
+                        if (payload != null && payload.length > 0) {
+                            ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(payload);
+                            InputStreamReader inputStreamReader = new InputStreamReader(byteArrayInputStream);
+                            JsonElement root = new JsonParser().parse(inputStreamReader);
+
+                            if (root.isJsonNull()) {
+                                // Got null guest pass from server...
+                                Log.e("GuestPass", "NULL guest pass json from rails");
+                            } else {
+                                // Build up the GuestPass URL
+                                String guestPass = "?utm_source=" + root.getAsJsonObject().get("key").getAsString();
+                                guestPassURLString = Helpers.getSiteURL() + "issues/" + issue.getID() + "/articles/" + article.getID() + guestPass;
+                            }
+                        }
+
+                        handleGuestPassURL(guestPassURLString);
+                        loadingGuestPassDialog.dismiss();
+                    }
+
+                    @Override
+                    public void onLoadBackground(byte[] payload) {
+
+                    }
+                });
+            } else {
+                handleGuestPassURL(null);
+            }
             return true;
+
         } else if (id == android.R.id.home) {
             finish();
             return true;
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private void handleGuestPassURL(String url) {
+        if (url == null || url.equals("")) {
+            url = article.getWebURL().toString();
+        }
+        // Send article share information here...
+        Intent shareIntent = new Intent();
+        shareIntent.setAction(Intent.ACTION_SEND);
+        DateFormat dateFormat = new SimpleDateFormat("MMMM yyyy", Locale.getDefault());
+        String articleInformation = article.getTitle()
+                + " - New Internationalist magazine, "
+                + dateFormat.format(article.getPublication());
+        shareIntent.putExtra(Intent.EXTRA_TEXT, "I'm reading "
+                        + articleInformation
+                        + ".\n\n"
+                        + "Article link:\n"
+                        + url
+                        + "\n\nMagazine link:\n"
+                        + issue.getWebURL()
+                        + "\n\nSent from New Internationalist Android app:\n"
+                        + Helpers.GOOGLE_PLAY_APP_URL
+        );
+        shareIntent.setType("text/plain");
+        // TODO: When time permits, save the image to externalStorage and then share.
+//                shareIntent.putExtra(Intent.EXTRA_STREAM, issue.getCoverUriOnFilesystem());
+//                shareIntent.setType("image/jpeg");
+        shareIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, articleInformation);
+        startActivity(Intent.createChooser(shareIntent, getResources().getText(R.string.action_share_toc)));
     }
 
     /**

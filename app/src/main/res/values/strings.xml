@@ -126,5 +126,7 @@
     <string name="categories_loading_progress_message">Generating the categories from the articles on your device.</string>
     <string name="search_loading_progress_title">Searching...</string>
     <string name="search_loading_progress_message">Searching through the articles on your device for the search term(s) you entered.</string>
+    <string name="article_guest_pass_loading_title">Generating guest pass...</string>
+    <string name="article_guest_pass_loading_message">Creating a guest pass for this article so that friends who aren\'t subscribers will be able to read it.</string>
 
 </resources>
