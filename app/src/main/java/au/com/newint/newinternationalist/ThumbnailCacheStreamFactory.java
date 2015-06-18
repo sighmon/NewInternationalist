@@ -76,7 +76,7 @@ public class ThumbnailCacheStreamFactory extends CacheStreamFactory {
             // this will block if we haven't seen the full file yet
             // we should be off the main thread here though.
             byte[] data = source.read();
-            Bitmap fullsizeImageBitmap = BitmapFactory.decodeByteArray(data,0,data.length);
+            Bitmap fullsizeImageBitmap = Helpers.scaledBitmapDecode(data,width,height);
 
             Log.i("ThumbnailCSF", "bitmap decoded");
             if (fullsizeImageBitmap != null) {
