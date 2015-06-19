@@ -137,18 +137,20 @@ public class TableOfContentsActivity extends ActionBarActivity {
                 // Send issue share information here...
                 DateFormat dateFormat = new SimpleDateFormat("MMMM yyyy", Locale.getDefault());
                 String magazineInformation = issue.getTitle()
-                        + " - New Internationalist magazine "
+                        + " - New Internationalist magazine, "
                         + dateFormat.format(issue.getRelease());
                 shareIntent.putExtra(Intent.EXTRA_TEXT, "I'm reading "
                                 + magazineInformation
                                 + ".\n\n"
                                 + issue.getWebURL()
+                                + "\n\nSent from New Internationalist Android app:\n"
+                                + Helpers.GOOGLE_PLAY_APP_URL
                 );
                 shareIntent.setType("text/plain");
                 // TODO: When time permits, save the image to externalStorage and then share.
 //                shareIntent.putExtra(Intent.EXTRA_STREAM, issue.getCoverUriOnFilesystem());
 //                shareIntent.setType("image/jpeg");
-                shareIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, "New Internationalist magazine, " + dateFormat.format(issue.getRelease()));
+                shareIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, magazineInformation);
                 startActivity(Intent.createChooser(shareIntent, getResources().getText(R.string.action_share_toc)));
                 return true;
             default:

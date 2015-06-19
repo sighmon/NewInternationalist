@@ -49,4 +49,6 @@
     <dimen name="subscribe_header_font_size">24sp</dimen>
     <dimen name="subscribe_restore_padding">20dp</dimen>
     <dimen name="toc_category_margin_top">16dp</dimen>
+    <dimen name="article_margin_top">20dp</dimen>
+    <dimen name="toc_margin_top">16dp</dimen>
 </resources>

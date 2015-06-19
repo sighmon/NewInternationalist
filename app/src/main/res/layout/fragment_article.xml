@@ -14,7 +14,7 @@
             android:textSize="26sp"
             android:text="@string/article_title"
             android:textColor="@color/primary_text_default_material_light"
-            android:paddingTop="@dimen/activity_horizontal_margin"
+            android:paddingTop="@dimen/article_margin_top"
             android:paddingLeft="@dimen/article_margin_left_right"
             android:paddingRight="@dimen/article_margin_left_right"
             android:layout_width="wrap_content"
