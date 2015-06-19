@@ -9,6 +9,9 @@
     <TextView
         android:text="@string/toc_category_name"
         android:id="@+id/toc_category_name"
+        android:textSize="@dimen/abc_text_size_large_material"
+        android:textColor="@color/accent_material_dark"
+        android:layout_marginTop="@dimen/toc_category_margin_top"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content" />
 

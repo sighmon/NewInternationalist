@@ -320,8 +320,6 @@ public class TableOfContentsActivity extends ActionBarActivity {
 
         private void populateLayoutListFromArticles(ArrayList<Article> articles) {
 
-            // TODO: WATCH FOR MULTIPLES, AND EMPTY TITLES
-
             // Add category articles
             layoutList.add("Features");
             addArticlesToLayoutListWithCategoryName(articles, "features");
@@ -374,6 +372,7 @@ public class TableOfContentsActivity extends ActionBarActivity {
         }
 
         private void addArticlesToLayoutListWithCategoryNameWithExclusions(ArrayList<Article> articles, String categoryName, String[] exclusions) {
+            boolean articleAdded = false;
             for (Article article : articles) {
                 Category : for (Category category : article.getCategories()) {
                     String thisCategoryName = category.getName();
@@ -383,19 +382,34 @@ public class TableOfContentsActivity extends ActionBarActivity {
                         }
                     }
                     if (thisCategoryName.contains(categoryName)) {
-                        layoutList.add(article);
+                        if (!layoutList.contains(article)) {
+                            layoutList.add(article);
+                            articleAdded = true;
+                        }
                     }
                 }
+            }
+            if (!articleAdded) {
+                // If no articles were added, remove the category title (last entry)
+                layoutList.remove(layoutList.size() - 1);
             }
         }
 
         private void addArticlesToLayoutListWithCategoryName(ArrayList<Article> articles, String categoryName) {
+            boolean articleAdded = false;
             for (Article article : articles) {
                 for (Category category : article.getCategories()) {
                     if (category.getName().contains(categoryName)) {
-                        layoutList.add(article);
+                        if (!layoutList.contains(article)) {
+                            layoutList.add(article);
+                            articleAdded = true;
+                        }
                     }
                 }
+            }
+            if (!articleAdded) {
+                // If no articles were added, remove the category title (last entry)
+                layoutList.remove(layoutList.size() - 1);
             }
         }
 

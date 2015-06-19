@@ -252,6 +252,7 @@ public class Issue implements Parcelable {
                 if (root.isJsonNull()) {
                     //TODO: got null json, now what?
                     // doing nothing seems to work...
+                    Log.e("Issue", "Preload articles returned a JsonNull root.");
                 } else {
                     rootArray = root.getAsJsonObject().get("articles").getAsJsonArray();
 
