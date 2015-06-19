@@ -284,7 +284,7 @@ public class MainActivity extends ActionBarActivity {
                     dialog.show();
                 } else {
 
-                    if (latestIssueOnFileBeforeUpdate != null && latestIssueOnFileBeforeUpdate != latestIssueOnFile) {
+                    if (latestIssueOnFileBeforeUpdate == null || (latestIssueOnFileBeforeUpdate != null && latestIssueOnFileBeforeUpdate != latestIssueOnFile)) {
 
                         latestIssueOnFile.coverCacheStreamFactory.preload(new CacheStreamFactory.CachePreloadCallback() {
 
@@ -541,28 +541,30 @@ public class MainActivity extends ActionBarActivity {
 
             // If cover is already on filesystem, show it before updating issues.json
             latestIssueOnFileBeforeUpdate = Publisher.INSTANCE.latestIssue();
-            latestIssueOnFileBeforeUpdate.coverCacheStreamFactory.preload(null, "net", new CacheStreamFactory.CachePreloadCallback() {
+            if (latestIssueOnFileBeforeUpdate != null) {
+                latestIssueOnFileBeforeUpdate.coverCacheStreamFactory.preload(null, "net", new CacheStreamFactory.CachePreloadCallback() {
 
-                @Override
-                public void onLoad(byte[] payload) {
+                    @Override
+                    public void onLoad(byte[] payload) {
 
-                    Log.i("coverCSF..onLoad", "Received listener, showing cover.");
+                        Log.i("coverCSF..onLoad", "Received listener, showing cover.");
 
-                    // Show cover
-                    final ImageView home_cover = (ImageView) rootView.findViewById(R.id.home_cover);
-                    if (home_cover != null) {
-                        Log.i("coverCSF..onLoad", "calling decodeStream");
-                        final Bitmap coverBitmap = Helpers.bitmapDecode(payload);
-                        Log.i("coverCSF..onLoad", "decodeStream returned");
-                        animateUpdateImageViewWithBitmap(home_cover, coverBitmap);
+                        // Show cover
+                        final ImageView home_cover = (ImageView) rootView.findViewById(R.id.home_cover);
+                        if (home_cover != null) {
+                            Log.i("coverCSF..onLoad", "calling decodeStream");
+                            final Bitmap coverBitmap = Helpers.bitmapDecode(payload);
+                            Log.i("coverCSF..onLoad", "decodeStream returned");
+                            animateUpdateImageViewWithBitmap(home_cover, coverBitmap);
+                        }
+
                     }
 
-                }
-
-                @Override
-                public void onLoadBackground(byte[] payload) {
-                }
-            });
+                    @Override
+                    public void onLoadBackground(byte[] payload) {
+                    }
+                });
+            }
 
             return rootView;
         }
