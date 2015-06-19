@@ -36,7 +36,7 @@
             android:id="@+id/article_categories_gridview"
             android:paddingLeft="@dimen/article_margin_left_right"
             android:paddingRight="@dimen/article_margin_left_right"
-            android:paddingTop="@dimen/article_margin_left_right"
+            android:paddingTop="@dimen/article_categories_margin_top"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:numColumns="auto_fit"
