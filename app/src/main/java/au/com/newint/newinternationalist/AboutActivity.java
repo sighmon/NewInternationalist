@@ -2,8 +2,10 @@ package au.com.newint.newinternationalist;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -11,6 +13,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.TextView;
 
 import com.parse.Parse;
@@ -42,6 +45,19 @@ public class AboutActivity extends ActionBarActivity {
         WebView webview = (WebView) findViewById(R.id.about_web_view);
         webview.setBackgroundColor(0x00000000);
         webview.loadUrl("file:///android_asset/about.html");
+
+        // Handle web links in webView
+        webview.setWebViewClient(new WebViewClient() {
+
+            @Override
+            public boolean shouldOverrideUrlLoading(WebView  view, String  url) {
+
+                // An external link tapped
+                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                startActivity(browserIntent);
+                return true;
+            }
+        });
 
         // Display Parse Id for debugging
         versionTextView.setOnLongClickListener(new View.OnLongClickListener() {

@@ -2,7 +2,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="10dp"
     tools:context="au.com.newint.newinternationalist.MagazineArchiveActivity.MagazineArchiveFragment">
 
     <GridView xmlns:android="http://schemas.android.com/apk/res/android"
@@ -11,8 +10,11 @@
         android:layout_height="match_parent"
         android:columnWidth="@dimen/magazine_archive_column_width"
         android:numColumns="auto_fit"
-        android:verticalSpacing="10dp"
-        android:horizontalSpacing="10dp"
+        android:verticalSpacing="@dimen/magazine_archive_padding"
+        android:horizontalSpacing="@dimen/magazine_archive_padding"
+        android:paddingTop="@dimen/magazine_archive_padding"
+        android:paddingBottom="@dimen/magazine_archive_padding"
+        android:clipToPadding="false"
         android:stretchMode="columnWidth"
         android:gravity="center"/>
 
