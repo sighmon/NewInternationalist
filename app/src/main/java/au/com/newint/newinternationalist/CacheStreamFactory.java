@@ -131,6 +131,7 @@ public abstract class CacheStreamFactory {
         try {
             preloadTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,new PreloadParameters(this,callback,startingAt,stoppingAt));
         } catch (RejectedExecutionException e) {
+            // FIXME: Fix multiple blocked threads from filling the pool
             Log.e("CacheStreamFactory", "Too many threads... sobbing quietly and then ignoring your ridiculous request.");
         }
 
