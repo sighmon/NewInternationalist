@@ -241,6 +241,8 @@ public class CategoriesActivity extends ActionBarActivity {
                         itemCount++;
                         itemCount += section.categories.size();
                     }
+                } else {
+                    // TODO: Display a message for the user to read an issue!
                 }
                 return itemCount;
             }
