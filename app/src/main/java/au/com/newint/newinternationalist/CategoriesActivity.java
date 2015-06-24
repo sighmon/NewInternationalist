@@ -236,9 +236,11 @@ public class CategoriesActivity extends ActionBarActivity {
             public int getItemCount() {
 
                 int itemCount = 0;
-                for (Section section : sectionsList) {
-                    itemCount++;
-                    itemCount += section.categories.size();
+                if (sectionsList != null && sectionsList.size() > 0) {
+                    for (Section section : sectionsList) {
+                        itemCount++;
+                        itemCount += section.categories.size();
+                    }
                 }
                 return itemCount;
             }
