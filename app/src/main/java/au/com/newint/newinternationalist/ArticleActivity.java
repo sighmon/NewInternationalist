@@ -7,6 +7,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.database.DataSetObserver;
+import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.net.Uri;
 import android.os.Build;
@@ -30,6 +31,7 @@ import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.GridView;
+import android.widget.LinearLayout;
 import android.widget.ListAdapter;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -436,9 +438,30 @@ public class ArticleActivity extends ActionBarActivity {
 
             ArrayList<Category> categories = article.getCategories();
 
-            final ExpandableHeightGridView gridview = (ExpandableHeightGridView) rootView.findViewById(R.id.article_categories_gridview);
-            gridview.setExpanded(true);
-            gridview.setAdapter(new CategoriesAdapter(MainActivity.applicationContext, categories));
+            // Using a line breaking LinearLayout instead to compact the category buttons
+//            final ExpandableHeightGridView gridview = (ExpandableHeightGridView) rootView.findViewById(R.id.article_categories_gridview);
+//            gridview.setExpanded(true);
+//            gridview.setAdapter(new CategoriesAdapter(MainActivity.applicationContext, categories));
+
+            final LinearLayoutLineBreak categoriesLinearLayout = (LinearLayoutLineBreak) rootView.findViewById(R.id.article_categories_linear_layout);
+            for (final Category category : categories) {
+                Button categoryButton = new Button(rootView.getContext());
+                categoryButton.setText(category.getDisplayNameSingleWord());
+                categoryButton.setTextColor(Color.WHITE);
+                categoryButton.setAllCaps(false);
+
+                categoryButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Intent categoryIntent = new Intent(MainActivity.applicationContext, CategoryActivity.class);
+                        Log.i("Categories", "Category tapped: " + category.getDisplayName());
+                        categoryIntent.putExtra("categoryJson", category.categoryJson.toString());
+                        startActivity(categoryIntent);
+                    }
+                });
+
+                categoriesLinearLayout.addView(categoryButton);
+            }
 
             // Get Images
             ArrayList<Image> images = article.getImages();
@@ -556,6 +579,8 @@ public class ArticleActivity extends ActionBarActivity {
                     categoryButton.setPadding(0, 0, 0, 0);
                     categoryButton.setTransformationMethod(null);
                     categoryButton.getBackground().setColorFilter(getResources().getColor(R.color.button_material_light), PorterDuff.Mode.MULTIPLY);
+//                    categoryButton.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+                    categoryButton.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, 50));
 
                     categoryButton.setOnClickListener(new View.OnClickListener() {
                         @Override

@@ -67,6 +67,11 @@ public class Category {
         }
     }
 
+    public String getDisplayNameSingleWord() {
+        String[] nameComponents = getName().split("/");
+        return Helpers.capitalize(nameComponents[nameComponents.length - 1]);
+    }
+
     public int getColour() {
         return categoryJson.get("colour").getAsInt();
     }

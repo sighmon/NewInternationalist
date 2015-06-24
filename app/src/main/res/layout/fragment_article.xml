@@ -32,26 +32,24 @@
             android:layout_height="wrap_content"
             android:layout_below="@+id/article_title" />
 
-        <au.com.newint.newinternationalist.ExpandableHeightGridView
-            android:id="@+id/article_categories_gridview"
+        <au.com.newint.newinternationalist.LinearLayoutLineBreak
+            android:id="@+id/article_categories_linear_layout"
+            android:paddingTop="@dimen/article_categories_margin_top"
             android:paddingLeft="@dimen/article_margin_left_right"
             android:paddingRight="@dimen/article_margin_left_right"
-            android:paddingTop="@dimen/article_categories_margin_top"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:numColumns="auto_fit"
-            android:stretchMode="columnWidth"
-            android:gravity="center"
-            android:layout_below="@+id/article_teaser" >
+            android:orientation="horizontal"
+            android:layout_below="@+id/article_teaser">
 
-        </au.com.newint.newinternationalist.ExpandableHeightGridView>
+        </au.com.newint.newinternationalist.LinearLayoutLineBreak>
 
         <WebView
             android:id="@+id/article_body"
             android:layout_marginTop="@dimen/article_body_margin_top"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_below="@+id/article_categories_gridview" />
+            android:layout_below="@+id/article_categories_linear_layout" />
 
         <ProgressBar
             android:id="@+id/article_body_loading_spinner"
