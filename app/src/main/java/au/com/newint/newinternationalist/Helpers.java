@@ -16,6 +16,10 @@ import android.util.Base64;
 import android.util.DisplayMetrics;
 import android.util.Log;
 
+import com.google.android.gms.analytics.GoogleAnalytics;
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
+
 import java.io.Console;
 import java.io.IOException;
 import java.io.InputStream;
@@ -108,8 +112,19 @@ public class Helpers {
         }
     }
 
+    public static boolean getFromPrefs(String key, boolean defaultValue) {
+        // Default value will be returned of no value found or error occurred.
+        SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(MainActivity.applicationContext);
+        try {
+            return sharedPrefs.getBoolean(key, defaultValue);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return defaultValue; // Nothing for key or error, defaultValue returned
+        }
+    }
+
     public static String getDeveloperPayload() {
-        // TODO: generate userID string?
+        // We don't want to collect any extra data
         return "";
     }
 
@@ -261,5 +276,31 @@ public class Helpers {
         //Log.i("bitmapDecode", "end");
 
         return bitmap;
+    }
+
+    public static void sendGoogleAnalytics(String screenName) {
+        boolean allowAnonymousStatistics = getFromPrefs(MainActivity.applicationContext.getResources().getString(R.string.allow_anonymous_statistics_key), false);
+        if (allowAnonymousStatistics && App.tracker != null) {
+
+            // Get tracker.
+            Tracker t = App.tracker;
+
+            // Set screen name.
+            t.setScreenName(screenName);
+
+            // Send a screen view.
+            t.send(new HitBuilders.ScreenViewBuilder().build());
+        }
+    }
+
+    public static void sendGoogleAnalyticsEvent(String category, String action, String label) {
+        boolean allowAnonymousStatistics = getFromPrefs(MainActivity.applicationContext.getResources().getString(R.string.allow_anonymous_statistics_key), false);
+        if (allowAnonymousStatistics && App.tracker != null) {
+            App.tracker.send(new HitBuilders.EventBuilder()
+                    .setCategory(category)
+                    .setAction(action)
+                    .setLabel(label)
+                    .build());
+        }
     }
 }

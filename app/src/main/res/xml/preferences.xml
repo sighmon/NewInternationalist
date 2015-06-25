@@ -4,12 +4,12 @@
         android:title="@string/preferences_category_title"
         android:key="pref_key_storage_settings">
         <SwitchPreference
-            android:key="allow_anonymous_statistics"
-            android:title="@string/allow_anonymous_statistics_switch"
+            android:key="@string/allow_anonymous_statistics_key"
+            android:title="@string/allow_anonymous_statistics_switch_title"
             android:defaultValue="true" />
         <SwitchPreference
-            android:key="show_help_alerts"
-            android:title="@string/show_help_alerts_switch"
+            android:key="@string/show_help_alerts_key"
+            android:title="@string/show_help_alerts_switch_title"
             android:defaultValue="true" />
     </PreferenceCategory>
 </PreferenceScreen>

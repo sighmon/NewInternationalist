@@ -52,6 +52,9 @@ public class SearchActivity extends ActionBarActivity {
 
         // Set the activity title
         setTitle("Results for: " + searchQuery);
+
+        // Send Google Analytics if the user allows it
+        Helpers.sendGoogleAnalytics("Search: " + searchQuery);
     }
 
 

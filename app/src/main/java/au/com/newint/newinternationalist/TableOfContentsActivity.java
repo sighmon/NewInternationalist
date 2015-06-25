@@ -52,6 +52,14 @@ public class TableOfContentsActivity extends ActionBarActivity {
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+
+        // Send Google Analytics if the user allows it
+        Helpers.sendGoogleAnalytics(issue.getNumber() + " - " + issue.getTitle());
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_table_of_contents);
@@ -66,7 +74,7 @@ public class TableOfContentsActivity extends ActionBarActivity {
         }
 
         // Set title to Home screen
-        setTitle("Home");
+        setTitle(getResources().getString(R.string.home_title));
 
         // Setup in-app billing
         mHelper = Helpers.setupIabHelper(getApplicationContext());
@@ -152,6 +160,10 @@ public class TableOfContentsActivity extends ActionBarActivity {
 //                shareIntent.setType("image/jpeg");
                 shareIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, magazineInformation);
                 startActivity(Intent.createChooser(shareIntent, getResources().getText(R.string.action_share_toc)));
+
+                // Send analytics event if user permits
+                Helpers.sendGoogleAnalyticsEvent("Issue", "Share", issue.getWebURL().toString());
+
                 return true;
             default:
                 return super.onOptionsItemSelected(item);

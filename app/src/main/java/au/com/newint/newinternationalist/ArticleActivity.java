@@ -37,6 +37,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.analytics.HitBuilders;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
@@ -212,6 +213,9 @@ public class ArticleActivity extends ActionBarActivity {
 //                shareIntent.setType("image/jpeg");
         shareIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, articleInformation);
         startActivity(Intent.createChooser(shareIntent, getResources().getText(R.string.action_share_toc)));
+
+        // Send analytics event if user permits
+        Helpers.sendGoogleAnalyticsEvent("Article", "Share", url);
     }
 
     /**
@@ -228,6 +232,9 @@ public class ArticleActivity extends ActionBarActivity {
         @Override
         public void onResume() {
             super.onResume();
+
+            // Send Google Analytics if the user allows it
+            Helpers.sendGoogleAnalytics(article.getTitle() + " (" + issue.getNumber() + ")");
 
             // Setup in-app billing
             mHelper = Helpers.setupIabHelper(getActivity().getApplicationContext());

@@ -63,6 +63,9 @@ public class SettingsActivity extends PreferenceActivity {
         public void onResume() {
             super.onResume();
 
+            // Send Google Analytics if the user allows it
+            Helpers.sendGoogleAnalytics(getResources().getString(R.string.title_activity_settings));
+
             // Set the summary to the current values
             Map<String, ?> sharedPreferencesMap = getPreferenceScreen().getSharedPreferences().getAll();
             for (Map.Entry<String, ?> entry : sharedPreferencesMap.entrySet()) {

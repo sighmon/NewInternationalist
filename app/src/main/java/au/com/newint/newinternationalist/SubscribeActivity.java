@@ -23,6 +23,7 @@ import android.webkit.WebView;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.ecommerce.Product;
 
 import java.lang.reflect.Array;
@@ -57,6 +58,14 @@ public class SubscribeActivity extends ActionBarActivity {
         }
 
         mProducts = new ArrayList<>();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        // Send Google Analytics if the user allows it
+        Helpers.sendGoogleAnalytics(getResources().getString(R.string.title_activity_subscribe));
     }
 
     @Override
@@ -268,14 +277,20 @@ public class SubscribeActivity extends ActionBarActivity {
                                 } else if (purchase.getSku().equals(Helpers.TWELVE_MONTH_SUBSCRIPTION_ID)) {
                                     // TODO: Update subscription status.
                                     Log.i("Subscribe", "Purchase succeeded: " + purchase.getItemType());
+                                    // Send analytics event if user permits
+                                    Helpers.sendGoogleAnalyticsEvent("Google Play", "Purchase", purchase.getItemType());
 
                                 } else if (purchase.getSku().equals(Helpers.ONE_MONTH_SUBSCRIPTION_ID)) {
                                     // TODO: Update subscription status.
                                     Log.i("Subscribe", "Purchase succeeded: " + purchase.getItemType());
+                                    // Send analytics event if user permits
+                                    Helpers.sendGoogleAnalyticsEvent("Google Play", "Purchase", purchase.getItemType());
                                 } else {
                                     // TODO: Handle individual purchases
                                     Log.i("Subscribe", "Individual purchase: " + purchase.getItemType());
                                     adapter.notifyDataSetChanged();
+                                    // Send analytics event if user permits
+                                    Helpers.sendGoogleAnalyticsEvent("Google Play", "Purchase", purchase.getItemType());
                                 }
                             }
                         };

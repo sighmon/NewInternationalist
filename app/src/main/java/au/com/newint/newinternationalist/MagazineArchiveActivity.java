@@ -35,6 +35,14 @@ public class MagazineArchiveActivity extends ActionBarActivity {
         }
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        // Send Google Analytics if the user allows it
+        Helpers.sendGoogleAnalytics(getResources().getString(R.string.title_activity_magazine_archive));
+    }
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

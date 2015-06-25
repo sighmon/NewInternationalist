@@ -17,6 +17,8 @@ import android.widget.TextView;
 public class ImageActivity extends ActionBarActivity {
 
     static String url;
+    static Article article;
+    static Issue issue;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,8 +31,8 @@ public class ImageActivity extends ActionBarActivity {
         }
 
         url = getIntent().getStringExtra("url");
-        Article article = getIntent().getParcelableExtra("article");
-        Issue issue = getIntent().getParcelableExtra("issue");
+        article = getIntent().getParcelableExtra("article");
+        issue = getIntent().getParcelableExtra("issue");
         if (article != null) {
             setTitle(article.getTitle());
         } else if (issue != null) {
@@ -38,6 +40,24 @@ public class ImageActivity extends ActionBarActivity {
         } else {
             setTitle(R.string.image_zoom_default_title);
         }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        // Send Google Analytics if the user allows it
+        String analyticsString = getResources().getString(R.string.title_activity_image);
+        if (url != null) {
+            String[] urlComponents = url.split("/");
+            analyticsString = urlComponents[urlComponents.length - 1];
+        }
+        if (issue != null) {
+            analyticsString += " (" + issue.getNumber() + ")";
+        } else if (article != null) {
+            analyticsString += " (" + article.parentIssue.getNumber() + ")";
+        }
+        Helpers.sendGoogleAnalytics(analyticsString);
     }
 
 

@@ -30,6 +30,9 @@ public class AboutActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_about);
 
+        // Send Google Analytics if the user allows it
+        Helpers.sendGoogleAnalytics(getResources().getString(R.string.title_activity_about));
+
         // Set the version number
         PackageInfo pInfo = null;
         try {

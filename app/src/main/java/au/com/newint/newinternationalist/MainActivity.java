@@ -74,6 +74,14 @@ public class MainActivity extends ActionBarActivity {
     static Issue latestIssueOnFileBeforeUpdate;
 
     @Override
+    public void onResume() {
+        super.onResume();
+
+        // Send Google Analytics if the user allows it
+        Helpers.sendGoogleAnalytics(getResources().getString(R.string.home_title));
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);

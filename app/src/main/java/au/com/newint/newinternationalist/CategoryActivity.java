@@ -51,6 +51,13 @@ public class CategoryActivity extends ActionBarActivity {
         setTitle(category.getDisplayName());
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        // Send Google Analytics if the user allows it
+        Helpers.sendGoogleAnalytics(category.getDisplayName() + " (" + getResources().getString(R.string.title_activity_category) + ")");
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

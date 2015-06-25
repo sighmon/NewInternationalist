@@ -55,6 +55,13 @@ public class CategoriesActivity extends ActionBarActivity {
         loadingProgressDialog.show();
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        // Send Google Analytics if the user allows it
+        Helpers.sendGoogleAnalytics(getResources().getString(R.string.title_activity_categories));
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
