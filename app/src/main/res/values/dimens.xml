@@ -54,4 +54,6 @@
     <dimen name="magazine_archive_padding">16dp</dimen>
     <dimen name="search_cover_padding_right">16dp</dimen>
     <dimen name="search_results_header_text_width">300dp</dimen>
+    <dimen name="subscribe_cover_width">100dp</dimen>
+    <dimen name="subscribe_cover_height">141dp</dimen>
 </resources>

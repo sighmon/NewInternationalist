@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.graphics.drawable.ShapeDrawable;
 import android.graphics.drawable.shapes.RoundRectShape;
 import android.os.AsyncTask;
@@ -19,8 +20,11 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
 import android.webkit.WebView;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.google.android.gms.analytics.HitBuilders;
@@ -374,7 +378,7 @@ public class SubscribeActivity extends ActionBarActivity {
             public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
 
                 // Recycling the viewHolder for all but the purchases
-//                holder.setIsRecyclable(false);
+                holder.setIsRecyclable(false);
 
                 if (holder instanceof SubscribeHeaderViewHolder) {
                     // Header
@@ -385,10 +389,54 @@ public class SubscribeActivity extends ActionBarActivity {
                 } else if (holder instanceof SubscribeViewHolder) {
                     // In-app product
                     SkuDetails product = mProducts.get(position);
-                    SubscribeViewHolder viewHolder = ((SubscribeViewHolder) holder);
+                    final SubscribeViewHolder viewHolder = ((SubscribeViewHolder) holder);
+
+                    // Setup product image
+                    int issuePosition = position - (mProducts.size() - (mIssueList.size() - 1)); // missueList -1 for the fake last issue
+                    if (issuePosition >= 0) {
+                        // We've passed the subscriptions, so load the issue cover
+                        int coverWidth = Math.round(getResources().getDimension(R.dimen.subscribe_cover_width));
+                        Issue issue = mIssueList.get(issuePosition);
+                        issue.getCoverCacheStreamFactoryForSize(coverWidth).preload(new CacheStreamFactory.CachePreloadCallback() {
+                            @Override
+                            public void onLoad(byte[] payload) {
+                                if (payload != null && payload.length > 0) {
+                                    final Bitmap coverBitmap = Helpers.bitmapDecode(payload);
+
+                                    Animation fadeOutAnimation = new AlphaAnimation(1.0f, 0.0f);
+                                    final Animation fadeInAnimation = new AlphaAnimation(0.0f, 1.0f);
+                                    fadeOutAnimation.setDuration(100);
+                                    fadeInAnimation.setDuration(200);
+                                    fadeOutAnimation.setAnimationListener(new Animation.AnimationListener() {
+                                        @Override
+                                        public void onAnimationStart(Animation animation) {
+
+                                        }
+
+                                        @Override
+                                        public void onAnimationEnd(Animation animation) {
+                                            viewHolder.productImage.setImageBitmap(coverBitmap);
+                                            viewHolder.productImage.startAnimation(fadeInAnimation);
+                                        }
+
+                                        @Override
+                                        public void onAnimationRepeat(Animation animation) {
+
+                                        }
+                                    });
+                                    viewHolder.productImage.startAnimation(fadeOutAnimation);
+                                }
+                            }
+
+                            @Override
+                            public void onLoadBackground(byte[] payload) {
+
+                            }
+                        });
+                    }
 
                     // Setup product
-                    viewHolder.productTitle.setText(product.getTitle());
+                    viewHolder.productTitle.setText(product.getTitle().replace(" (New Internationalist magazine)", ""));
                     viewHolder.productDescription.setText(product.getDescription());
                     viewHolder.productPrice.setText(product.getPrice());
 
@@ -418,12 +466,14 @@ public class SubscribeActivity extends ActionBarActivity {
 
             public class SubscribeViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
+                public ImageView productImage;
                 public TextView productTitle;
                 public TextView productDescription;
                 public TextView productPrice;
 
                 public SubscribeViewHolder(View itemView) {
                     super(itemView);
+                    productImage = (ImageView) itemView.findViewById(R.id.subscribe_product_image);
                     productTitle = (TextView) itemView.findViewById(R.id.subscribe_product_title);
                     productDescription = (TextView) itemView.findViewById(R.id.subscribe_product_description);
                     productPrice = (TextView) itemView.findViewById(R.id.subscribe_product_price);
