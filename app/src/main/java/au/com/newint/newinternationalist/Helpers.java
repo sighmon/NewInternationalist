@@ -187,7 +187,7 @@ public class Helpers {
 
     public static String wrapInHTML(String htmlToWrap) {
         // Load CSS from file and wrap it in HTML
-        return "<html><head><link href='article-body.css' type='text/css' rel='stylesheet'/></head><body>" + htmlToWrap + "</body></html>";
+        return "<html><head><link href='bootstrap.css' type='text/css' rel='stylesheet'/><link href='article-body.css' type='text/css' rel='stylesheet'/></head><body>" + htmlToWrap + "</body></html>";
     }
 
     public static String capitalize(final String line) {
