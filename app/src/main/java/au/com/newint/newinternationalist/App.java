@@ -47,7 +47,8 @@ public class App extends Application {
             tracker.enableAdvertisingIdCollection(true);
             tracker.enableAutoActivityTracking(false);
             tracker.setScreenName(getResources().getString(R.string.app_launched_analytics));
-            tracker.send(new HitBuilders.ScreenViewBuilder().build());
+            // Don't need to send here apparently. First setup sends automatically.
+//            tracker.send(new HitBuilders.ScreenViewBuilder().build());
         }
     }
 
