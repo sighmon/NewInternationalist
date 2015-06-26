@@ -52,4 +52,6 @@
     <dimen name="article_margin_top">20dp</dimen>
     <dimen name="toc_margin_top">16dp</dimen>
     <dimen name="magazine_archive_padding">16dp</dimen>
+    <dimen name="search_cover_padding_right">16dp</dimen>
+    <dimen name="search_results_header_text_width">300dp</dimen>
 </resources>

@@ -9,6 +9,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:scrollbars="vertical"
-        />
+        android:paddingBottom="@dimen/toc_margin_top"
+        android:clipToPadding="false" />
 
 </RelativeLayout>

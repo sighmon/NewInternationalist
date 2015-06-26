@@ -2,6 +2,7 @@ package au.com.newint.newinternationalist;
 
 import android.app.Application;
 import android.content.SharedPreferences;
+import android.content.pm.ApplicationInfo;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.preference.PreferenceManager;
@@ -41,14 +42,16 @@ public class App extends Application {
         if (allowAnonymousStatistics) {
             analytics = GoogleAnalytics.getInstance(this);
             analytics.setLocalDispatchPeriod(1800);
-
-            tracker = analytics.newTracker(getVariableFromConfig("GOOGLE_ANALYTICS"));
+            String analyticsID = getVariableFromConfig("GOOGLE_ANALYTICS");
+            if (BuildConfig.DEBUG) {
+                analyticsID = getVariableFromConfig("GOOGLE_ANALYTICS_DEV");
+            }
+            tracker = analytics.newTracker(analyticsID);
             tracker.enableExceptionReporting(true);
             tracker.enableAdvertisingIdCollection(true);
             tracker.enableAutoActivityTracking(false);
             tracker.setScreenName(getResources().getString(R.string.app_launched_analytics));
-            // Don't need to send here apparently. First setup sends automatically.
-//            tracker.send(new HitBuilders.ScreenViewBuilder().build());
+            tracker.send(new HitBuilders.ScreenViewBuilder().build());
         }
     }
 

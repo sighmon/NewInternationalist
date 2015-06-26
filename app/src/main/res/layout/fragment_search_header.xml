@@ -13,13 +13,14 @@
         android:src="@drawable/home_cover"
         android:paddingTop="@dimen/search_cover_padding_top"
         android:paddingBottom="@dimen/search_cover_padding"
+        android:paddingRight="@dimen/search_cover_padding_right"
         android:layout_centerHorizontal="true"
         android:contentDescription="@string/search_cover_description" />
 
     <TextView
         android:text="@string/search_results_header"
         android:id="@+id/search_results_header"
-        android:layout_width="wrap_content"
+        android:layout_width="@dimen/search_results_header_text_width"
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
         android:layout_centerVertical="true"
