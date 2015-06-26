@@ -57,7 +57,7 @@ public enum Publisher {
     BasicCookieStore cookieStore;
 
     Publisher() {
-        deleteCookieStore();
+        setupCookieStore();
 
         // Get SITE_URL from config variables
         String siteURLString = Helpers.getSiteURL();
@@ -76,6 +76,12 @@ public enum Publisher {
 
         issuesJSONCacheStreamFactory = new FileCacheStreamFactory(cacheFile, new URLCacheStreamFactory(issuesURL));
 
+    }
+
+    public void setupCookieStore() {
+        if (cookieStore == null) {
+            cookieStore = new BasicCookieStore();
+        }
     }
 
     public void deleteCookieStore() {

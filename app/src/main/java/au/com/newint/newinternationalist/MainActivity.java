@@ -603,17 +603,7 @@ public class MainActivity extends ActionBarActivity {
             // Try logging into Rails for authentication.
             DefaultHttpClient httpclient = new DefaultHttpClient();
 
-            // List current cookies
-            List<Cookie> cookies = Publisher.INSTANCE.cookieStore.getCookies();
-            if( !cookies.isEmpty() ){
-                for (Cookie cookie : cookies){
-                    String cookieString = cookie.getName() + " : " + cookie.getValue();
-                    Log.i("Home login", "Old cookie: " + cookieString);
-                }
-            }
-
-            // Delete cookies.
-            Publisher.INSTANCE.deleteCookieStore();
+            // TODO: Work out why the login cookies aren't stored here..
 
             // Try to connect
             HttpContext ctx = new BasicHttpContext();
