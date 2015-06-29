@@ -421,7 +421,7 @@ public class TableOfContentsActivity extends ActionBarActivity {
                     }
                 }
             }
-            if (!articleAdded) {
+            if (!articleAdded && layoutList.size() > 0) {
                 // If no articles were added, remove the category title (last entry)
                 layoutList.remove(layoutList.size() - 1);
             }
