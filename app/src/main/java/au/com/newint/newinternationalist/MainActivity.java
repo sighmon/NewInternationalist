@@ -24,6 +24,7 @@ import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -73,6 +74,8 @@ public class MainActivity extends ActionBarActivity {
     IabHelper mHelper;
     static Issue latestIssueOnFileBeforeUpdate;
 
+    static ProgressBar loadingSpinner;
+
     @Override
     public void onResume() {
         super.onResume();
@@ -96,8 +99,6 @@ public class MainActivity extends ActionBarActivity {
 
         // Set default preferences, the false on the end means it's only set once
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
-
-
 
         // Setup in-app billing
         mHelper = Helpers.setupIabHelper(this);
@@ -185,140 +186,6 @@ public class MainActivity extends ActionBarActivity {
                     Log.d("com.parse.push", "Successfully subscribed to the broadcast channel.");
                 } else {
                     Log.e("com.parse.push", "Failed to subscribe for push", e);
-                }
-            }
-        });
-
-        // Download the latest issues.json list of magazines
-        Publisher.INSTANCE.issuesJSONCacheStreamFactory.preload("net", null, new CacheStreamFactory.CachePreloadCallback() {
-            @Override
-            public void onLoadBackground(byte[] payload) {
-
-                //TODO: numerous direct filesystem access here which should be abstracted with CSFs
-
-                JsonArray magazines = null;
-
-                if (payload.length > 0) {
-
-                    JsonElement root = new JsonParser().parse(new String(payload));
-                    //TODO: throws an exception (which one?) if the payload is empty instead of returning null
-                    // IllegalStateException
-
-                    magazines = root.getAsJsonArray();
-                }
-
-                Issue latestIssueOnFile = null;
-
-                if (magazines != null) {
-                    JsonObject latestIssueOnlineJson = magazines.get(0).getAsJsonObject();
-                    //latestIssue = new Issue()
-
-                    JsonObject newestOnlineIssue = magazines.get(0).getAsJsonObject();
-                    int newestOnlineIssueRailsId = newestOnlineIssue.get("id").getAsInt();
-                    int magazinesOnFilesystem = Publisher.INSTANCE.numberOfIssues();
-
-                    Log.i("Filesystem", String.format("Number of issues on filesystem: %1$d", magazinesOnFilesystem));
-                    Log.i("www", String.format("Number of issues on www: %1$d", magazines.size()));
-
-                    if (magazines.size() > magazinesOnFilesystem) {
-                        // There are more issues online. Now check if it's a new or backissue
-
-                        Issue latestIssue = Publisher.INSTANCE.latestIssue(); // hits filesystem but we are still in background
-                        if (latestIssue != null) {
-                            int newestFilesystemIssueRailsId = latestIssue.getID();
-
-                            if (newestOnlineIssueRailsId != newestFilesystemIssueRailsId) {
-                                // It's a new issue
-                                Log.i("NewIssue", String.format("New issue available! Id: %1$d", newestOnlineIssueRailsId));
-                                newIssueAdded = true;
-                            }
-                        }
-
-                        for (JsonElement magazine : magazines) {
-                            JsonObject jsonObject = magazine.getAsJsonObject();
-
-                            int id = jsonObject.get("id").getAsInt();
-
-                            File dir = new File(getApplicationContext().getFilesDir(), Integer.toString(id));
-                            dir.mkdirs();
-
-                            File file = new File(dir, "issue.json");
-
-                            try {
-                                Writer w = new FileWriter(file);
-
-                                new Gson().toJson(jsonObject, w);
-
-                                w.close();
-                            } catch (IOException e) {
-                                e.printStackTrace();
-                            }
-                        }
-
-                        //TODO: this should be done in main activity in response to a listener
-                        Publisher.INSTANCE.issuesList = null;
-
-                        latestIssue = Publisher.INSTANCE.latestIssue(); //hits filesystem but we are in the background still
-
-
-                        //if (latestIssue!=null) latestIssue.getCover();
-
-                    }
-                }
-
-            }
-
-            @Override
-            public void onLoad(byte[] payload) {
-                Issue latestIssueOnFile = Publisher.INSTANCE.latestIssue();
-
-                //if latestIssueOnFile==null we probably have no internet, and this is the first run
-                //TODO: DRY this up, maybe make a helper?
-
-                if (latestIssueOnFile == null) {
-                    Log.i("ArticleBody", "Failed! Response is null");
-                    AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-                    builder.setMessage(R.string.no_internet_dialog_message_article_body).setTitle(R.string.no_internet_dialog_title_article_body);
-
-                    builder.setNegativeButton(R.string.no_internet_dialog_ok_button, new DialogInterface.OnClickListener() {
-
-                        public void onClick(DialogInterface dialog, int id) {
-                            // User cancelled the dialog
-                            //finish();
-                        }
-                    });
-
-                    AlertDialog dialog = builder.create();
-                    dialog.show();
-                } else {
-
-                    if (latestIssueOnFileBeforeUpdate == null || (latestIssueOnFileBeforeUpdate != null && latestIssueOnFileBeforeUpdate != latestIssueOnFile)) {
-
-                        latestIssueOnFile.coverCacheStreamFactory.preload(new CacheStreamFactory.CachePreloadCallback() {
-
-                            @Override
-                            public void onLoad(byte[] payload) {
-
-                                Log.i("Cover", "New issue cover available, showing cover.");
-
-                                // Show cover
-                                final ImageView home_cover = (ImageView) MainActivity.this.findViewById(R.id.home_cover);
-                                if (home_cover != null) {
-                                    Log.i("coverCSF..onLoad", "calling decodeStream");
-                                    final Bitmap coverBitmap = Helpers.bitmapDecode(payload);
-                                    Log.i("coverCSF..onLoad", "decodeStream returned");
-                                    animateUpdateImageViewWithBitmap(home_cover, coverBitmap);
-                                }
-
-                            }
-
-                            @Override
-                            public void onLoadBackground(byte[] payload) {
-                            }
-                        });
-                    } else {
-                        Log.i("LatestIssue", "No new issue available.");
-                    }
                 }
             }
         });
@@ -434,6 +301,146 @@ public class MainActivity extends ActionBarActivity {
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
             final View rootView = inflater.inflate(R.layout.fragment_main, container, false);
+
+            // Setup loading spinner
+            loadingSpinner = (ProgressBar) rootView.findViewById(R.id.home_cover_loading_spinner);
+            loadingSpinner.setVisibility(View.VISIBLE);
+
+            // Download the latest issues.json list of magazines
+            Publisher.INSTANCE.issuesJSONCacheStreamFactory.preload("net", null, new CacheStreamFactory.CachePreloadCallback() {
+                @Override
+                public void onLoadBackground(byte[] payload) {
+
+                    JsonArray magazines = null;
+
+                    if (payload.length > 0) {
+
+                        JsonElement root = new JsonParser().parse(new String(payload));
+                        //TODO: throws an exception (which one?) if the payload is empty instead of returning null
+                        // IllegalStateException
+
+                        magazines = root.getAsJsonArray();
+                    }
+
+                    Issue latestIssueOnFile = null;
+
+                    if (magazines != null) {
+                        JsonObject latestIssueOnlineJson = magazines.get(0).getAsJsonObject();
+                        //latestIssue = new Issue()
+
+                        JsonObject newestOnlineIssue = magazines.get(0).getAsJsonObject();
+                        int newestOnlineIssueRailsId = newestOnlineIssue.get("id").getAsInt();
+                        int magazinesOnFilesystem = Publisher.INSTANCE.numberOfIssues();
+
+                        Log.i("Filesystem", String.format("Number of issues on filesystem: %1$d", magazinesOnFilesystem));
+                        Log.i("www", String.format("Number of issues on www: %1$d", magazines.size()));
+
+                        if (magazines.size() > magazinesOnFilesystem) {
+                            // There are more issues online. Now check if it's a new or backissue
+
+                            Issue latestIssue = Publisher.INSTANCE.latestIssue(); // hits filesystem but we are still in background
+                            if (latestIssue != null) {
+                                int newestFilesystemIssueRailsId = latestIssue.getID();
+
+                                if (newestOnlineIssueRailsId != newestFilesystemIssueRailsId) {
+                                    // It's a new issue
+                                    Log.i("NewIssue", String.format("New issue available! Id: %1$d", newestOnlineIssueRailsId));
+                                    newIssueAdded = true;
+                                }
+                            }
+
+                            for (JsonElement magazine : magazines) {
+                                JsonObject jsonObject = magazine.getAsJsonObject();
+
+                                int id = jsonObject.get("id").getAsInt();
+
+                                File dir = new File(applicationContext.getFilesDir(), Integer.toString(id));
+                                dir.mkdirs();
+
+                                File file = new File(dir, "issue.json");
+
+                                try {
+                                    Writer w = new FileWriter(file);
+
+                                    new Gson().toJson(jsonObject, w);
+
+                                    w.close();
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+
+                            //TODO: this should be done in main activity in response to a listener
+                            Publisher.INSTANCE.issuesList = null;
+
+                            latestIssue = Publisher.INSTANCE.latestIssue(); //hits filesystem but we are in the background still
+
+
+                            //if (latestIssue!=null) latestIssue.getCover();
+
+                        }
+                    }
+
+                }
+
+                @Override
+                public void onLoad(byte[] payload) {
+
+                    Issue latestIssueOnFile = Publisher.INSTANCE.latestIssue();
+
+                    //if latestIssueOnFile==null we probably have no internet, and this is the first run
+                    //TODO: DRY this up, maybe make a helper?
+
+                    if (latestIssueOnFile == null) {
+                        Log.i("ArticleBody", "Failed! Response is null");
+                        AlertDialog.Builder builder = new AlertDialog.Builder(applicationContext);
+                        builder.setMessage(R.string.no_internet_dialog_message_article_body).setTitle(R.string.no_internet_dialog_title_article_body);
+
+                        builder.setNegativeButton(R.string.no_internet_dialog_ok_button, new DialogInterface.OnClickListener() {
+
+                            public void onClick(DialogInterface dialog, int id) {
+                                // User cancelled the dialog
+                                //finish();
+                            }
+                        });
+
+                        AlertDialog dialog = builder.create();
+                        dialog.show();
+                    } else {
+
+                        if (latestIssueOnFileBeforeUpdate == null || (latestIssueOnFileBeforeUpdate != null && latestIssueOnFileBeforeUpdate != latestIssueOnFile)) {
+
+                            latestIssueOnFile.coverCacheStreamFactory.preload(new CacheStreamFactory.CachePreloadCallback() {
+
+                                @Override
+                                public void onLoad(byte[] payload) {
+
+                                    // Stop loading spinner
+                                    loadingSpinner.setVisibility(View.GONE);
+
+                                    Log.i("Cover", "New issue cover available, showing cover.");
+
+                                    // Show cover
+                                    final ImageView home_cover = (ImageView) rootView.findViewById(R.id.home_cover);
+                                    if (home_cover != null) {
+                                        Log.i("coverCSF..onLoad", "calling decodeStream");
+                                        final Bitmap coverBitmap = Helpers.bitmapDecode(payload);
+                                        Log.i("coverCSF..onLoad", "decodeStream returned");
+                                        animateUpdateImageViewWithBitmap(home_cover, coverBitmap);
+                                    }
+
+                                }
+
+                                @Override
+                                public void onLoadBackground(byte[] payload) {
+                                }
+                            });
+                        } else {
+                            Log.i("LatestIssue", "No new issue available.");
+                        }
+                    }
+                }
+            });
 
             // Check if we're logged in
             if (Publisher.INSTANCE.loggedIn) {
@@ -556,6 +563,9 @@ public class MainActivity extends ActionBarActivity {
                     public void onLoad(byte[] payload) {
 
                         Log.i("coverCSF..onLoad", "Received listener, showing cover.");
+
+                        // Stop loading spinner
+                        loadingSpinner.setVisibility(View.GONE);
 
                         // Show cover
                         final ImageView home_cover = (ImageView) rootView.findViewById(R.id.home_cover);

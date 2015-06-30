@@ -6,6 +6,8 @@
     <dimen name="home_cover_height">318dp</dimen>
     <dimen name="home_cover_margin_top">10dp</dimen>
     <dimen name="home_cover_margin_bottom">10dp</dimen>
+    <dimen name="home_button_font_size">20sp</dimen>
+    <dimen name="home_cover_loading_spinner_margin_bottom">40dp</dimen>
     <dimen name="magazine_archive_column_width">100dp</dimen>
     <dimen name="magazine_archive_column_height">141dp</dimen>
     <dimen name="card_corner_radius">4dp</dimen>
@@ -19,7 +21,6 @@
     <dimen name="toc_editor_image_padding_bottom">10dp</dimen>
     <dimen name="toc_editors_letter_padding">10dp</dimen>
     <dimen name="toc_editors_name_padding">10dp</dimen>
-    <dimen name="home_button_font_size">20sp</dimen>
     <dimen name="article_teaser_margin_top">10dp</dimen>
     <dimen name="article_categories_margin_top">20dp</dimen>
     <dimen name="article_body_margin_top">15dp</dimen>
