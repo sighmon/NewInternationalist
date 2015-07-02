@@ -319,18 +319,22 @@ public class ArticleActivity extends ActionBarActivity {
                                 @Override
                                 public void onLoad(byte[] payload) {
                                     Log.i("ArticleBody", "Inserting image: " + image.getID());
-                                    try {
-                                        String javascript = String.format("javascript:"
-                                                + "var insertBody = function () {"
-                                                + "  var id = 'image%1$s';"
-                                                + "  var img = document.getElementById(id);"
-                                                + "  img.src = '%2$s';"
-                                                + "  img.parentElement.href = '%3$s';"
-                                                + "};"
-                                                + "insertBody();", image.getID(), image.getImageLocationOnFilesystem().toURI().toURL(), image.getImageLocationOnFilesystem().toURI().toURL());
-                                        articleBody.loadUrl(javascript);
-                                    } catch (MalformedURLException e) {
-                                        e.printStackTrace();
+                                    if (payload != null) {
+                                        try {
+                                            String javascript = String.format("javascript:"
+                                                    + "var insertBody = function () {"
+                                                    + "  var id = 'image%1$s';"
+                                                    + "  var img = document.getElementById(id);"
+                                                    + "  img.src = '%2$s';"
+                                                    + "  img.parentElement.href = '%3$s';"
+                                                    + "};"
+                                                    + "insertBody();", image.getID(), image.getImageLocationOnFilesystem().toURI().toURL(), image.getImageLocationOnFilesystem().toURI().toURL());
+                                            articleBody.loadUrl(javascript);
+                                        } catch (MalformedURLException e) {
+                                            e.printStackTrace();
+                                        }
+                                    } else {
+                                        Log.e("ArticleBody", "ERROR: fullImageCacheStreamFactory payload is null.");
                                     }
                                 }
 

@@ -615,6 +615,8 @@ public class MainActivity extends ActionBarActivity {
 
             // TODO: Work out why the login cookies aren't stored here..
 
+            // TODO: Try http://developer.android.com/reference/java/net/HttpURLConnection.html
+
             // Try to connect
             HttpContext ctx = new BasicHttpContext();
             ctx.setAttribute(ClientContext.COOKIE_STORE, Publisher.INSTANCE.cookieStore);
