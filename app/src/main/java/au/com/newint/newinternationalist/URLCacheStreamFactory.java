@@ -74,7 +74,9 @@ public class URLCacheStreamFactory extends CacheStreamFactory {
         try {
             DefaultHttpClient httpclient = new DefaultHttpClient();
             HttpContext ctx = new BasicHttpContext();
-            ctx.setAttribute(ClientContext.COOKIE_STORE, Publisher.INSTANCE.cookieStore);
+            // Hack while we move away from deprecated DefaultHttpClient:
+            // Don't save the cookies here, as they're only for GET requests
+//            ctx.setAttribute(ClientContext.COOKIE_STORE, Publisher.INSTANCE.cookieStore);
             HttpResponse response = httpclient.execute(sourceURIRequest,ctx);
             int statusCode = response.getStatusLine().getStatusCode();
             if(statusCode>=200 && statusCode<300) {
