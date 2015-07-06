@@ -613,9 +613,8 @@ public class MainActivity extends ActionBarActivity {
             // Try logging into Rails for authentication.
             DefaultHttpClient httpclient = new DefaultHttpClient();
 
-            // TODO: Work out why the login cookies aren't stored here..
-
             // TODO: Try http://developer.android.com/reference/java/net/HttpURLConnection.html
+            // TODO: Use URLCacheStreamFactory here.
 
             // Try to connect
             HttpContext ctx = new BasicHttpContext();
