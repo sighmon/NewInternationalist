@@ -81,7 +81,12 @@ public class Image {
 
     private URL getFullsizeImageURL() {
         try {
-            return new URL(imageJson.get("data").getAsJsonObject().get("url").getAsString());
+            String fullsizeImageString = imageJson.get("data").getAsJsonObject().get("url").getAsString();
+            if (BuildConfig.DEBUG && Helpers.getSiteURL().contains("3000")) {
+                // For running from a local Rails dev site
+                fullsizeImageString = Helpers.getSiteURL() + fullsizeImageString;
+            }
+            return new URL(fullsizeImageString);
         } catch (MalformedURLException e) {
             return null;
         }

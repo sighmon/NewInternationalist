@@ -392,8 +392,8 @@ public class MainActivity extends ActionBarActivity {
                     //TODO: DRY this up, maybe make a helper?
 
                     if (latestIssueOnFile == null) {
-                        Log.i("ArticleBody", "Failed! Response is null");
-                        AlertDialog.Builder builder = new AlertDialog.Builder(applicationContext);
+                        Log.i("ArticleBody", "ERROR! No latestIssue() on fileSystem.");
+                        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
                         builder.setMessage(R.string.no_internet_dialog_message_article_body).setTitle(R.string.no_internet_dialog_title_article_body);
 
                         builder.setNegativeButton(R.string.no_internet_dialog_ok_button, new DialogInterface.OnClickListener() {
@@ -406,6 +406,7 @@ public class MainActivity extends ActionBarActivity {
 
                         AlertDialog dialog = builder.create();
                         dialog.show();
+                        loadingSpinner.setVisibility(View.GONE);
                     } else {
 
                         if (latestIssueOnFileBeforeUpdate == null || (latestIssueOnFileBeforeUpdate != null && latestIssueOnFileBeforeUpdate != latestIssueOnFile)) {
