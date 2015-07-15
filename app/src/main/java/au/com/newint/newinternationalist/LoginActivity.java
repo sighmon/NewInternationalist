@@ -5,6 +5,7 @@ import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.app.LoaderManager.LoaderCallbacks;
 import android.content.CursorLoader;
+import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
 import android.net.Uri;
@@ -89,6 +90,24 @@ public class LoginActivity extends ActionBarActivity implements LoaderCallbacks<
             @Override
             public void onClick(View view) {
                 attemptLogin();
+            }
+        });
+
+        Button forgotPasswordButton = (Button) findViewById(R.id.login_forgotten_password);
+        forgotPasswordButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(Helpers.getSiteURL() + "users/password/new"));
+                startActivity(browserIntent);
+            }
+        });
+
+        Button signUpButton = (Button) findViewById(R.id.login_sign_up);
+        signUpButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(Helpers.getSiteURL() + "users/sign_up"));
+                startActivity(browserIntent);
             }
         });
 

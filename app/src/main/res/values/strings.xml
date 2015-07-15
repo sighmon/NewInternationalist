@@ -14,7 +14,7 @@
     <!-- Settings -->
     <string name="action_settings">Settings</string>
     <string name="title_activity_settings">Settings</string>
-    <string name="preferences_category_title">Newint app settings</string>
+    <string name="preferences_category_title">New Internationalist app settings</string>
     <string name="allow_anonymous_statistics_switch_title">Allow anonymous statistics</string>
     <string name="show_help_alerts_switch_title">Show help alerts</string>
 
@@ -132,5 +132,19 @@
     <string name="show_help_alerts_key">show_help_alerts</string>
     <string name="home_title">Home</string>
     <string name="app_launched_analytics">App launched</string>
+    <string name="preferences_manage_subscription">Manage your subscription</string>
+    <string name="pref_key_storage_settings">pref_key_storage_settings</string>
+    <string name="preferences_app_link_key">preferences_app_link</string>
+    <string name="preferences_app_link_title">Google Play Subscription</string>
+    <string name="preferences_app_link_summary">To manage your Google Play subscription, tap here and you\'ll be taken to the Google Play store.</string>
+    <string name="pref_subscriptions">pref_subscriptions</string>
+    <string name="preferences_rails_link_key">preferences_rails_link_key</string>
+    <string name="preferences_rails_link_title">NI Subscription</string>
+    <string name="preferences_rails_link_summary">To manage your New Internationalist digital subscription, tap here and you\'ll be taken to the New Internationalist digital edition.</string>
+    <string name="preferences_rails_forgot_key">preferences_rails_forgot_key</string>
+    <string name="preferences_rails_forgot_title">Forgot your password?</string>
+    <string name="preferences_rails_forgot_summary">If you\'ve forgotten your password for your NI digital subscription login, tap here to go to the page where you can reset it.</string>
+    <string name="login_forgotten_password">Forgot your password?</string>
+    <string name="login_sign_up">Sign-up</string>
 
 </resources>

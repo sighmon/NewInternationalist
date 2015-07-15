@@ -57,4 +57,5 @@
     <dimen name="search_results_header_text_width">300dp</dimen>
     <dimen name="subscribe_cover_width">100dp</dimen>
     <dimen name="subscribe_cover_height">141dp</dimen>
+    <dimen name="login_forgotten_password_margin_top">20dp</dimen>
 </resources>

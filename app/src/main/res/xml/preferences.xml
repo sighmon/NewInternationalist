@@ -2,7 +2,7 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
     <PreferenceCategory
         android:title="@string/preferences_category_title"
-        android:key="pref_key_storage_settings">
+        android:key="@string/pref_key_storage_settings">
         <SwitchPreference
             android:key="@string/allow_anonymous_statistics_key"
             android:title="@string/allow_anonymous_statistics_switch_title"
@@ -11,5 +11,34 @@
             android:key="@string/show_help_alerts_key"
             android:title="@string/show_help_alerts_switch_title"
             android:defaultValue="true" />
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="@string/preferences_manage_subscription"
+        android:key="@string/pref_subscriptions">
+        <Preference
+            android:key="@string/preferences_app_link_key"
+            android:title="@string/preferences_app_link_title"
+            android:summary="@string/preferences_app_link_summary">
+            <intent
+                android:action="android.intent.action.VIEW"
+                android:data="market://details?id=au.com.newint.newinternationalist" />
+        </Preference>
+        <Preference
+            android:key="@string/preferences_rails_link_key"
+            android:title="@string/preferences_rails_link_title"
+            android:summary="@string/preferences_rails_link_summary">
+            <intent
+                android:action="android.intent.action.VIEW"
+                android:data="https://digital.newint.com.au/users/sign_in" />
+        </Preference>
+        <Preference
+            android:key="@string/preferences_rails_forgot_key"
+            android:title="@string/preferences_rails_forgot_title"
+            android:summary="@string/preferences_rails_forgot_summary">
+            <intent
+                android:action="android.intent.action.VIEW"
+                android:data="https://digital.newint.com.au/users/password/new" />
+        </Preference>
     </PreferenceCategory>
 </PreferenceScreen>

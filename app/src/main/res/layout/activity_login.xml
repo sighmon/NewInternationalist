@@ -55,6 +55,24 @@
                 android:textStyle="bold"
                 android:textAllCaps="false"/>
 
+            <Button
+                android:id="@+id/login_forgotten_password"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/login_forgotten_password"
+                android:textAllCaps="false"
+                android:layout_gravity="center"
+                android:layout_marginTop="@dimen/login_forgotten_password_margin_top"/>
+
+            <Button
+                android:id="@+id/login_sign_up"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/login_sign_up"
+                android:textAllCaps="false"
+                android:layout_gravity="center"
+                android:layout_marginTop="@dimen/login_forgotten_password_margin_top"/>
+
         </LinearLayout>
     </ScrollView>
 
