@@ -1,6 +1,7 @@
 package au.com.newint.newinternationalist;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.res.AssetManager;
@@ -310,7 +311,7 @@ public class Helpers {
 
     public static void sendGoogleAdwordsConversion(SkuDetails productPurchased) {
         boolean allowAnonymousStatistics = getFromPrefs(MainActivity.applicationContext.getResources().getString(R.string.allow_anonymous_statistics_key), false);
-        if (allowAnonymousStatistics && App.tracker != null) {
+        if (allowAnonymousStatistics) {
             // Send conversion
             String purchasePrice = "0";
             if (productPurchased != null) {
@@ -320,6 +321,13 @@ public class Helpers {
                     Helpers.getVariableFromConfig("ADWORDS_ID"),
                     Helpers.getVariableFromConfig("ADWORDS_KEY"),
                     purchasePrice, true);
+        }
+    }
+
+    public static void registerGoogleConversionsReferrer(Intent intent) {
+        boolean allowAnonymousStatistics = getFromPrefs(MainActivity.applicationContext.getResources().getString(R.string.allow_anonymous_statistics_key), false);
+        if (allowAnonymousStatistics) {
+            AdWordsConversionReporter.registerReferrer(MainActivity.applicationContext, intent.getData());
         }
     }
 }

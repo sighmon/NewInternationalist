@@ -26,6 +26,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 
+import com.google.ads.conversiontracking.AdWordsConversionReporter;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -82,6 +83,11 @@ public class MainActivity extends ActionBarActivity {
 
         // Send Google Analytics if the user allows it
         Helpers.sendGoogleAnalytics(getResources().getString(R.string.home_title));
+
+        // Register the deep link referrer if the user allows it
+        if (this.getIntent().getData() != null) {
+            Helpers.registerGoogleConversionsReferrer(this.getIntent());
+        }
     }
 
     @Override
