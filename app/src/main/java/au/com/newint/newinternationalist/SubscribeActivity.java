@@ -279,22 +279,31 @@ public class SubscribeActivity extends ActionBarActivity {
                                     Log.i("Subscribe", "User cancelled purchase.");
                                     return;
                                 } else if (purchase.getSku().equals(Helpers.TWELVE_MONTH_SUBSCRIPTION_ID)) {
-                                    // TODO: Update subscription status.
+                                    // Update subscription status.
                                     Log.i("Subscribe", "Purchase succeeded: " + purchase.getItemType());
                                     // Send analytics event if user permits
                                     Helpers.sendGoogleAnalyticsEvent("Google Play", "Purchase", purchase.getItemType());
+                                    SkuDetails productPurchased = null;
+                                    productPurchased = getProductForPurchase(purchase);
+                                    Helpers.sendGoogleAdwordsConversion(productPurchased);
 
                                 } else if (purchase.getSku().equals(Helpers.ONE_MONTH_SUBSCRIPTION_ID)) {
-                                    // TODO: Update subscription status.
+                                    // Update subscription status.
                                     Log.i("Subscribe", "Purchase succeeded: " + purchase.getItemType());
                                     // Send analytics event if user permits
                                     Helpers.sendGoogleAnalyticsEvent("Google Play", "Purchase", purchase.getItemType());
+                                    SkuDetails productPurchased = null;
+                                    productPurchased = getProductForPurchase(purchase);
+                                    Helpers.sendGoogleAdwordsConversion(productPurchased);
                                 } else {
-                                    // TODO: Handle individual purchases
+                                    // Handle individual purchases
                                     Log.i("Subscribe", "Individual purchase: " + purchase.getItemType());
                                     adapter.notifyDataSetChanged();
                                     // Send analytics event if user permits
                                     Helpers.sendGoogleAnalyticsEvent("Google Play", "Purchase", purchase.getItemType());
+                                    SkuDetails productPurchased = null;
+                                    productPurchased = getProductForPurchase(purchase);
+                                    Helpers.sendGoogleAdwordsConversion(productPurchased);
                                 }
                             }
                         };
@@ -514,5 +523,17 @@ public class SubscribeActivity extends ActionBarActivity {
                 }
             }
         }
+    }
+
+    private static SkuDetails getProductForPurchase(Purchase purchase) {
+        SkuDetails productPurchased = null;
+        if (mProducts != null && mProducts.size() > 0) {
+            for (SkuDetails product : mProducts) {
+                if (product.getSku().equals(purchase.getSku())) {
+                    productPurchased = product;
+                }
+            }
+        }
+        return productPurchased;
     }
 }

@@ -16,6 +16,7 @@ import android.util.Base64;
 import android.util.DisplayMetrics;
 import android.util.Log;
 
+import com.google.ads.conversiontracking.AdWordsConversionReporter;
 import com.google.android.gms.analytics.GoogleAnalytics;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
@@ -37,6 +38,8 @@ import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.SecretKeySpec;
 
 import au.com.newint.newinternationalist.util.IabHelper;
+import au.com.newint.newinternationalist.util.Purchase;
+import au.com.newint.newinternationalist.util.SkuDetails;
 
 /**
  * Created by New Internationalist on 26/02/15.
@@ -296,11 +299,27 @@ public class Helpers {
     public static void sendGoogleAnalyticsEvent(String category, String action, String label) {
         boolean allowAnonymousStatistics = getFromPrefs(MainActivity.applicationContext.getResources().getString(R.string.allow_anonymous_statistics_key), false);
         if (allowAnonymousStatistics && App.tracker != null) {
+            // Send analytics event
             App.tracker.send(new HitBuilders.EventBuilder()
                     .setCategory(category)
                     .setAction(action)
                     .setLabel(label)
                     .build());
+        }
+    }
+
+    public static void sendGoogleAdwordsConversion(SkuDetails productPurchased) {
+        boolean allowAnonymousStatistics = getFromPrefs(MainActivity.applicationContext.getResources().getString(R.string.allow_anonymous_statistics_key), false);
+        if (allowAnonymousStatistics && App.tracker != null) {
+            // Send conversion
+            String purchasePrice = "0";
+            if (productPurchased != null) {
+                purchasePrice = productPurchased.getPrice();
+            }
+            AdWordsConversionReporter.reportWithConversionId(MainActivity.applicationContext,
+                    Helpers.getVariableFromConfig("ADWORDS_ID"),
+                    Helpers.getVariableFromConfig("ADWORDS_KEY"),
+                    purchasePrice, true);
         }
     }
 }
