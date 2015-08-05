@@ -3,7 +3,9 @@ New Internationalist magazine Android app
 
 New Internationalist Magazine for Android devices.
 
-![New Internationalist Magazine for Android.](http://nirailsapp.s3.amazonaws.com/uploads/android.jpg)
+![New Internationalist Magazine for Android.](https://nirailsapp.s3.amazonaws.com/uploads/android-devices-880px.jpg)
+
+Read about it at [digital.newint.com.au/android](https://digital.newint.com.au/android)
 
 ## Features
 * Read New Internationalist magazines on Android devices.
@@ -19,7 +21,7 @@ New Internationalist Magazine for Android devices.
 * If you have an existing [digital.newint.com.au](https://digital.newint.com.au) subscription, simply login with those details to get complete access to the Android version.
 
 ## Google Play store
-* A download link will be available here when complete. Expected in the last half of 2015.
+* Download the New Internationalist magazine app for Android from: [play.google.com](https://play.google.com/store/apps/details?id=au.com.newint.newinternationalist).
 
 ## iOS App
 
