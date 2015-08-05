@@ -146,5 +146,9 @@
     <string name="preferences_rails_forgot_summary">If you\'ve forgotten your password for your NI digital subscription login, tap here to go to the page where you can reset it.</string>
     <string name="login_forgotten_password">Forgot your password?</string>
     <string name="login_sign_up">Sign-up</string>
+    <string name="preload_articles_failed_dialog_title">Error!</string>
+    <string name="preload_articles_failed_dialog_message">I\'m very sorry, but it looks like there\'s some trouble connecting with our server. You can either try again or send us an email to let us know.</string>
+    <string name="preload_articles_failed_dialog_email_subject">Android app error - preload articles failed...</string>
+    <string name="preload_articles_dialog_email_body">Hi, the preload articles on the table of contents failed:</string>
 
 </resources>
