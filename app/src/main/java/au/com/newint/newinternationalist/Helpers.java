@@ -333,7 +333,7 @@ public class Helpers {
 
     public static void debugLog(String tag, String msg) {
         if (BuildConfig.DEBUG) {
-            Helpers.debugLog(tag,msg);
+            Log.i(tag,msg);
         }
     }
 }
