@@ -248,7 +248,7 @@ public class ArticleActivity extends ActionBarActivity {
                             Log.d("ArticleBody", "Problem setting up In-app Billing: " + result);
                         }
                         // Hooray, IAB is fully set up!
-                        Log.i("ArticleBody", "In-app billing setup result: " + result);
+                        Helpers.debugLog("ArticleBody", "In-app billing setup result: " + result);
 
                         // Make a products list of the subscriptions and this issue
                         final ArrayList<String> skuList = new ArrayList<String>();
@@ -293,7 +293,7 @@ public class ArticleActivity extends ActionBarActivity {
             }
 
             if (rootView != null) {
-//                Log.i("onResume", "****LOADING BODY****");
+//                Helpers.debugLog("onResume", "****LOADING BODY****");
 
                 // When the article webView body has finished loading, insert the images.
                 final WebView articleBody = (WebView) rootView.findViewById(R.id.article_body);
@@ -314,11 +314,11 @@ public class ArticleActivity extends ActionBarActivity {
                         ArrayList<Image> images = article.getImages();
                         for (final Image image : images) {
                             // Get the images
-                            Log.i("ArticleBody", "Loading image: " + image.getID());
+                            Helpers.debugLog("ArticleBody", "Loading image: " + image.getID());
                             image.fullImageCacheStreamFactory.preload(null, null, new CacheStreamFactory.CachePreloadCallback() {
                                 @Override
                                 public void onLoad(byte[] payload) {
-                                    Log.i("ArticleBody", "Inserting image: " + image.getID());
+                                    Helpers.debugLog("ArticleBody", "Inserting image: " + image.getID());
                                     if (payload != null) {
                                         try {
                                             String javascript = String.format("javascript:"
@@ -351,7 +351,7 @@ public class ArticleActivity extends ActionBarActivity {
                     public boolean shouldOverrideUrlLoading(WebView  view, String  url) {
                         String[] pathComponents = url.split("\\.");
                         String fileExtension = pathComponents[pathComponents.length - 1];
-                        Log.i("Article", "Link tapped: " + url);
+                        Helpers.debugLog("Article", "Link tapped: " + url);
                         if ( fileExtension.equals("jpeg") || fileExtension.equals("jpg") || fileExtension.equals("png") || fileExtension.equals("gif") ) {
                             // An image was tapped
                             Intent imageIntent = new Intent(MainActivity.applicationContext, ImageActivity.class);
@@ -386,7 +386,7 @@ public class ArticleActivity extends ActionBarActivity {
                                             articleIntent.putExtra("article", articleInUrl);
                                             startActivity(articleIntent);
                                             progress.dismiss();
-                                            Log.i("Article", "Opening article: " + articleInUrl.getTitle() + " (" + articleInUrl.getID() + ")");
+                                            Helpers.debugLog("Article", "Opening article: " + articleInUrl.getTitle() + " (" + articleInUrl.getID() + ")");
                                         } else {
                                             Log.e("Article", "Error: issue or article in URL is null, so can't open article.");
                                         }
@@ -465,7 +465,7 @@ public class ArticleActivity extends ActionBarActivity {
                     @Override
                     public void onClick(View v) {
                         Intent categoryIntent = new Intent(MainActivity.applicationContext, CategoryActivity.class);
-                        Log.i("Categories", "Category tapped: " + category.getDisplayName());
+                        Helpers.debugLog("Categories", "Category tapped: " + category.getDisplayName());
                         categoryIntent.putExtra("categoryJson", category.categoryJson.toString());
                         startActivity(categoryIntent);
                     }
@@ -476,14 +476,14 @@ public class ArticleActivity extends ActionBarActivity {
 
             // Get Images
             ArrayList<Image> images = article.getImages();
-            Log.i("Article", "Images: " + images.size());
+            Helpers.debugLog("Article", "Images: " + images.size());
 
             // Register for ArticleBodyDownloadComplete listener
             articleBodyDownloadCompleteListener = new Publisher.ArticleBodyDownloadCompleteListener() {
 
                 @Override
                 public void onArticleBodyDownloadComplete(ArrayList responseList) {
-                    Log.i("ArticleBody", "Received listener, refreshing article body.");
+                    Helpers.debugLog("ArticleBody", "Received listener, refreshing article body.");
 
                     articleBodyLoadingSpinner.setVisibility(View.GONE);
 
@@ -501,7 +501,7 @@ public class ArticleActivity extends ActionBarActivity {
 
                         } else if (responseStatusCode > 400 && responseStatusCode < 500) {
                             // Article request failed
-                            Log.i("ArticleBody", "Failed with code: " + responseStatusCode);
+                            Helpers.debugLog("ArticleBody", "Failed with code: " + responseStatusCode);
                             // Alert and intent to login.
                             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
                             builder.setMessage(R.string.login_dialog_message_article_body).setTitle(R.string.login_dialog_title_article_body);
@@ -531,13 +531,13 @@ public class ArticleActivity extends ActionBarActivity {
 
                         } else {
                             // Server error.
-                            Log.i("ArticleBody", "Failed with code: " + responseStatusCode + " and response: " + response.getStatusLine());
+                            Helpers.debugLog("ArticleBody", "Failed with code: " + responseStatusCode + " and response: " + response.getStatusLine());
                             bodyHTML = response.getStatusLine().toString();
                         }
 
                     } else {
                         // Error getting article body
-                        Log.i("ArticleBody", "Failed! Response is null");
+                        Helpers.debugLog("ArticleBody", "Failed! Response is null");
                         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
                         builder.setMessage(R.string.no_internet_dialog_message_article_body).setTitle(R.string.no_internet_dialog_title_article_body);
                         builder.setNegativeButton(R.string.no_internet_dialog_ok_button, new DialogInterface.OnClickListener() {
@@ -598,7 +598,7 @@ public class ArticleActivity extends ActionBarActivity {
                         public void onClick(View v) {
                             Intent categoryIntent = new Intent(MainActivity.applicationContext, CategoryActivity.class);
                             Category categoryTapped = (Category) mCategories.get(position);
-                            Log.i("Categories", "Category tapped: " + categoryTapped.getDisplayName());
+                            Helpers.debugLog("Categories", "Category tapped: " + categoryTapped.getDisplayName());
                             categoryIntent.putExtra("categoryJson", categoryTapped.categoryJson.toString());
                             startActivity(categoryIntent);
                         }

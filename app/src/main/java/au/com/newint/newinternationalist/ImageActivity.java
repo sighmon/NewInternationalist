@@ -75,13 +75,13 @@ public class ImageActivity extends ActionBarActivity {
         // as you specify a parent activity in AndroidManifest.xml.
         switch (item.getItemId()) {
             case R.id.action_settings:
-                // Log.i("Menu", "Settings pressed.");
+                // Helpers.debugLog("Menu", "Settings pressed.");
                 // Settings intent
                 Intent settingsIntent = new Intent(this, SettingsActivity.class);
                 startActivity(settingsIntent);
                 return true;
             case R.id.about:
-                // Log.i("Menu", "About pressed.");
+                // Helpers.debugLog("Menu", "About pressed.");
                 // About intent
                 Intent aboutIntent = new Intent(this, AboutActivity.class);
                 startActivity(aboutIntent);

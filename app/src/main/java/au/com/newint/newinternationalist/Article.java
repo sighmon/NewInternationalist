@@ -126,7 +126,7 @@ public class Article implements Parcelable {
 
         if (cacheFile.exists()) {
             // Already have the body, so return it's contents as a string
-//            Log.i("ArticleBody", "Filesystem hit! Returning from file.");
+//            Helpers.debugLog("ArticleBody", "Filesystem hit! Returning from file.");
             try {
                 FileInputStream inputStream = new FileInputStream(cacheFile);
                 InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
@@ -176,9 +176,9 @@ public class Article implements Parcelable {
         while (regexMatcher.find()) {
             MatchResult matchResult = regexMatcher.toMatchResult();
             String replacement = null;
-            Log.i("ExpandedBody", "Group: " + regexMatcher.group());
-            Log.i("ExpandedBody", "Group count: " + regexMatcher.groupCount());
-            Log.i("ExpandedBody", "Group 1: " + regexMatcher.group(1));
+            Helpers.debugLog("ExpandedBody", "Group: " + regexMatcher.group());
+            Helpers.debugLog("ExpandedBody", "Group count: " + regexMatcher.groupCount());
+            Helpers.debugLog("ExpandedBody", "Group 1: " + regexMatcher.group(1));
             imageID = regexMatcher.group(1);
             String[] options = new String[0];
             if (regexMatcher.group(2) != null) {
@@ -283,7 +283,7 @@ public class Article implements Parcelable {
         } catch (Exception e) {
             // Keynote is empty, so getAsBoolean barfs.
             // TODO: more graceful fail?
-//            Log.i("GetKeynote", e.toString());
+//            Helpers.debugLog("GetKeynote", e.toString());
         }
         return keynote;
     }
@@ -441,9 +441,9 @@ public class Article implements Parcelable {
                 response = httpclient.execute(post, ctx);
 
             } catch (ClientProtocolException e) {
-                Log.i("ArticleBody", "ClientProtocolException: " + e);
+                Helpers.debugLog("ArticleBody", "ClientProtocolException: " + e);
             } catch (IOException e) {
-                Log.i("ArticleBody", "IOException: " + e);
+                Helpers.debugLog("ArticleBody", "IOException: " + e);
             }
 
             int responseStatusCode;
@@ -458,16 +458,16 @@ public class Article implements Parcelable {
 
                 } else if (responseStatusCode > 400 && responseStatusCode < 500) {
                     // Article request failed
-                    Log.i("ArticleBody", "Failed with code: " + responseStatusCode);
+                    Helpers.debugLog("ArticleBody", "Failed with code: " + responseStatusCode);
 
                 } else {
                     // Server error.
-                    Log.i("ArticleBody", "Failed with code: " + responseStatusCode + " and response: " + response.getStatusLine());
+                    Helpers.debugLog("ArticleBody", "Failed with code: " + responseStatusCode + " and response: " + response.getStatusLine());
                 }
 
             } else {
                 // Error getting article body
-                Log.i("ArticleBody", "Failed! Response is null");
+                Helpers.debugLog("ArticleBody", "Failed! Response is null");
             }
 
             if (success) {

@@ -118,7 +118,7 @@ public class MainActivity extends ActionBarActivity {
                         Log.d("InApp", "Problem setting up In-app Billing: " + result);
                     }
                     // Hooray, IAB is fully set up!
-                    Log.i("InApp", "In-app billing setup result: " + result);
+                    Helpers.debugLog("InApp", "In-app billing setup result: " + result);
 
                     // Ask Google Play for a products list on a background thread
                     ArrayList<String> additionalSkuList = new ArrayList<String>();
@@ -128,22 +128,22 @@ public class MainActivity extends ActionBarActivity {
                         public void onQueryInventoryFinished(IabResult result, Inventory inventory) {
                             if (result.isFailure()) {
                                 // handle error
-                                Log.i("InApp", "Query failed: " + result);
+                                Helpers.debugLog("InApp", "Query failed: " + result);
                                 return;
                             }
 
                             // Check subscription inventory
-                            Log.i("InApp", "Inventory: " + inventory);
+                            Helpers.debugLog("InApp", "Inventory: " + inventory);
                             SkuDetails yearlyAutomaticSubscription = inventory.getSkuDetails("12monthauto");
                             SkuDetails monthlyAutomaticSubscription = inventory.getSkuDetails("1monthauto");
-                            Log.i("InApp", "12monthauto: " + yearlyAutomaticSubscription.getTitle() + yearlyAutomaticSubscription.getPrice());
-                            Log.i("InApp", "1monthauto: " + monthlyAutomaticSubscription.getTitle() + monthlyAutomaticSubscription.getPrice());
+                            Helpers.debugLog("InApp", "12monthauto: " + yearlyAutomaticSubscription.getTitle() + yearlyAutomaticSubscription.getPrice());
+                            Helpers.debugLog("InApp", "1monthauto: " + monthlyAutomaticSubscription.getTitle() + monthlyAutomaticSubscription.getPrice());
 
                             // Check if the user has purchased the inventory
                             if (inventory.hasPurchase("12monthauto")) {
                                 // TODO: See how multiple purchases work.. and renewals
                                 Purchase purchase = inventory.getPurchase("12monthauto");
-                                Log.i("InApp", "Purchase: " + purchase.toString());
+                                Helpers.debugLog("InApp", "Purchase: " + purchase.toString());
 
                                 Date purchaseDate = new Date(purchase.getPurchaseTime());
 
@@ -151,16 +151,16 @@ public class MainActivity extends ActionBarActivity {
                                     // User has a valid subscription
                                     Publisher.INSTANCE.hasValidSubscription = true;
                                     for (Publisher.SubscriptionListener listener : Publisher.INSTANCE.subscriptionListeners) {
-                                        Log.i("InApp", "Sending listener subscription valid.");
+                                        Helpers.debugLog("InApp", "Sending listener subscription valid.");
                                         // Pass in login success boolean
                                         listener.onUpdate(purchase);
                                     }
-                                    Log.i("InApp", "Subscription expiry date: " + Helpers.subscriptionExpiryDate(purchaseDate, 12));
+                                    Helpers.debugLog("InApp", "Subscription expiry date: " + Helpers.subscriptionExpiryDate(purchaseDate, 12));
                                 }
                             } else if (inventory.hasPurchase("1monthauto")) {
                                 // TODO: See how multiple purchases work.. and renewals
                                 Purchase purchase = inventory.getPurchase("1monthauto");
-                                Log.i("InApp", "Purchase: " + purchase.toString());
+                                Helpers.debugLog("InApp", "Purchase: " + purchase.toString());
 
                                 Date purchaseDate = new Date(purchase.getPurchaseTime());
 
@@ -168,11 +168,11 @@ public class MainActivity extends ActionBarActivity {
                                     // User has a valid subscription
                                     Publisher.INSTANCE.hasValidSubscription = true;
                                     for (Publisher.SubscriptionListener listener : Publisher.INSTANCE.subscriptionListeners) {
-                                        Log.i("InApp", "Sending listener subscription valid.");
+                                        Helpers.debugLog("InApp", "Sending listener subscription valid.");
                                         // Pass in purchase if needed
                                         listener.onUpdate(purchase);
                                     }
-                                    Log.i("InApp", "Subscription expiry date: " + Helpers.subscriptionExpiryDate(purchaseDate, 1));
+                                    Helpers.debugLog("InApp", "Subscription expiry date: " + Helpers.subscriptionExpiryDate(purchaseDate, 1));
                                 }
                             }
                         }
@@ -200,7 +200,7 @@ public class MainActivity extends ActionBarActivity {
         Intent intent = getIntent();
         if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
             String query = intent.getStringExtra(SearchManager.QUERY);
-            Log.i("Search","Searching for: " + query);
+            Helpers.debugLog("Search","Searching for: " + query);
         }
 
         // Attempt to login if credentials have been stored.
@@ -272,19 +272,19 @@ public class MainActivity extends ActionBarActivity {
 
         switch (item.getItemId()) {
             case R.id.action_settings:
-                // Log.i("Menu", "Settings pressed.");
+                // Helpers.debugLog("Menu", "Settings pressed.");
                 // Settings intent
                 Intent settingsIntent = new Intent(this, SettingsActivity.class);
                 startActivity(settingsIntent);
                 return true;
             case R.id.about:
-                // Log.i("Menu", "About pressed.");
+                // Helpers.debugLog("Menu", "About pressed.");
                 // About intent
                 Intent aboutIntent = new Intent(this, AboutActivity.class);
                 startActivity(aboutIntent);
                 return true;
             case R.id.action_search:
-                Log.i("Search", "Search tapped on Home view.");
+                Helpers.debugLog("Search", "Search tapped on Home view.");
 //                onSearchRequested();
             default:
                 return super.onOptionsItemSelected(item);
@@ -338,8 +338,8 @@ public class MainActivity extends ActionBarActivity {
                         int newestOnlineIssueRailsId = newestOnlineIssue.get("id").getAsInt();
                         int magazinesOnFilesystem = Publisher.INSTANCE.numberOfIssues();
 
-                        Log.i("Filesystem", String.format("Number of issues on filesystem: %1$d", magazinesOnFilesystem));
-                        Log.i("www", String.format("Number of issues on www: %1$d", magazines.size()));
+                        Helpers.debugLog("Filesystem", String.format("Number of issues on filesystem: %1$d", magazinesOnFilesystem));
+                        Helpers.debugLog("www", String.format("Number of issues on www: %1$d", magazines.size()));
 
                         if (magazines.size() > magazinesOnFilesystem) {
                             // There are more issues online. Now check if it's a new or backissue
@@ -350,7 +350,7 @@ public class MainActivity extends ActionBarActivity {
 
                                 if (newestOnlineIssueRailsId != newestFilesystemIssueRailsId) {
                                     // It's a new issue
-                                    Log.i("NewIssue", String.format("New issue available! Id: %1$d", newestOnlineIssueRailsId));
+                                    Helpers.debugLog("NewIssue", String.format("New issue available! Id: %1$d", newestOnlineIssueRailsId));
                                     newIssueAdded = true;
                                 }
                             }
@@ -398,7 +398,7 @@ public class MainActivity extends ActionBarActivity {
                     //TODO: DRY this up, maybe make a helper?
 
                     if (latestIssueOnFile == null) {
-                        Log.i("ArticleBody", "ERROR! No latestIssue() on fileSystem.");
+                        Helpers.debugLog("ArticleBody", "ERROR! No latestIssue() on fileSystem.");
                         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
                         builder.setMessage(R.string.no_internet_dialog_message_article_body).setTitle(R.string.no_internet_dialog_title_article_body);
 
@@ -425,14 +425,14 @@ public class MainActivity extends ActionBarActivity {
                                     // Stop loading spinner
                                     loadingSpinner.setVisibility(View.GONE);
 
-                                    Log.i("Cover", "New issue cover available, showing cover.");
+                                    Helpers.debugLog("Cover", "New issue cover available, showing cover.");
 
                                     // Show cover
                                     final ImageView home_cover = (ImageView) rootView.findViewById(R.id.home_cover);
                                     if (home_cover != null) {
-                                        Log.i("coverCSF..onLoad", "calling decodeStream");
+                                        Helpers.debugLog("coverCSF..onLoad", "calling decodeStream");
                                         final Bitmap coverBitmap = Helpers.bitmapDecode(payload);
-                                        Log.i("coverCSF..onLoad", "decodeStream returned");
+                                        Helpers.debugLog("coverCSF..onLoad", "decodeStream returned");
                                         animateUpdateImageViewWithBitmap(home_cover, coverBitmap);
                                     }
 
@@ -443,7 +443,7 @@ public class MainActivity extends ActionBarActivity {
                                 }
                             });
                         } else {
-                            Log.i("LatestIssue", "No new issue available.");
+                            Helpers.debugLog("LatestIssue", "No new issue available.");
                         }
                     }
                 }
@@ -491,7 +491,7 @@ public class MainActivity extends ActionBarActivity {
                 @Override
                 public void onClick(View view) {
                     // Cover tapped
-                    Log.i("Cover", "Cover was tapped!");
+                    Helpers.debugLog("Cover", "Cover was tapped!");
                     Issue latestIssueOnFile = Publisher.INSTANCE.latestIssue();
                     if(latestIssueOnFile!=null) {
                         Intent tableOfContentsIntent = new Intent(rootView.getContext(), TableOfContentsActivity.class);
@@ -569,7 +569,7 @@ public class MainActivity extends ActionBarActivity {
                     @Override
                     public void onLoad(byte[] payload) {
 
-                        Log.i("coverCSF..onLoad", "Received listener, showing cover.");
+                        Helpers.debugLog("coverCSF..onLoad", "Received listener, showing cover.");
 
                         // Stop loading spinner
                         loadingSpinner.setVisibility(View.GONE);
@@ -577,9 +577,9 @@ public class MainActivity extends ActionBarActivity {
                         // Show cover
                         final ImageView home_cover = (ImageView) rootView.findViewById(R.id.home_cover);
                         if (home_cover != null) {
-                            Log.i("coverCSF..onLoad", "calling decodeStream");
+                            Helpers.debugLog("coverCSF..onLoad", "calling decodeStream");
                             final Bitmap coverBitmap = Helpers.bitmapDecode(payload);
-                            Log.i("coverCSF..onLoad", "decodeStream returned");
+                            Helpers.debugLog("coverCSF..onLoad", "decodeStream returned");
                             animateUpdateImageViewWithBitmap(home_cover, coverBitmap);
                         }
 
@@ -644,9 +644,9 @@ public class MainActivity extends ActionBarActivity {
                 response = httpclient.execute(post, ctx);
 
             } catch (ClientProtocolException e) {
-                Log.i("Home login", "ClientProtocolException: " + e);
+                Helpers.debugLog("Home login", "ClientProtocolException: " + e);
             } catch (IOException e) {
-                Log.i("Home login", "IOException: " + e);
+                Helpers.debugLog("Home login", "IOException: " + e);
             }
 
             int responseStatusCode;
@@ -663,16 +663,16 @@ public class MainActivity extends ActionBarActivity {
 
                 } else if (responseStatusCode > 400 && responseStatusCode < 500) {
                     // Login was incorrect.
-                    Log.i("Home login", "Failed with code: " + responseStatusCode);
+                    Helpers.debugLog("Home login", "Failed with code: " + responseStatusCode);
 
                 } else {
                     // Server error.
-                    Log.i("Home login", "Failed with code: " + responseStatusCode + " and response: " + response.getStatusLine());
+                    Helpers.debugLog("Home login", "Failed with code: " + responseStatusCode + " and response: " + response.getStatusLine());
                 }
 
             } else {
                 // Error logging in
-                Log.i("Home login", "Failed! Response is null");
+                Helpers.debugLog("Home login", "Failed! Response is null");
             }
 
             return success;
@@ -685,7 +685,7 @@ public class MainActivity extends ActionBarActivity {
 
                 // Let listener know
                 for (Publisher.LoginListener listener : Publisher.INSTANCE.loginListeners) {
-                    Log.i("Home login", "Sending listener login success: True");
+                    Helpers.debugLog("Home login", "Sending listener login success: True");
                     // Pass in login success boolean
                     listener.onUpdate(success);
                 }

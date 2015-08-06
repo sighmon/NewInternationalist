@@ -24,7 +24,7 @@ public abstract class CacheStreamFactory {
     public PreloadTask preloadTask;
 
     CacheStreamFactory(CacheStreamFactory fallback, String name) {
-        Log.i("CacheStreamFactory", "creating factory of type " + name + ", fallback is " + ((fallback != null) ? "not" : "") + " null");
+        Helpers.debugLog("CacheStreamFactory", "creating factory of type " + name + ", fallback is " + ((fallback != null) ? "not" : "") + " null");
         preloadTask = new PreloadTask();
         this.fallback = fallback;
         this.name = name;
@@ -105,11 +105,11 @@ public abstract class CacheStreamFactory {
         @Override
         protected void onPostExecute(PreloadReturn params) {
             super.onPostExecute(params);
-            Log.i("CacheStreamFactory", CacheStreamFactory.this+"->preload()->onPostExecute("+((params==null)?"null":"not-null")+")");
+            Helpers.debugLog("CacheStreamFactory", CacheStreamFactory.this+"->preload()->onPostExecute("+((params==null)?"null":"not-null")+")");
             CachePreloadCallback callback = params.callback;
             // on network failure params.payload will be null
             byte[] payload = params.payload;
-            //Log.i("CacheStreamFactory", CacheStreamFactory.this+"->preload()->onPostExecute("+((callback==null)?"null":"not-null")+")");
+            //Helpers.debugLog("CacheStreamFactory", CacheStreamFactory.this+"->preload()->onPostExecute("+((callback==null)?"null":"not-null")+")");
             if (callback != null) {
                 callback.onLoad(payload);
             }
@@ -121,9 +121,9 @@ public abstract class CacheStreamFactory {
     }
 
     void preload(String startingAt, String stoppingAt, CachePreloadCallback callback) {
-        Log.i("CacheStreamFactory", this+"->preload(...,"+startingAt+","+stoppingAt+")");
+        Helpers.debugLog("CacheStreamFactory", this+"->preload(...,"+startingAt+","+stoppingAt+")");
         if(preloadTask!=null) {
-            Log.i("CacheStreamFactory", "preloadTask is not null, cancelling.");
+            Helpers.debugLog("CacheStreamFactory", "preloadTask is not null, cancelling.");
             preloadTask.cancel(false);
         }
         preloadTask = new PreloadTask();
@@ -142,9 +142,9 @@ public abstract class CacheStreamFactory {
     }
 
     InputStream createInputStream(String startingAt, String stoppingAt) {
-        Log.i("CacheStreamFactory",this+"->createInputStream("+startingAt+","+stoppingAt+")");
+        Helpers.debugLog("CacheStreamFactory",this+"->createInputStream("+startingAt+","+stoppingAt+")");
         synchronized (this) {
-            Log.i("CacheStreamFactory","unblocked!");
+            Helpers.debugLog("CacheStreamFactory","unblocked!");
             if (stoppingAt != null && stoppingAt.equals(name)) {
                 Log.e("CacheStreamFactory", "stoppingAt hit, returning null");
                 return null;
@@ -152,7 +152,7 @@ public abstract class CacheStreamFactory {
             if (startingAt == null || startingAt.equals(name)) {
                 InputStream cis = createCacheInputStream();
                 if (cis != null) {
-                    Log.i("CacheStreamFactory", this + ": cis!=null");
+                    Helpers.debugLog("CacheStreamFactory", this + ": cis!=null");
                     return cis;
                 } else {
                     return wrappedFallbackStream(null, stoppingAt);
@@ -177,7 +177,7 @@ public abstract class CacheStreamFactory {
     }
 
     private InputStream wrappedFallbackStream(String startingAt, String stoppingAt) {
-        Log.i("CacheStreamFactory", this+"->wrappedFallbackStream("+startingAt+", "+stoppingAt+")");
+        Helpers.debugLog("CacheStreamFactory", this+"->wrappedFallbackStream("+startingAt+", "+stoppingAt+")");
         if (fallback==null) {
             return null;
         }
@@ -193,7 +193,7 @@ public abstract class CacheStreamFactory {
 
             @Override
             public int read() throws IOException {
-                //Log.i("writeThroughStream","read() called");
+                //Helpers.debugLog("writeThroughStream","read() called");
                 int b = -1;
                 try {
                     b = fallbackInputStream.read();
@@ -215,7 +215,7 @@ public abstract class CacheStreamFactory {
             @Override
             public long skip(long n) throws IOException {
                 long skipped;
-                Log.i("writeThroughStream","skip("+n+") called");
+                Helpers.debugLog("writeThroughStream","skip("+n+") called");
                 for(skipped = 0;skipped < n; skipped++) {
                     try {
                         read();
@@ -252,7 +252,7 @@ public abstract class CacheStreamFactory {
             InputStream inputStream = this.createInputStream(startingAt, stoppingAt);
             long c = IOUtils.copy(inputStream, byteArrayOutputStream);
             inputStream.close();
-            Log.i("CacheStreamFactory", this+": IOUtils.copy processed "+c+" bytes");
+            Helpers.debugLog("CacheStreamFactory", this+": IOUtils.copy processed "+c+" bytes");
             return byteArrayOutputStream.toByteArray();
         } catch (IOException e) {
             Log.e("CacheStreamFactory", this+": IOException while reading stream to byte array");

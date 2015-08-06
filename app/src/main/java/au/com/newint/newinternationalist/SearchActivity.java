@@ -83,19 +83,19 @@ public class SearchActivity extends ActionBarActivity {
         //noinspection SimplifiableIfStatement
         switch (item.getItemId()) {
             case R.id.action_settings:
-                // Log.i("Menu", "Settings pressed.");
+                // Helpers.debugLog("Menu", "Settings pressed.");
                 // Settings intent
                 Intent settingsIntent = new Intent(this, SettingsActivity.class);
                 startActivity(settingsIntent);
                 return true;
             case R.id.about:
-                // Log.i("Menu", "About pressed.");
+                // Helpers.debugLog("Menu", "About pressed.");
                 // About intent
                 Intent aboutIntent = new Intent(this, AboutActivity.class);
                 startActivity(aboutIntent);
                 return true;
             case R.id.action_search:
-                Log.i("Search", "Search tapped on Home view.");
+                Helpers.debugLog("Search", "Search tapped on Home view.");
 //                onSearchRequested();
             default:
                 return super.onOptionsItemSelected(item);
@@ -342,7 +342,7 @@ public class SearchActivity extends ActionBarActivity {
     // Search logic
 
     static public void filterArticlesForSearchQuery(String query) {
-//        Log.i("Search", "Search for " + query);
+//        Helpers.debugLog("Search", "Search for " + query);
 
         // This is an AND search by default.
 
@@ -380,7 +380,7 @@ public class SearchActivity extends ActionBarActivity {
 
         // Create a pattern to match
         Pattern pattern = Pattern.compile(searchTerm, Pattern.CASE_INSENSITIVE);
-//        Log.i("Search", pattern.toString());
+//        Helpers.debugLog("Search", pattern.toString());
 
         for (ArrayList<Article> articlesArray : arrayOfArticleArrays) {
 

@@ -113,7 +113,7 @@ public class Issue implements Parcelable {
     }
 
     public ArrayList<Article> buildArticlesFromDir (File dir) {
-        Log.i("Issue","buildArticlesFromDir("+dir+")");
+        Helpers.debugLog("Issue","buildArticlesFromDir("+dir+")");
         ArrayList<Article> articlesArray = new ArrayList<Article>();
         if (dir.exists()) {
             File[] files = dir.listFiles();
@@ -344,7 +344,7 @@ public class Issue implements Parcelable {
 
                 @Override
                 public void onArticlesDownloadComplete(JsonArray articles) {
-                    Log.i("ArticlesReady", "Received listener, refreshing articles view.");
+                    Helpers.debugLog("ArticlesReady", "Received listener, refreshing articles view.");
                     // Refresh adapter data
                     adapter.notifyDataSetChanged();
                     Publisher.articleListeners.clear();
@@ -461,9 +461,9 @@ public class Issue implements Parcelable {
                 zipURLresponse = httpclient.execute(post, ctx);
 
             } catch (ClientProtocolException e) {
-                Log.i("TOC", "Zip URL download: ClientProtocolException: " + e);
+                Helpers.debugLog("TOC", "Zip URL download: ClientProtocolException: " + e);
             } catch (IOException e) {
-                Log.i("TOC", "Zip URL download: IOException: " + e);
+                Helpers.debugLog("TOC", "Zip URL download: IOException: " + e);
             }
 
             int zipURLresponseStatusCode;
@@ -478,25 +478,25 @@ public class Issue implements Parcelable {
 
                 if (zipURLresponseStatusCode >= 200 && zipURLresponseStatusCode < 300) {
                     // We have the ZipURL JSON
-                    Log.i("TOC", "Zip URL success: " + zipURLresponse.getStatusLine());
+                    Helpers.debugLog("TOC", "Zip URL success: " + zipURLresponse.getStatusLine());
                     zipURLsuccess = true;
 
                 } else if (zipURLresponseStatusCode > 400 && zipURLresponseStatusCode < 500) {
                     // Zip request failed
-                    Log.i("TOC", "Zip URL request failed with code: " + zipURLresponseStatusCode);
+                    Helpers.debugLog("TOC", "Zip URL request failed with code: " + zipURLresponseStatusCode);
 
                 } else {
                     // Server error.
-                    Log.i("TOC", "Zip URL request failed with code: " + zipURLresponseStatusCode + " and response: " + zipURLresponse.getStatusLine());
+                    Helpers.debugLog("TOC", "Zip URL request failed with code: " + zipURLresponseStatusCode + " and response: " + zipURLresponse.getStatusLine());
                 }
 
             } else {
                 // Error getting zipURL
-                Log.i("TOC", "Zip URL request failed! Response is null");
+                Helpers.debugLog("TOC", "Zip URL request failed! Response is null");
             }
 
             if (zipURLsuccess) {
-                Log.i("TOC", "Success! ZipURL found.");
+                Helpers.debugLog("TOC", "Success! ZipURL found.");
 
                 // Download the zip file
 
@@ -525,9 +525,9 @@ public class Issue implements Parcelable {
                         zipFileResponse = httpclient.execute(zipGet, zipContext);
 
                     } catch (ClientProtocolException e) {
-                        Log.i("TOC", "Zip file download: ClientProtocolException: " + e);
+                        Helpers.debugLog("TOC", "Zip file download: ClientProtocolException: " + e);
                     } catch (IOException e) {
-                        Log.i("TOC", "Zip file download: IOException: " + e);
+                        Helpers.debugLog("TOC", "Zip file download: IOException: " + e);
                     }
                 }
 
@@ -543,26 +543,26 @@ public class Issue implements Parcelable {
 
                     if (zipFileResponseStatusCode >= 200 && zipFileResponseStatusCode < 300) {
                         // We have the ZipURL JSON
-                        Log.i("TOC", "Zip file success: " + zipFileResponse.getStatusLine());
+                        Helpers.debugLog("TOC", "Zip file success: " + zipFileResponse.getStatusLine());
                         zipFileSuccess = true;
 
                     } else if (zipFileResponseStatusCode > 400 && zipFileResponseStatusCode < 500) {
                         // Zip request failed
-                        Log.i("TOC", "Zip file request failed with code: " + zipFileResponseStatusCode);
+                        Helpers.debugLog("TOC", "Zip file request failed with code: " + zipFileResponseStatusCode);
 
                     } else {
                         // Server error.
-                        Log.i("TOC", "Zip file request failed with code: " + zipFileResponseStatusCode + " and response: " + zipFileResponse.getStatusLine());
+                        Helpers.debugLog("TOC", "Zip file request failed with code: " + zipFileResponseStatusCode + " and response: " + zipFileResponse.getStatusLine());
                     }
 
                 } else {
-                    Log.i("TOC", "Zip file download response is null, sorry.");
+                    Helpers.debugLog("TOC", "Zip file download response is null, sorry.");
                 }
 
                 if (zipFileSuccess) {
                     // Unzip the zip and move it into place
 
-                    Log.i("TOC", "Zip file: " + zipFileResponse);
+                    Helpers.debugLog("TOC", "Zip file: " + zipFileResponse);
 
                     ZipInputStream zipInputStream = null;
                     try {
@@ -577,7 +577,7 @@ public class Issue implements Parcelable {
                         try {
                             ZipEntry entry;
                             while ((entry = zipInputStream.getNextEntry()) != null) {
-                                Log.i("TOC","Zip file entry: " + entry.getName() + ", " + entry.getSize());
+                                Helpers.debugLog("TOC","Zip file entry: " + entry.getName() + ", " + entry.getSize());
 
                                 // If it's a directory, make it.
                                 String filename = entry.getName();

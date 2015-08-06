@@ -163,9 +163,9 @@ public class MagazineArchiveActivity extends ActionBarActivity {
                             if (payload==null) return;
 
                             if (cachedImageView.hasCacheStreamFactory(cacheStreamFactory))
-                                Log.i("MagazineArchiveActivity", "getView->preload->onLoad: expected callback");
+                                Helpers.debugLog("MagazineArchiveActivity", "getView->preload->onLoad: expected callback");
                             else {
-                                Log.i("MagazineArchiveActivity", "getView->preload->onLoad: not expecting this callback");
+                                Helpers.debugLog("MagazineArchiveActivity", "getView->preload->onLoad: not expecting this callback");
                                 return;
                             }
 
@@ -173,7 +173,7 @@ public class MagazineArchiveActivity extends ActionBarActivity {
 
                             final Bitmap coverBitmap = Helpers.bitmapDecode(payload);
 
-                            Log.i("MagazineArchiveActivity", "onLoad delay: " + (returnTime - callTime));
+                            Helpers.debugLog("MagazineArchiveActivity", "onLoad delay: " + (returnTime - callTime));
 
                             // only fade in if the callback took longer than 5 ms
                             if ((returnTime - callTime) < 5 * 1000 * 1000 * 1000) {

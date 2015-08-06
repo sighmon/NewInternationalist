@@ -275,9 +275,9 @@ public class Helpers {
     // not actually synchronized any more
     public static Bitmap bitmapDecode(byte[] bytes) {
 
-        //Log.i("bitmapDecode", "start");
+        //Helpers.debugLog("bitmapDecode", "start");
         Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-        //Log.i("bitmapDecode", "end");
+        //Helpers.debugLog("bitmapDecode", "end");
 
         return bitmap;
     }
@@ -328,6 +328,12 @@ public class Helpers {
         boolean allowAnonymousStatistics = getFromPrefs(MainActivity.applicationContext.getResources().getString(R.string.allow_anonymous_statistics_key), false);
         if (allowAnonymousStatistics) {
             AdWordsConversionReporter.registerReferrer(MainActivity.applicationContext, intent.getData());
+        }
+    }
+
+    public static void debugLog(String tag, String msg) {
+        if (BuildConfig.DEBUG) {
+            Helpers.debugLog(tag,msg);
         }
     }
 }

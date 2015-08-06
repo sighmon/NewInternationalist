@@ -76,13 +76,13 @@ public class CategoryActivity extends ActionBarActivity {
         //noinspection SimplifiableIfStatement
         switch (item.getItemId()) {
             case R.id.action_settings:
-                // Log.i("Menu", "Settings pressed.");
+                // Helpers.debugLog("Menu", "Settings pressed.");
                 // Settings intent
                 Intent settingsIntent = new Intent(this, SettingsActivity.class);
                 startActivity(settingsIntent);
                 return true;
             case R.id.about:
-                // Log.i("Menu", "About pressed.");
+                // Helpers.debugLog("Menu", "About pressed.");
                 // About intent
                 Intent aboutIntent = new Intent(this, AboutActivity.class);
                 startActivity(aboutIntent);
@@ -177,9 +177,9 @@ public class CategoryActivity extends ActionBarActivity {
 
 
                                 if (categoryViewHolder.hasCacheStreamFactory(cacheStreamFactory))
-                                    Log.i("CategoryActivity", "onBindViewHolder->preload->onLoad: expected callback");
+                                    Helpers.debugLog("CategoryActivity", "onBindViewHolder->preload->onLoad: expected callback");
                                 else {
-                                    Log.i("CategoryActivity", "onBindViewHolder->preload->onLoad: not expecting this callback");
+                                    Helpers.debugLog("CategoryActivity", "onBindViewHolder->preload->onLoad: not expecting this callback");
                                     return;
                                 }
 

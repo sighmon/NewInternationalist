@@ -62,7 +62,7 @@ public class URLCacheStreamFactory extends CacheStreamFactory {
     // A: bad idea unless we need it, as it might hide design flaws
     @Override
     protected InputStream createCacheInputStream() {
-        Log.i("URLCacheStreamFactory", "createCacheInputStream() ["+sourceURIRequest+"]");
+        Helpers.debugLog("URLCacheStreamFactory", "createCacheInputStream() ["+sourceURIRequest+"]");
 
         HttpURLConnection urlConnection = null;
 

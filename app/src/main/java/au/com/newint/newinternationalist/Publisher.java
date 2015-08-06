@@ -61,7 +61,7 @@ public enum Publisher {
 
         // Get SITE_URL from config variables
         String siteURLString = Helpers.getSiteURL();
-        Log.i("SITE_URL", siteURLString);
+        Helpers.debugLog("SITE_URL", siteURLString);
 
         // Get issues.json and save/update our cache
         URL issuesURL = null;
@@ -245,7 +245,7 @@ public enum Publisher {
         Issue newestIssue = issuesArray.isEmpty()?null:issuesArray.get(0);;
 
         if (newestIssue != null) {
-            Log.i("LatestIssue", String.format("ID: %1$s, Title: %2$s", newestIssue.getID(), newestIssue.getTitle()));
+            Helpers.debugLog("LatestIssue", String.format("ID: %1$s, Title: %2$s", newestIssue.getID(), newestIssue.getTitle()));
         }
 
         return newestIssue;

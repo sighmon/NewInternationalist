@@ -67,9 +67,9 @@ public class ThumbnailCacheStreamFactory extends CacheStreamFactory {
     protected InputStream createCacheInputStream() {
         // does the cache file exist?
         // if no, make it
-        Log.i("ThumbnailCSF", "createCacheInputStream ["+cacheFile.getName()+"]");
+        Helpers.debugLog("ThumbnailCSF", "createCacheInputStream ["+cacheFile.getName()+"]");
         if(!cacheFile.exists()) {
-            Log.i("ThumbnailCSF", "cache miss, creating thumbnail");
+            Helpers.debugLog("ThumbnailCSF", "cache miss, creating thumbnail");
             // Scale image for size requested
             //Bitmap fullsizeImageBitmap = BitmapFactory.decodeStream(source.createInputStream());
 
@@ -78,7 +78,7 @@ public class ThumbnailCacheStreamFactory extends CacheStreamFactory {
             byte[] data = source.read();
             Bitmap fullsizeImageBitmap = Helpers.scaledBitmapDecode(data,width,height);
 
-            Log.i("ThumbnailCSF", "bitmap decoded");
+            Helpers.debugLog("ThumbnailCSF", "bitmap decoded");
             if (fullsizeImageBitmap != null) {
                 // TODO: Work out why this creates jagged images. Is the image size wrong??
                 //                    Bitmap scaledCover = Bitmap.createScaledBitmap(fullsizeImageBitmap, width, height, true);
@@ -125,9 +125,9 @@ public class ThumbnailCacheStreamFactory extends CacheStreamFactory {
                 return null;
             }
 
-            Log.i("ThumbnailCSF", "thumbnail created");
+            Helpers.debugLog("ThumbnailCSF", "thumbnail created");
         } else {
-            Log.i("ThumbnailCSF", "cache hit");
+            Helpers.debugLog("ThumbnailCSF", "cache hit");
         }
 
         // try to serve up fileinputstream

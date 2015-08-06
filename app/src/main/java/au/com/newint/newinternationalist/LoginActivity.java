@@ -276,7 +276,7 @@ public class LoginActivity extends ActionBarActivity implements LoaderCallbacks<
             if( !cookies.isEmpty() ){
                 for (Cookie cookie : cookies){
                     String cookieString = cookie.getName() + " : " + cookie.getValue();
-                    Log.i("Cookie", "Old cookie: " + cookieString);
+                    Helpers.debugLog("Cookie", "Old cookie: " + cookieString);
                 }
             }
 
@@ -304,9 +304,9 @@ public class LoginActivity extends ActionBarActivity implements LoaderCallbacks<
                 response = httpclient.execute(post, ctx);
 
             } catch (ClientProtocolException e) {
-                Log.i("Login", "ClientProtocolException: " + e);
+                Helpers.debugLog("Login", "ClientProtocolException: " + e);
             } catch (IOException e) {
-                Log.i("Login", "IOException: " + e);
+                Helpers.debugLog("Login", "IOException: " + e);
             }
 
             int responseStatusCode;
@@ -323,17 +323,17 @@ public class LoginActivity extends ActionBarActivity implements LoaderCallbacks<
 
                 } else if (responseStatusCode > 400 && responseStatusCode < 500) {
                     // Login was incorrect.
-                    Log.i("Login", "Failed with code: " + responseStatusCode);
+                    Helpers.debugLog("Login", "Failed with code: " + responseStatusCode);
 
                 } else {
                     // Server error.
-                    Log.i("Login", "Failed with code: " + responseStatusCode + " and response: " + response.getStatusLine());
+                    Helpers.debugLog("Login", "Failed with code: " + responseStatusCode + " and response: " + response.getStatusLine());
                     loginErrorString = "Sorry, it looks like our server has a problem. Please try again later.";
                 }
 
             } else {
                 // Error logging in
-                Log.i("Login", "Failed! Response is null");
+                Helpers.debugLog("Login", "Failed! Response is null");
                 loginErrorString = "It doesn't look like you have internet access.";
             }
 
@@ -350,7 +350,7 @@ public class LoginActivity extends ActionBarActivity implements LoaderCallbacks<
 
                 // Let listener know
                 for (Publisher.LoginListener listener : Publisher.INSTANCE.loginListeners) {
-                    Log.i("Login", "Sending listener login success: True");
+                    Helpers.debugLog("Login", "Sending listener login success: True");
                     // Pass in login success boolean
                     listener.onUpdate(success);
                 }

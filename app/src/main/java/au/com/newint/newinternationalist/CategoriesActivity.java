@@ -46,7 +46,7 @@ public class CategoriesActivity extends ActionBarActivity {
         Intent intent = getIntent();
         if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
             String query = intent.getStringExtra(SearchManager.QUERY);
-            Log.i("Search","Searching for: " + query);
+            Helpers.debugLog("Search","Searching for: " + query);
         }
 
         loadingProgressDialog = new ProgressDialog(this);
@@ -88,19 +88,19 @@ public class CategoriesActivity extends ActionBarActivity {
         //noinspection SimplifiableIfStatement
         switch (item.getItemId()) {
             case R.id.action_settings:
-                // Log.i("Menu", "Settings pressed.");
+                // Helpers.debugLog("Menu", "Settings pressed.");
                 // Settings intent
                 Intent settingsIntent = new Intent(this, SettingsActivity.class);
                 startActivity(settingsIntent);
                 return true;
             case R.id.about:
-                // Log.i("Menu", "About pressed.");
+                // Helpers.debugLog("Menu", "About pressed.");
                 // About intent
                 Intent aboutIntent = new Intent(this, AboutActivity.class);
                 startActivity(aboutIntent);
                 return true;
             case R.id.action_search:
-                Log.i("Search", "Search tapped on Home view.");
+                Helpers.debugLog("Search", "Search tapped on Home view.");
 //                onSearchRequested();
             default:
                 return super.onOptionsItemSelected(item);
@@ -338,7 +338,7 @@ public class CategoriesActivity extends ActionBarActivity {
 //                    // Pass Category through as a Parcel
                     if (getSectionOrCategoryForPosition(getPosition()) instanceof Category) {
                         Category categoryTapped = (Category) getSectionOrCategoryForPosition(getPosition());
-                        Log.i("Categories", "Category tapped: " + categoryTapped.getDisplayName());
+                        Helpers.debugLog("Categories", "Category tapped: " + categoryTapped.getDisplayName());
                         categoryIntent.putExtra("categoryJson", categoryTapped.categoryJson.toString());
                     }
                     startActivity(categoryIntent);

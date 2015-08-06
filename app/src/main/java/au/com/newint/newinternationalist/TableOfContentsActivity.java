@@ -88,7 +88,7 @@ public class TableOfContentsActivity extends ActionBarActivity {
                         Log.d("TOC", "Problem setting up In-app Billing: " + result);
                     }
                     // Hooray, IAB is fully set up!
-                    Log.i("TOC", "In-app billing setup result: " + result);
+                    Helpers.debugLog("TOC", "In-app billing setup result: " + result);
 
                     // Make a products list of the subscriptions and this issue
                     final ArrayList<String> skuList = new ArrayList<String>();
@@ -204,7 +204,7 @@ public class TableOfContentsActivity extends ActionBarActivity {
                         if (articles != null) {
                             populateLayoutListFromArticles(articles);
                             adapter.notifyItemChanged(1);
-                            Log.i("PreloadArticles", "Articles ready, so refreshing first article.");
+                            Helpers.debugLog("PreloadArticles", "Articles ready, so refreshing first article.");
                         } else {
                             Log.e("PreloadArticles", "Table of contents PreloadArticles returned null.");
                             // Alert the user of the error.
@@ -248,7 +248,7 @@ public class TableOfContentsActivity extends ActionBarActivity {
 
                 @Override
                 public void onIssueZipDownloadComplete(ArrayList responseList) {
-                    Log.i("TOC", "Received listener, handling zip download response.");
+                    Helpers.debugLog("TOC", "Received listener, handling zip download response.");
                     // Check response, and respond with dialog
 
                     ProgressBar progressSpinner = (ProgressBar) rootView.findViewById(R.id.toc_zip_loading_spinner);
@@ -283,7 +283,7 @@ public class TableOfContentsActivity extends ActionBarActivity {
 
                         } else if (responseStatusCode > 400 && responseStatusCode < 500) {
                             // Article request failed
-                            Log.i("TOC", "Zip download failed with code: " + responseStatusCode);
+                            Helpers.debugLog("TOC", "Zip download failed with code: " + responseStatusCode);
                             // Alert and intent to login.
                             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
                             builder.setMessage(R.string.login_dialog_message_article_body).setTitle(R.string.login_dialog_title_article_body);
@@ -312,7 +312,7 @@ public class TableOfContentsActivity extends ActionBarActivity {
 
                         } else {
                             // Some other error.
-                            Log.i("TOC", "Zip download failed with code: " + responseStatusCode + " and response: " + response.getStatusLine());
+                            Helpers.debugLog("TOC", "Zip download failed with code: " + responseStatusCode + " and response: " + response.getStatusLine());
                             // Alert the user of the error.
                             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
                             builder.setMessage(getResources().getString(R.string.zip_download_dialog_message) + response.getStatusLine()).setTitle(R.string.zip_download_dialog_title);
@@ -343,7 +343,7 @@ public class TableOfContentsActivity extends ActionBarActivity {
 
                     } else {
                         // Error getting zip
-                        Log.i("TOC", "Zip download failed! Response is null");
+                        Helpers.debugLog("TOC", "Zip download failed! Response is null");
                         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
                         builder.setMessage(R.string.no_internet_dialog_message_article_body).setTitle(R.string.no_internet_dialog_title_article_body);
                         builder.setNegativeButton(R.string.no_internet_dialog_ok_button, new DialogInterface.OnClickListener() {
@@ -694,7 +694,7 @@ public class TableOfContentsActivity extends ActionBarActivity {
 
                 @Override
                 public boolean onLongClick(View v) {
-                    Log.i("TOC", "Cover long click detected!");
+                    Helpers.debugLog("TOC", "Cover long click detected!");
                     // Ask the user if they'd like to delete this issue's cache
                     AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
                     builder.setMessage(R.string.toc_dialog_delete_cache_message).setTitle(R.string.toc_dialog_delete_cache_title);

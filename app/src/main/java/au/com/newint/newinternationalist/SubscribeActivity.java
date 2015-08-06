@@ -110,13 +110,13 @@ public class SubscribeActivity extends ActionBarActivity {
         // as you specify a parent activity in AndroidManifest.xml.
         switch (item.getItemId()) {
             case R.id.action_settings:
-                // Log.i("Menu", "Settings pressed.");
+                // Helpers.debugLog("Menu", "Settings pressed.");
                 // Settings intent
                 Intent settingsIntent = new Intent(this, SettingsActivity.class);
                 startActivity(settingsIntent);
                 return true;
             case R.id.about:
-                // Log.i("Menu", "About pressed.");
+                // Helpers.debugLog("Menu", "About pressed.");
                 // About intent
                 Intent aboutIntent = new Intent(this, AboutActivity.class);
                 startActivity(aboutIntent);
@@ -167,7 +167,7 @@ public class SubscribeActivity extends ActionBarActivity {
                             Log.d("Subscribe", "Problem setting up In-app Billing: " + result);
                         }
                         // Hooray, IAB is fully set up!
-                        Log.i("Subscribe", "In-app billing setup result: " + result);
+                        Helpers.debugLog("Subscribe", "In-app billing setup result: " + result);
 
                         // Consume the test purchase..
                         if (BuildConfig.DEBUG) {
@@ -210,7 +210,7 @@ public class SubscribeActivity extends ActionBarActivity {
                                         Inventory inventory = mHelper.queryInventory(true, partition);
 
                                         // Check subscription inventory
-                                        Log.i("Subscribe", "Inventory (" + loopNumber + "): " + inventory);
+                                        Helpers.debugLog("Subscribe", "Inventory (" + loopNumber + "): " + inventory);
 
                                         // Loop through products and add them to mProducts
                                         for (String sku : partition) {
@@ -276,11 +276,11 @@ public class SubscribeActivity extends ActionBarActivity {
                                     return;
                                 } else if (result.getResponse() == IabHelper.IABHELPER_USER_CANCELLED) {
                                     // User cancelled the purchase, so ignore, move on
-                                    Log.i("Subscribe", "User cancelled purchase.");
+                                    Helpers.debugLog("Subscribe", "User cancelled purchase.");
                                     return;
                                 } else if (purchase.getSku().equals(Helpers.TWELVE_MONTH_SUBSCRIPTION_ID)) {
                                     // Update subscription status.
-                                    Log.i("Subscribe", "Purchase succeeded: " + purchase.getItemType());
+                                    Helpers.debugLog("Subscribe", "Purchase succeeded: " + purchase.getItemType());
                                     // Send analytics event if user permits
                                     Helpers.sendGoogleAnalyticsEvent("Google Play", "Purchase", purchase.getItemType());
                                     SkuDetails productPurchased = null;
@@ -289,7 +289,7 @@ public class SubscribeActivity extends ActionBarActivity {
 
                                 } else if (purchase.getSku().equals(Helpers.ONE_MONTH_SUBSCRIPTION_ID)) {
                                     // Update subscription status.
-                                    Log.i("Subscribe", "Purchase succeeded: " + purchase.getItemType());
+                                    Helpers.debugLog("Subscribe", "Purchase succeeded: " + purchase.getItemType());
                                     // Send analytics event if user permits
                                     Helpers.sendGoogleAnalyticsEvent("Google Play", "Purchase", purchase.getItemType());
                                     SkuDetails productPurchased = null;
@@ -297,7 +297,7 @@ public class SubscribeActivity extends ActionBarActivity {
                                     Helpers.sendGoogleAdwordsConversion(productPurchased);
                                 } else {
                                     // Handle individual purchases
-                                    Log.i("Subscribe", "Individual purchase: " + purchase.getItemType());
+                                    Helpers.debugLog("Subscribe", "Individual purchase: " + purchase.getItemType());
                                     adapter.notifyDataSetChanged();
                                     // Send analytics event if user permits
                                     Helpers.sendGoogleAnalyticsEvent("Google Play", "Purchase", purchase.getItemType());
@@ -492,7 +492,7 @@ public class SubscribeActivity extends ActionBarActivity {
                 @Override
                 public void onClick(View v) {
                     // Purchase product!
-                    Log.i("Subscribe", "Product tapped at position: " + getPosition());
+                    Helpers.debugLog("Subscribe", "Product tapped at position: " + getPosition());
                     mPositionTapped = getPosition();
                     // TODO: Generate developerPayload in helper, now just returns an empty string
                     String developerPayload = Helpers.getDeveloperPayload();
