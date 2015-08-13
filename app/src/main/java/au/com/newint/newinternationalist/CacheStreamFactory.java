@@ -12,6 +12,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.concurrent.RejectedExecutionException;
 
 /**
@@ -21,11 +23,15 @@ public abstract class CacheStreamFactory {
     private final String name;
     protected final CacheStreamFactory fallback;
 
-    public PreloadTask preloadTask;
+    //public PreloadTask preloadTask;
+
+    HashMap<String,PreloadTask> preloadTasks;
+
 
     CacheStreamFactory(CacheStreamFactory fallback, String name) {
         Helpers.debugLog("CacheStreamFactory", "creating factory of type " + name + ", fallback is " + ((fallback != null) ? "not" : "") + " null");
-        preloadTask = new PreloadTask();
+        //preloadTask = new PreloadTask();
+        this.preloadTask = null;
         this.fallback = fallback;
         this.name = name;
     }
@@ -64,6 +70,16 @@ public abstract class CacheStreamFactory {
     }
 
     class PreloadTask extends AsyncTask<PreloadParameters,Integer,PreloadReturn> {
+
+        final ArrayList<CachePreloadCallback> callbacks;
+
+        boolean callbacksProcessed;
+
+        PreloadTask() {
+            super();
+            callbacksProcessed = false;
+            callbacks = new ArrayList<>();
+        }
 
         @Override
         protected PreloadReturn doInBackground(PreloadParameters... params) {
@@ -122,6 +138,26 @@ public abstract class CacheStreamFactory {
 
     void preload(String startingAt, String stoppingAt, CachePreloadCallback callback) {
         Helpers.debugLog("CacheStreamFactory", this+"->preload(...,"+startingAt+","+stoppingAt+")");
+
+        //do we already have a preload task matching these start/stop parameters?
+        PreloadTask preloadTask = preloadTasks.get(startingAt+":"+stoppingAt);
+        if (preloadTask!=null) {
+            // yes we do
+            // has it finished yet?
+            synchronized (preloadTask) {
+                if (preloadTask.callbacksProcessed) {
+                    // yes it has
+                    Log.e("CacheStreamFactory", "preload(...) found preloadTask in hash even though it is at callback stage");
+                } else {
+                    // no it hasn't
+                    preloadTask.callbacks.add(callback);
+                }
+            }
+        } else {
+            // no we don't
+            // create new preload task
+        }
+
         if(preloadTask!=null) {
             Helpers.debugLog("CacheStreamFactory", "preloadTask is not null, cancelling.");
             preloadTask.cancel(false);
