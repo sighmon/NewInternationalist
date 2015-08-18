@@ -1,6 +1,7 @@
 package au.com.newint.newinternationalist;
 
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -8,6 +9,7 @@ import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBarActivity;
@@ -105,6 +107,9 @@ public class MainActivity extends ActionBarActivity {
 
         // Set default preferences, the false on the end means it's only set once
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
+
+        // Handle deep link
+        onNewIntent(getIntent());
 
         // Setup in-app billing
         mHelper = Helpers.setupIabHelper(this);
@@ -209,6 +214,69 @@ public class MainActivity extends ActionBarActivity {
         if (username != null && !username.equals("")) {
             // Try logging in!
             new SilentUserLoginTask(username, Helpers.getPassword("")).execute();
+        }
+    }
+
+    protected void onNewIntent(Intent intent) {
+        String action = intent.getAction();
+        String data = intent.getDataString();
+        if (Intent.ACTION_VIEW.equals(action) && data != null) {
+            // Parse magazine and or article ID and start intent
+            if (data.matches("(.*)/issues/(\\d+)/articles/(\\d+)")) {
+                // It's an article deep link
+                String[] components = data.split("/");
+                final ArrayList<String> issueArticleIDs = new ArrayList<String>();
+                for (String component : components) {
+                    if (component.matches("(\\d+)")) {
+                        // It's a digit, add it to our ID array
+                        issueArticleIDs.add(component);
+                    }
+                }
+                if (issueArticleIDs.size() == 2) {
+                    final Issue issueInUrl = new Issue(Integer.parseInt(issueArticleIDs.get(0)));
+                    issueInUrl.preloadArticles(new CacheStreamFactory.CachePreloadCallback() {
+                        @Override
+                        public void onLoad(byte[] payload) {
+                            Article articleInUrl = issueInUrl.getArticleWithID(Integer.parseInt(issueArticleIDs.get(1)));
+                            if (issueInUrl != null && articleInUrl != null) {
+                                Intent articleIntent = new Intent(applicationContext, ArticleActivity.class);
+                                articleIntent.putExtra("issue", issueInUrl);
+                                articleIntent.putExtra("article", articleInUrl);
+                                startActivity(articleIntent);
+                                Helpers.debugLog("Article", "Opening article: " + articleInUrl.getTitle() + " (" + articleInUrl.getID() + ")");
+                            } else {
+                                Log.e("Article", "Error: issue or article in URL is null, so can't open article.");
+                            }
+                        }
+
+                        @Override
+                        public void onLoadBackground(byte[] payload) {
+
+                        }
+                    });
+                } else {
+                    Log.e("Article", "Error parsing issue or article ID in link.");
+                }
+            } else if (data.matches("(.*)/issues/(\\d+)")) {
+                // It's a deep link to an issue
+                int issueID = Integer.parseInt(data.replaceAll("\\D+", ""));
+                Issue issueInUrl = new Issue(issueID);
+                Intent tableOfContentsIntent = new Intent(applicationContext, TableOfContentsActivity.class);
+                // Pass issue through as a Parcel
+                tableOfContentsIntent.putExtra("issue", issueInUrl);
+                startActivity(tableOfContentsIntent);
+            } else if (data.matches("(.*)/issues")) {
+                // It's a deep link to the magazine archive
+                Intent magazineArchiveIntent = new Intent(applicationContext, MagazineArchiveActivity.class);
+                startActivity(magazineArchiveIntent);
+            } else if (data.matches("(.*)/categories(.*)")) {
+                // It's a deep link to the categories page
+                Intent categoriesIntent = new Intent(applicationContext, CategoriesActivity.class);
+                startActivity(categoriesIntent);
+            } else {
+                // Ignore it
+                Log.e("NewIntent", "ERROR: badly formed data URL: " + data);
+            }
         }
     }
 

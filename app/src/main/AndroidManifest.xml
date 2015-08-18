@@ -33,6 +33,14 @@
             <meta-data
                 android:name="android.app.default_searchable"
                 android:value=".SearchActivity" />
+
+            <intent-filter android:label="@string/title_activity_magazine_archive">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <!-- Accepts URIs that begin with "newint://" -->
+                <data android:scheme="newint" />
+            </intent-filter>
         </activity>
         <activity
             android:name=".AboutActivity"
