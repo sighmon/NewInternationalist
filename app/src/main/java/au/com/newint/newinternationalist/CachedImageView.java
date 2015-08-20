@@ -16,7 +16,8 @@ public class CachedImageView extends ImageView {
     public void setCacheStreamFactory(CacheStreamFactory cacheStreamFactory) {
         // find last cacheStreamFactory and kill it's process
         if(this.cacheStreamFactory!=null) {
-            this.cacheStreamFactory.preloadTask.cancel(false);
+
+            this.cacheStreamFactory.cancel(false);
         }
         this.cacheStreamFactory = cacheStreamFactory;
     }

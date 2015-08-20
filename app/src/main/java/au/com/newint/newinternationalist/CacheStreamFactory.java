@@ -25,13 +25,13 @@ public abstract class CacheStreamFactory {
 
     //public PreloadTask preloadTask;
 
-    HashMap<String,PreloadTask> preloadTasks;
+    final HashMap<String,PreloadTask> preloadTasks;
 
 
     CacheStreamFactory(CacheStreamFactory fallback, String name) {
         Helpers.debugLog("CacheStreamFactory", "creating factory of type " + name + ", fallback is " + ((fallback != null) ? "not" : "") + " null");
         //preloadTask = new PreloadTask();
-        this.preloadTask = null;
+        this.preloadTasks = new HashMap<>();
         this.fallback = fallback;
         this.name = name;
     }
@@ -84,7 +84,7 @@ public abstract class CacheStreamFactory {
         @Override
         protected PreloadReturn doInBackground(PreloadParameters... params) {
 
-            CachePreloadCallback callback = null;
+            //CachePreloadCallback callback = null;
             String startingAt = null;
             String stoppingAt = null;
             Object lock;
@@ -92,10 +92,10 @@ public abstract class CacheStreamFactory {
                 lock = params[0].lock;
             } else {
                 Log.e("CacheStreamFactory","params.length <= 0");
-                return new PreloadReturn(callback,null);
+                return new PreloadReturn(null,null);
             }
             synchronized (lock) {
-                callback = params[0].callback;
+                //callback = params[0].callback;
                 startingAt = params[0].startingAt;
                 stoppingAt = params[0].stoppingAt;
 
@@ -103,7 +103,7 @@ public abstract class CacheStreamFactory {
                 ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
                 if (inputStream == null) {
                     Log.e("CacheStreamFactory","createInputStream returned null");
-                    return new PreloadReturn(callback,null);
+                    return new PreloadReturn(null,null);
                 }
                 try {
                     IOUtils.copy(inputStream, byteArrayOutputStream);
@@ -113,8 +113,15 @@ public abstract class CacheStreamFactory {
                 }
 
                 byte[] payload = byteArrayOutputStream.toByteArray();
-                callback.onLoadBackground(payload);
-                return new PreloadReturn(callback,payload);
+                synchronized(CacheStreamFactory.this.preloadTasks) {
+                    // remove ourselves from the list before executing callbacks
+                    CacheStreamFactory.this.preloadTasks.remove(this);
+                }
+
+                for(CachePreloadCallback callback : this.callbacks) {
+                    callback.onLoadBackground(payload);
+                }
+                return new PreloadReturn(null,payload);
             }
         }
 
@@ -122,55 +129,67 @@ public abstract class CacheStreamFactory {
         protected void onPostExecute(PreloadReturn params) {
             super.onPostExecute(params);
             Helpers.debugLog("CacheStreamFactory", CacheStreamFactory.this+"->preload()->onPostExecute("+((params==null)?"null":"not-null")+")");
-            CachePreloadCallback callback = params.callback;
+            synchronized(CacheStreamFactory.this.preloadTasks) {
+                // remove ourselves from the list before executing callbacks
+                CacheStreamFactory.this.preloadTasks.remove(this);
+            }
+            //CachePreloadCallback callback = params.callback;
             // on network failure params.payload will be null
             byte[] payload = params.payload;
             //Helpers.debugLog("CacheStreamFactory", CacheStreamFactory.this+"->preload()->onPostExecute("+((callback==null)?"null":"not-null")+")");
-            if (callback != null) {
+            //if (callback != null) {
+            for(CachePreloadCallback callback : this.callbacks) {
                 callback.onLoad(payload);
+            }
+            //}
+        }
+    }
+
+    void cancel(boolean mayInterruptIfRunning) {
+        Helpers.debugLog("CacheStreamFactory", "cancelling callbacks");
+        synchronized (preloadTasks) {
+            for(PreloadTask preloadTask : preloadTasks.values()) {
+                preloadTask.callbacks.clear();
             }
         }
     }
 
     void preload(CachePreloadCallback callback) {
-        preload(null,null,callback);
+        preload(null, null, callback);
     }
 
     void preload(String startingAt, String stoppingAt, CachePreloadCallback callback) {
         Helpers.debugLog("CacheStreamFactory", this+"->preload(...,"+startingAt+","+stoppingAt+")");
 
+
         //do we already have a preload task matching these start/stop parameters?
-        PreloadTask preloadTask = preloadTasks.get(startingAt+":"+stoppingAt);
-        if (preloadTask!=null) {
-            // yes we do
-            // has it finished yet?
-            synchronized (preloadTask) {
-                if (preloadTask.callbacksProcessed) {
-                    // yes it has
-                    Log.e("CacheStreamFactory", "preload(...) found preloadTask in hash even though it is at callback stage");
-                } else {
-                    // no it hasn't
-                    preloadTask.callbacks.add(callback);
+        synchronized (preloadTasks) {
+            PreloadTask preloadTask = preloadTasks.get(startingAt + ":" + stoppingAt);
+            if (preloadTask != null) {
+                // yes we do
+                // assume callbacks have not been called yet as it is still in the map
+                preloadTask.callbacks.add(callback);
+
+            } else {
+                // no we don't
+                // create new preload task
+
+                preloadTask = new PreloadTask();
+                // and add the callback
+                preloadTask.callbacks.add(callback);
+                //preloadTask.execute(new PreloadParameters(this,callback,startingAt,stoppingAt));
+
+                // not sure how much of this is necessary now that we are handling multiple callbacks (listeners)
+
+                try {
+                    preloadTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, new PreloadParameters(this, null, startingAt, stoppingAt));
+                } catch (RejectedExecutionException e) {
+                    // FIXME: Fix multiple blocked threads from filling the pool
+                    Log.e("CacheStreamFactory", "Too many threads... sobbing quietly and then ignoring your ridiculous request.");
                 }
             }
-        } else {
-            // no we don't
-            // create new preload task
-        }
 
-        if(preloadTask!=null) {
-            Helpers.debugLog("CacheStreamFactory", "preloadTask is not null, cancelling.");
-            preloadTask.cancel(false);
         }
-        preloadTask = new PreloadTask();
-        //preloadTask.execute(new PreloadParameters(this,callback,startingAt,stoppingAt));
-        try {
-            preloadTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,new PreloadParameters(this,callback,startingAt,stoppingAt));
-        } catch (RejectedExecutionException e) {
-            // FIXME: Fix multiple blocked threads from filling the pool
-            Log.e("CacheStreamFactory", "Too many threads... sobbing quietly and then ignoring your ridiculous request.");
-        }
-
     }
 
     InputStream createInputStream() {
