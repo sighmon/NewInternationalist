@@ -90,8 +90,8 @@ public class Issue implements Parcelable {
 
     public Issue(JsonObject issueJson) {
         this.issueJson = issueJson;
-        coverCacheStreamFactory = new FileCacheStreamFactory(getCoverLocationOnFilesystem(), new URLCacheStreamFactory(getCoverURL()));
-        editorsImageCacheStreamFactory = new FileCacheStreamFactory(getEditorsLetterLocationOnFilesystem(), new URLCacheStreamFactory(getEditorsPhotoURL()));
+        coverCacheStreamFactory = FileCacheStreamFactory.createIfNecessary(getCoverLocationOnFilesystem(), new URLCacheStreamFactory(getCoverURL()));
+        editorsImageCacheStreamFactory = FileCacheStreamFactory.createIfNecessary(getEditorsLetterLocationOnFilesystem(), new URLCacheStreamFactory(getEditorsPhotoURL()));
         thumbnailCacheStreamFactorySparseArray = new SparseArray<>();
 
         // Get SITE_URL
@@ -108,7 +108,7 @@ public class Issue implements Parcelable {
 
         File cacheFile = new File(cacheDir, this.getID() + ".json");
 
-        articlesJSONCacheStreamFactory = new FileCacheStreamFactory(cacheFile, new URLCacheStreamFactory(articlesURL));
+        articlesJSONCacheStreamFactory = FileCacheStreamFactory.createIfNecessary(cacheFile, new URLCacheStreamFactory(articlesURL));
 
     }
 

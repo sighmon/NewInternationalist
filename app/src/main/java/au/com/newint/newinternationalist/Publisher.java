@@ -74,7 +74,7 @@ public enum Publisher {
         File cacheDir = MainActivity.applicationContext.getCacheDir();
         File cacheFile = new File(cacheDir,"issues.json");
 
-        issuesJSONCacheStreamFactory = new FileCacheStreamFactory(cacheFile, new URLCacheStreamFactory(issuesURL));
+        issuesJSONCacheStreamFactory = FileCacheStreamFactory.createIfNecessary(cacheFile, new URLCacheStreamFactory(issuesURL));
 
     }
 

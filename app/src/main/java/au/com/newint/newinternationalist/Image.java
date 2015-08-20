@@ -34,7 +34,7 @@ public class Image {
         this.parentArticle = parentArticle;
         this.imageJson = imageJson;
         this.issueID = issueID;
-        fullImageCacheStreamFactory = new FileCacheStreamFactory(getImageLocationOnFilesystem(), new URLCacheStreamFactory(getFullsizeImageURL()));
+        fullImageCacheStreamFactory = FileCacheStreamFactory.createIfNecessary(getImageLocationOnFilesystem(), new URLCacheStreamFactory(getFullsizeImageURL()));
     }
 
     @Override
