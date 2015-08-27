@@ -38,6 +38,7 @@ public class FileCacheStreamFactory extends CacheStreamFactory{
         return FileCacheStreamFactory.createIfNecessary(cacheFile, fallback, null);
     }
 
+    // only create one FileCSF for each file url
     static FileCacheStreamFactory createIfNecessary(File cacheFile, CacheStreamFactory fallback, String name) {
 
         String key = null;
@@ -68,7 +69,7 @@ public class FileCacheStreamFactory extends CacheStreamFactory{
     protected InputStream createCacheInputStream() {
 
         //TODO: set a flag on completion, now that FileCSF's should be shared... but what to do when it's incomplete? block?
-        
+
         if (cacheFile.exists() && cacheFile.length()>0) {
             Helpers.debugLog("FileCacheStreamFactory("+cacheFile.getName()+":"+this.hashCode()+")", "createInputStream() cache hit "+cacheFile.length()+" bytes");
             try {
@@ -81,13 +82,45 @@ public class FileCacheStreamFactory extends CacheStreamFactory{
         return null;
     }
 
+    class PartialFileOutputStream extends FileOutputStream {
+
+        final File partialFile;
+        final File completedFile;
+
+        // workaround to store references to partial/completed file
+        private PartialFileOutputStream(File completedFile, File partialFile) throws FileNotFoundException {
+            super(partialFile);
+            this.partialFile = partialFile;
+            this.completedFile = completedFile;
+        }
+
+        public PartialFileOutputStream(File file) throws FileNotFoundException {
+            this(file, new File(file.getPath() + ".part"));
+        }
+
+        @Override
+        public void close() throws IOException {
+            super.close(); // close the partial file output stream
+            if(partialFile.exists()) {
+                if (completedFile.exists()) {
+                    Helpers.debugLog("PartialFileOS", "deleting " + completedFile + " before renaming " + partialFile);
+                    completedFile.delete();
+                }
+                if (!partialFile.renameTo(completedFile)) {
+                    throw (new IOException("Error renaming '" + partialFile + "' (" + (completedFile.exists() ? "exists" : "missing") + ") to '" + completedFile + "' (" + (completedFile.exists() ? "exists" : "missing") + ")"));
+                }
+            } else {
+                Log.e("PartialFileOS","close() called but '"+partialFile+"' does not exist.");
+            }
+        }
+    }
 
     @Override
     protected OutputStream createCacheOutputStream() {
         Helpers.debugLog("FileCacheStreamFactory("+cacheFile.getName()+")", "createCacheOutputStream()");
 
         try {
-            return new FileOutputStream(cacheFile);
+            return new PartialFileOutputStream(cacheFile);
         } catch (FileNotFoundException e) {
             Log.e("FileCacheStreamFactory", "error creating cache file");
         }
