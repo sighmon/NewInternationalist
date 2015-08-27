@@ -110,7 +110,7 @@ public class FileCacheStreamFactory extends CacheStreamFactory{
                     throw (new IOException("Error renaming '" + partialFile + "' (" + (completedFile.exists() ? "exists" : "missing") + ") to '" + completedFile + "' (" + (completedFile.exists() ? "exists" : "missing") + ")"));
                 }
             } else {
-                Log.e("PartialFileOS","close() called but '"+partialFile+"' does not exist.");
+                Helpers.debugLog("PartialFileOS","close() called but '"+partialFile+"' does not exist.");
             }
         }
     }
