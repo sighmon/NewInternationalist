@@ -222,7 +222,7 @@ public class MainActivity extends ActionBarActivity {
         String data = intent.getDataString();
         if (Intent.ACTION_VIEW.equals(action) && data != null) {
             // Parse magazine and or article ID and start intent
-            if (data.matches("(.*)/issues/(\\d+)/articles/(\\d+)")) {
+            if (data.matches("(.*)/issues/(\\d+)/articles/(\\d+)") || data.matches("(.*)/issues/(\\d+)/articles/(\\d+)/")) {
                 // It's an article deep link
                 String[] components = data.split("/");
                 final ArrayList<String> issueArticleIDs = new ArrayList<String>();
@@ -257,7 +257,7 @@ public class MainActivity extends ActionBarActivity {
                 } else {
                     Log.e("Article", "Error parsing issue or article ID in link.");
                 }
-            } else if (data.matches("(.*)/issues/(\\d+)")) {
+            } else if (data.matches("(.*)/issues/(\\d+)") || data.matches("(.*)/issues/(\\d+)/")) {
                 // It's a deep link to an issue
                 int issueID = Integer.parseInt(data.replaceAll("\\D+", ""));
                 Issue issueInUrl = new Issue(issueID);

@@ -50,8 +50,9 @@ public class App extends Application {
             tracker.enableExceptionReporting(true);
             tracker.enableAdvertisingIdCollection(true);
             tracker.enableAutoActivityTracking(false);
-            tracker.setScreenName(getResources().getString(R.string.app_launched_analytics));
-            tracker.send(new HitBuilders.ScreenViewBuilder().build());
+            // Not sending app launched analytics anymore.. seems to be called a lot, perhaps in low memory situations.
+            // tracker.setScreenName(getResources().getString(R.string.app_launched_analytics));
+            // tracker.send(new HitBuilders.ScreenViewBuilder().build());
         }
     }
 
