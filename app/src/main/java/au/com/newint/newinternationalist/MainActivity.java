@@ -102,9 +102,6 @@ public class MainActivity extends ActionBarActivity {
                     .commit();
         }
 
-        applicationContext = getApplicationContext();
-        applicationResources = getResources();
-
         // Set default preferences, the false on the end means it's only set once
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
 

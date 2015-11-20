@@ -32,6 +32,9 @@ public class App extends Application {
     public void onCreate() {
         super.onCreate();
 
+        MainActivity.applicationContext = getApplicationContext();
+        MainActivity.applicationResources = getResources();
+
         // Setup push notifications
         Parse.enableLocalDatastore(this);
         Parse.initialize(this, getVariableFromConfig("PARSE_APP_ID"), getVariableFromConfig("PARSE_CLIENT_KEY"));
