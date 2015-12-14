@@ -54,6 +54,15 @@ public class Image {
         return imageJson.get("article_id").getAsInt();
     }
 
+    public boolean getHidden() {
+        JsonElement hidden = imageJson.get("hidden");
+        if (hidden != null) {
+            return hidden.getAsBoolean();
+        } else {
+            return false;
+        }
+    }
+
     public int getPosition() {
         JsonElement positionObject = imageJson.get("position");
         if (positionObject != null) {

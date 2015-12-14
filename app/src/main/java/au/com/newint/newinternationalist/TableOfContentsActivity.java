@@ -203,6 +203,9 @@ public class TableOfContentsActivity extends ActionBarActivity {
 
                         if (articles != null) {
                             populateLayoutListFromArticles(articles);
+                            Helpers.debugLog("PreloadArticles", "Total Articles: " + articles.size());
+                            Helpers.debugLog("PreloadArticles", "LayoutList: " + layoutList.size());
+//                            Helpers.debugLog("PreloadArticles", layoutList.toString());
                             adapter.notifyItemChanged(1);
                             Helpers.debugLog("PreloadArticles", "Articles ready, so refreshing first article.");
                         } else {
@@ -365,7 +368,21 @@ public class TableOfContentsActivity extends ActionBarActivity {
 
             // Add category articles
             layoutList.add("Features");
-            addArticlesToLayoutListWithCategoryName(articles, "features");
+            addArticlesToLayoutListWithCategoryNameWithExclusions(articles, "features",
+                    new String[]{
+                            "web-exclusive"
+                    });
+
+            // Add category web exclusives
+            layoutList.add("Web Exclusives");
+            addArticlesToLayoutListWithCategoryNameWithExclusions(articles, "web-exclusive",
+                    new String[]{
+                            "video"
+                    });
+
+            // Add category articles
+            layoutList.add("Videos");
+            addArticlesToLayoutListWithCategoryName(articles, "video");
 
             // Add category articles
             layoutList.add("Agenda");
@@ -388,6 +405,8 @@ public class TableOfContentsActivity extends ActionBarActivity {
                             "finally",
                             "features"
                     });
+
+            // TODO: Work out why opinion pieces sometimes get included in media reviews
 
             // Add category articles
             layoutList.add("Opinion");
@@ -432,7 +451,7 @@ public class TableOfContentsActivity extends ActionBarActivity {
                     }
                 }
             }
-            if (!articleAdded) {
+            if (!articleAdded && (layoutList.get(layoutList.size() - 1) instanceof String)) {
                 // If no articles were added, remove the category title (last entry)
                 layoutList.remove(layoutList.size() - 1);
             }
@@ -450,7 +469,7 @@ public class TableOfContentsActivity extends ActionBarActivity {
                     }
                 }
             }
-            if (!articleAdded && layoutList.size() > 0) {
+            if (!articleAdded && layoutList.size() > 0 && (layoutList.get(layoutList.size() - 1) instanceof String)) {
                 // If no articles were added, remove the category title (last entry)
                 layoutList.remove(layoutList.size() - 1);
             }

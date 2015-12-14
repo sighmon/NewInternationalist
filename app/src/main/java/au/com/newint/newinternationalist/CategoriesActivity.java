@@ -173,6 +173,7 @@ public class CategoriesActivity extends ActionBarActivity {
                         // Add unsorted categories to this list
                         issuesList = Publisher.INSTANCE.getIssuesFromFilesystem();
                         for (Issue issue : issuesList) {
+                            // TODO: Preload articles first, then call getArticles();
                             ArrayList<Article> articlesList = issue.getArticles();
                             for (Article article : articlesList) {
                                 ArrayList<Category> articleCategories = article.getCategories();

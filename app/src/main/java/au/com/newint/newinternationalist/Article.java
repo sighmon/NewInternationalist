@@ -246,18 +246,22 @@ public class Article implements Parcelable {
             String imageStringOfMissingImages = "";
             for (Image missedImage : images) {
                 // Build up new string of images
-                imageStringOfMissingImages += String.format("[File:%1$s]", Integer.toString(missedImage.getID()));
+                if (missedImage.getHidden()) {
+                    // It's hidden, so don't show
+                } else {
+                    imageStringOfMissingImages += String.format("[File:%1$s]", Integer.toString(missedImage.getID()));
+                }
             }
             // Add image [File: xx|full] tag to body and recursively try again
             if (!imageStringOfMissingImages.equals("")) {
                 // Searching for article-body tag.. could do this better???
-                String emptyArticleBodyString = "<div class=\"article-body\">\\s*<p(.*)>\\s*</p>\\s*</div>";
+                String emptyArticleBodyString = "<div class=\"article-body\">";
                 Pattern emptyBodyRegex = Pattern.compile(emptyArticleBodyString);
                 Matcher emptyBodyRegexMatcher = emptyBodyRegex.matcher(body);
                 boolean matchFound = false;
-                while (emptyBodyRegexMatcher.find()) {
+                if (emptyBodyRegexMatcher.find()) {
                     MatchResult emptyMatchResult = emptyBodyRegexMatcher.toMatchResult();
-                    body = body.substring(0, emptyMatchResult.start()) + imageStringOfMissingImages + body.substring(emptyMatchResult.end());
+                    body = body.substring(0, emptyMatchResult.start()) + body.substring(emptyMatchResult.start(), emptyMatchResult.end()) + imageStringOfMissingImages + body.substring(emptyMatchResult.end());
                     emptyBodyRegexMatcher.reset(body);
                     matchFound = true;
                 }
