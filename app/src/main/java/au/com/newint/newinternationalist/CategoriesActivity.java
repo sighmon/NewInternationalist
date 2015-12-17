@@ -26,6 +26,8 @@ import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
 
 
 public class CategoriesActivity extends ActionBarActivity {
@@ -50,9 +52,6 @@ public class CategoriesActivity extends ActionBarActivity {
         }
 
         loadingProgressDialog = new ProgressDialog(this);
-        loadingProgressDialog.setTitle(getResources().getString(R.string.categories_loading_progress_title));
-        loadingProgressDialog.setMessage(getResources().getString(R.string.categories_loading_progress_message));
-        loadingProgressDialog.show();
     }
 
     @Override
@@ -161,60 +160,110 @@ public class CategoriesActivity extends ActionBarActivity {
 
             public CategoriesAdapter() {
 
-                // Load in AsyncTask so that the ProgressDialog shows
+                // Load new articles unless the user just wants to search cached articles
 
-                new AsyncTask<Void, Void, Void>() {
+                loadingProgressDialog.setTitle(getResources().getString(R.string.categories_preload_articles_loading_progress_title));
+                loadingProgressDialog.setMessage(getResources().getString(R.string.categories_preload_articles_loading_progress_message));
+                loadingProgressDialog.show();
 
-                    protected Void doInBackground(Void... unused) {
-                        // Load Categories from file system in the background
+                issuesList = Publisher.INSTANCE.getIssuesFromFilesystem();
+                final HashMap<Integer,Boolean> preloadedIssueArticles = new HashMap<Integer, Boolean>();
 
-                        sectionsList = new ArrayList<>();
-                        ArrayList<Category> unfilteredCategoriesList = new ArrayList<>();
-                        // Add unsorted categories to this list
-                        issuesList = Publisher.INSTANCE.getIssuesFromFilesystem();
-                        for (Issue issue : issuesList) {
-                            // TODO: Preload articles first, then call getArticles();
-                            ArrayList<Article> articlesList = issue.getArticles();
-                            for (Article article : articlesList) {
-                                ArrayList<Category> articleCategories = article.getCategories();
-                                for (Category category : articleCategories) {
-                                    unfilteredCategoriesList.add(category);
+                for (final Issue issue : issuesList) {
+
+                    // Check to see if articles exist...
+
+                    if (issue.articles != null && issue.articles.size() > 0) {
+                        // Load categories
+                        loadingProgressDialog.dismiss();
+                        loadingProgressDialog.setTitle(getResources().getString(R.string.categories_loading_progress_title));
+                        loadingProgressDialog.setMessage(getResources().getString(R.string.categories_loading_progress_message));
+                        loadingProgressDialog.show();
+                        new LoadCategories().execute();
+
+                    } else {
+                        // Preload articles
+                        preloadedIssueArticles.put(issue.getID(),false);
+                        issue.preloadArticles(new CacheStreamFactory.CachePreloadCallback() {
+
+                            @Override
+                            public void onLoad(byte[] payload) {
+                                preloadedIssueArticles.put(issue.getID(), true);
+                                Boolean finished = true;
+                                for (Map.Entry<Integer,Boolean> entry : preloadedIssueArticles.entrySet()) {
+                                    if (!entry.getValue()) {
+                                        finished = false;
+                                    }
+                                }
+                                if (finished) {
+                                    loadingProgressDialog.dismiss();
+                                    loadingProgressDialog.setTitle(getResources().getString(R.string.categories_loading_progress_title));
+                                    loadingProgressDialog.setMessage(getResources().getString(R.string.categories_loading_progress_message));
+                                    loadingProgressDialog.show();
+
+                                    new LoadCategories().execute();
                                 }
                             }
-                        }
 
-                        // Sort by name
-                        Collections.sort(unfilteredCategoriesList, new Comparator<Category>() {
                             @Override
-                            public int compare(Category lhs, Category rhs) {
-                                return lhs.getName().compareTo(rhs.getName());
+                            public void onLoadBackground(byte[] payload) {
+
                             }
                         });
+                    }
+                }
+            }
 
-                        // Add unique elements to categoriesList
-                        Category lastCategory = null;
-                        Section currentSection = null;
-                        for (Category category : unfilteredCategoriesList) {
-                            if (lastCategory == null || !lastCategory.equals(category)) {
-                                // We have a new unique category
-                                String sectionName = category.getSectionName();
-                                if (currentSection == null || !currentSection.name.equals(sectionName)) {
-                                    currentSection = new Section(sectionName);
-                                    sectionsList.add(currentSection);
-                                }
-                                currentSection.categories.add(category);
+            private class LoadCategories extends AsyncTask<Void, Void, Void> {
+
+                protected Void doInBackground(Void... unused) {
+                    // Load Categories from file system in the background
+
+                    sectionsList = new ArrayList<>();
+                    ArrayList<Category> unfilteredCategoriesList = new ArrayList<>();
+                    // Add unsorted categories to this list
+                    issuesList = Publisher.INSTANCE.getIssuesFromFilesystem();
+                    for (Issue issue : issuesList) {
+                        ArrayList<Article> articlesList = issue.getArticles();
+                        for (Article article : articlesList) {
+                            ArrayList<Category> articleCategories = article.getCategories();
+                            for (Category category : articleCategories) {
+                                unfilteredCategoriesList.add(category);
                             }
-                            lastCategory = category;
                         }
+                    }
 
-                        return null;
+                    // Sort by name
+                    Collections.sort(unfilteredCategoriesList, new Comparator<Category>() {
+                        @Override
+                        public int compare(Category lhs, Category rhs) {
+                            return lhs.getName().compareTo(rhs.getName());
+                        }
+                    });
+
+                    // Add unique elements to categoriesList
+                    Category lastCategory = null;
+                    Section currentSection = null;
+                    for (Category category : unfilteredCategoriesList) {
+                        if (lastCategory == null || !lastCategory.equals(category)) {
+                            // We have a new unique category
+                            String sectionName = category.getSectionName();
+                            if (currentSection == null || !currentSection.name.equals(sectionName)) {
+                                currentSection = new Section(sectionName);
+                                sectionsList.add(currentSection);
+                            }
+                            currentSection.categories.add(category);
+                        }
+                        lastCategory = category;
                     }
-                    protected void onPostExecute(Void unused) {
-                        // After loading finishes dismiss the loading dialog
-                        loadingProgressDialog.dismiss();
-                        notifyDataSetChanged();
-                    }
-                }.execute();
+
+                    return null;
+                }
+                protected void onPostExecute(Void unused) {
+                    // After loading finishes dismiss the loading dialog
+                    loadingProgressDialog.dismiss();
+                    notifyDataSetChanged();
+                }
             }
 
             @Override

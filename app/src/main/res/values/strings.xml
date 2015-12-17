@@ -121,6 +121,8 @@
     <string name="article_link_loading_progress_message">We\'re downloading this article for you now, shouldn\'t be too long.</string>
     <string name="parse_id_dialog_title">Installation ID</string>
     <string name="parse_id_dialog_ok_button">OK</string>
+    <string name="categories_preload_articles_loading_progress_title">Loading...</string>
+    <string name="categories_preload_articles_loading_progress_message">Preloading new articles from digital magazines online.</string>
     <string name="categories_loading_progress_title">Loading...</string>
     <string name="categories_loading_progress_message">Generating the categories from the articles on your device.</string>
     <string name="search_loading_progress_title">Searching...</string>
