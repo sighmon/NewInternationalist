@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Login for AU -->
+    <string name="prompt_email">Email or username</string>
+    <string name="prompt_password">Password</string>
+    <string name="error_incorrect_password">Sorry, your username/email or password is incorrect.</string>
+
+</resources>

@@ -42,6 +42,7 @@ import org.apache.http.protocol.HttpContext;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 
 /**
@@ -94,13 +95,19 @@ public class LoginActivity extends ActionBarActivity implements LoaderCallbacks<
         });
 
         Button forgotPasswordButton = (Button) findViewById(R.id.login_forgotten_password);
-        forgotPasswordButton.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(Helpers.getSiteURL() + "users/password/new"));
-                startActivity(browserIntent);
-            }
-        });
+        String languageLocale = Locale.getDefault().toString();
+        if (languageLocale.equals("en_GB") || languageLocale.equals("en_CA") || languageLocale.equals("en_US")) {
+            // Remove forgot password button and don't add listener
+            forgotPasswordButton.setVisibility(View.GONE);
+        } else {
+            forgotPasswordButton.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(Helpers.getSiteURL() + "users/password/new"));
+                    startActivity(browserIntent);
+                }
+            });
+        }
 
         Button signUpButton = (Button) findViewById(R.id.login_sign_up);
         signUpButton.setOnClickListener(new OnClickListener() {
@@ -328,13 +335,13 @@ public class LoginActivity extends ActionBarActivity implements LoaderCallbacks<
                 } else {
                     // Server error.
                     Helpers.debugLog("Login", "Failed with code: " + responseStatusCode + " and response: " + response.getStatusLine());
-                    loginErrorString = "Sorry, it looks like our server has a problem. Please try again later.";
+                    loginErrorString = getString(R.string.login_error_server_error);
                 }
 
             } else {
                 // Error logging in
                 Helpers.debugLog("Login", "Failed! Response is null");
-                loginErrorString = "It doesn't look like you have internet access.";
+                loginErrorString = getString(R.string.login_error_no_internet);
             }
 
             return success;

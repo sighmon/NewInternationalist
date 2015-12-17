@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Login for GB -->
+    <string name="prompt_email">Subscription number, username or email</string>
+    <string name="prompt_password">Your surname or password</string>
+    <string name="error_incorrect_password">Sorry, your subscription number/username/email or surname/password were entered incorrectly or not what we have on file.</string>
+
+</resources>
