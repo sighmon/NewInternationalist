@@ -13,6 +13,11 @@
         android:orderInCategory="100"
         app:showAsAction="never" />
 
+    <item android:id="@+id/categories_refresh"
+        android:title="@string/categories_refresh"
+        android:icon="@drawable/ic_menu_refresh"
+        app:showAsAction="ifRoom|collapseActionView" />
+
     <item android:id="@+id/action_search"
         android:title="@string/action_search"
         android:icon="@drawable/abc_ic_search_api_mtrl_alpha"

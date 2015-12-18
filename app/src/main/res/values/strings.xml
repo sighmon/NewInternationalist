@@ -122,9 +122,9 @@
     <string name="parse_id_dialog_title">Installation ID</string>
     <string name="parse_id_dialog_ok_button">OK</string>
     <string name="categories_preload_articles_loading_progress_title">Loading...</string>
-    <string name="categories_preload_articles_loading_progress_message">Preloading new articles from digital magazines online.</string>
+    <string name="categories_preload_articles_loading_progress_message">Downloading the metadata for all of the articles on our server. This might take a little while...</string>
     <string name="categories_loading_progress_title">Loading...</string>
-    <string name="categories_loading_progress_message">Generating the categories from the articles on your device.</string>
+    <string name="categories_loading_progress_message">Generating categories from all of the articles you\'ve read or downloaded to your device. The more magazines you read, the more articles will turn up in these categories.</string>
     <string name="search_loading_progress_title">Searching...</string>
     <string name="search_loading_progress_message">Searching through the articles on your device for the search term(s) you entered.</string>
     <string name="article_guest_pass_loading_title">Generating guest pass...</string>
@@ -154,5 +154,7 @@
     <string name="preload_articles_dialog_email_body">Hi, the preload articles on the table of contents failed:</string>
     <string name="login_error_server_error">Sorry, it looks like our server has a problem. Please try again later.</string>
     <string name="login_error_no_internet">It doesn\'t look like you have internet access.</string>
+    <string name="categories_refresh">Reload articles for each category.</string>
+    <string name="categories_no_items">When you read a magazine, the articles will be categorised here. To categorise all of the available articles from our website, tap the refresh button in the menu bar.</string>
 
 </resources>

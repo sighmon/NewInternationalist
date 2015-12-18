@@ -1,5 +1,6 @@
 package au.com.newint.newinternationalist;
 
+import android.app.FragmentTransaction;
 import android.app.ProgressDialog;
 import android.app.SearchManager;
 import android.content.Context;
@@ -33,6 +34,10 @@ import java.util.Map;
 public class CategoriesActivity extends ActionBarActivity {
 
     static ProgressDialog loadingProgressDialog;
+    static public ArrayList<CategoriesFragment.Section> sectionsList;
+    static public ArrayList<Issue> issuesList;
+    static RecyclerView recList;
+    static TextView emptyList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,6 +65,13 @@ public class CategoriesActivity extends ActionBarActivity {
 
         // Send Google Analytics if the user allows it
         Helpers.sendGoogleAnalytics(getResources().getString(R.string.title_activity_categories));
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+
+        //
     }
 
     @Override
@@ -101,8 +113,47 @@ public class CategoriesActivity extends ActionBarActivity {
             case R.id.action_search:
                 Helpers.debugLog("Search", "Search tapped on Home view.");
 //                onSearchRequested();
+            case R.id.categories_refresh:
+                Helpers.debugLog("Categories", "Refresh requested.");
+                refreshArticles();
             default:
                 return super.onOptionsItemSelected(item);
+        }
+    }
+
+    private void refreshArticles() {
+        final HashMap<Integer,Boolean> preloadedIssueArticles = new HashMap<Integer, Boolean>();
+
+        for (final Issue issue : issuesList) {
+
+            loadingProgressDialog.setTitle(getResources().getString(R.string.categories_preload_articles_loading_progress_title));
+            loadingProgressDialog.setMessage(getResources().getString(R.string.categories_preload_articles_loading_progress_message));
+            loadingProgressDialog.show();
+
+            // Preload articles
+            preloadedIssueArticles.put(issue.getID(),false);
+            issue.preloadArticles(new CacheStreamFactory.CachePreloadCallback() {
+
+                @Override
+                public void onLoad(byte[] payload) {
+                    preloadedIssueArticles.put(issue.getID(), true);
+                    Boolean finished = true;
+                    for (Map.Entry<Integer,Boolean> entry : preloadedIssueArticles.entrySet()) {
+                        if (!entry.getValue()) {
+                            finished = false;
+                        }
+                    }
+                    if (finished) {
+                        loadingProgressDialog.dismiss();
+                        CategoriesFragment.adapter.loadCategories();
+                    }
+                }
+
+                @Override
+                public void onLoadBackground(byte[] payload) {
+
+                }
+            });
         }
     }
 
@@ -110,6 +161,8 @@ public class CategoriesActivity extends ActionBarActivity {
      * A placeholder fragment containing a simple view.
      */
     public static class CategoriesFragment extends Fragment {
+
+        static public CategoriesAdapter adapter;
 
         public CategoriesFragment() {
         }
@@ -136,7 +189,9 @@ public class CategoriesActivity extends ActionBarActivity {
             View rootView = localInflater.inflate(R.layout.fragment_categories, container, false);
 
             // RecyclerView setup
-            final RecyclerView recList = (RecyclerView) rootView.findViewById(R.id.categories_recycler_view);
+            recList = (RecyclerView) rootView.findViewById(R.id.categories_recycler_view);
+            emptyList = (TextView) rootView.findViewById(R.id.empty_view);
+
             // TODO: Work out how to change the colour to not-white
             recList.addItemDecoration(new DividerItemDecoration(getActivity(), null));
             recList.setHasFixedSize(false);
@@ -144,7 +199,7 @@ public class CategoriesActivity extends ActionBarActivity {
             llm.setOrientation(LinearLayoutManager.VERTICAL);
             recList.setLayoutManager(llm);
 
-            final CategoriesAdapter adapter = new CategoriesAdapter();
+            adapter = new CategoriesAdapter();
             recList.setAdapter(adapter);
 
             return rootView;
@@ -153,68 +208,24 @@ public class CategoriesActivity extends ActionBarActivity {
         // Adapter for Categories RecyclerView
         public class CategoriesAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
-            public ArrayList<Section> sectionsList;
-            public ArrayList<Issue> issuesList;
             private static final int TYPE_HEADER = 0;
             private static final int TYPE_CATEGORY = 1;
 
             public CategoriesAdapter() {
 
                 // Load new articles unless the user just wants to search cached articles
-
-                loadingProgressDialog.setTitle(getResources().getString(R.string.categories_preload_articles_loading_progress_title));
-                loadingProgressDialog.setMessage(getResources().getString(R.string.categories_preload_articles_loading_progress_message));
-                loadingProgressDialog.show();
-
                 issuesList = Publisher.INSTANCE.getIssuesFromFilesystem();
-                final HashMap<Integer,Boolean> preloadedIssueArticles = new HashMap<Integer, Boolean>();
-
-                for (final Issue issue : issuesList) {
-
-                    // Check to see if articles exist...
-
-                    if (issue.articles != null && issue.articles.size() > 0) {
-                        // Load categories
-                        loadingProgressDialog.dismiss();
-                        loadingProgressDialog.setTitle(getResources().getString(R.string.categories_loading_progress_title));
-                        loadingProgressDialog.setMessage(getResources().getString(R.string.categories_loading_progress_message));
-                        loadingProgressDialog.show();
-                        new LoadCategories().execute();
-
-                    } else {
-                        // Preload articles
-                        preloadedIssueArticles.put(issue.getID(),false);
-                        issue.preloadArticles(new CacheStreamFactory.CachePreloadCallback() {
-
-                            @Override
-                            public void onLoad(byte[] payload) {
-                                preloadedIssueArticles.put(issue.getID(), true);
-                                Boolean finished = true;
-                                for (Map.Entry<Integer,Boolean> entry : preloadedIssueArticles.entrySet()) {
-                                    if (!entry.getValue()) {
-                                        finished = false;
-                                    }
-                                }
-                                if (finished) {
-                                    loadingProgressDialog.dismiss();
-                                    loadingProgressDialog.setTitle(getResources().getString(R.string.categories_loading_progress_title));
-                                    loadingProgressDialog.setMessage(getResources().getString(R.string.categories_loading_progress_message));
-                                    loadingProgressDialog.show();
-
-                                    new LoadCategories().execute();
-                                }
-                            }
-
-                            @Override
-                            public void onLoadBackground(byte[] payload) {
-
-                            }
-                        });
-                    }
-                }
+                loadCategories();
             }
 
-            private class LoadCategories extends AsyncTask<Void, Void, Void> {
+            public void loadCategories() {
+                loadingProgressDialog.setTitle(getResources().getString(R.string.categories_loading_progress_title));
+                loadingProgressDialog.setMessage(getResources().getString(R.string.categories_loading_progress_message));
+                loadingProgressDialog.show();
+                new LoadCategoriesTask().execute();
+            }
+
+            public class LoadCategoriesTask extends AsyncTask<Void, Void, Void> {
 
                 protected Void doInBackground(Void... unused) {
                     // Load Categories from file system in the background
@@ -262,6 +273,14 @@ public class CategoriesActivity extends ActionBarActivity {
                 protected void onPostExecute(Void unused) {
                     // After loading finishes dismiss the loading dialog
                     loadingProgressDialog.dismiss();
+
+                    if (sectionsList != null && sectionsList.size() > 0) {
+                        recList.setVisibility(View.VISIBLE);
+                        emptyList.setVisibility(View.GONE);
+                    } else {
+                        recList.setVisibility(View.GONE);
+                        emptyList.setVisibility(View.VISIBLE);
+                    }
                     notifyDataSetChanged();
                 }
             }
@@ -298,8 +317,6 @@ public class CategoriesActivity extends ActionBarActivity {
                         itemCount++;
                         itemCount += section.categories.size();
                     }
-                } else {
-                    // TODO: Display a message for the user to read an issue!
                 }
                 return itemCount;
             }
@@ -327,8 +344,11 @@ public class CategoriesActivity extends ActionBarActivity {
 
                 } else if (holder instanceof CategoryViewHolder) {
                     // Category
-                    String categoryName = ((Category) getSectionOrCategoryForPosition(position)).getDisplayName();
-                    ((CategoryViewHolder) holder).categoryTitleTextView.setText(categoryName);
+                    Category category = ((Category) getSectionOrCategoryForPosition(position));
+                    if (category != null) {
+                        String categoryName = category.getDisplayName();
+                        ((CategoryViewHolder) holder).categoryTitleTextView.setText(categoryName);
+                    }
                 }
             }
 

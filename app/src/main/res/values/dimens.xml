@@ -58,4 +58,6 @@
     <dimen name="subscribe_cover_width">100dp</dimen>
     <dimen name="subscribe_cover_height">141dp</dimen>
     <dimen name="login_forgotten_password_margin_top">20dp</dimen>
+    <dimen name="categories_no_items_text_size">20sp</dimen>
+    <dimen name="categories_no_items_padding">40dp</dimen>
 </resources>
