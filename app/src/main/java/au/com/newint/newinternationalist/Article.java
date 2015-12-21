@@ -105,7 +105,7 @@ public class Article implements Parcelable {
     }
 
     private File bodyCacheFile() {
-        File articleDir = new File(MainActivity.applicationContext.getFilesDir() + "/" + Integer.toString(getIssueID()) + "/", Integer.toString(getID()));
+        File articleDir = new File(Helpers.getStorageDirectory() + "/" + Integer.toString(getIssueID()) + "/", Integer.toString(getID()));
         return new File(articleDir,"body.html");
     }
 
@@ -480,7 +480,7 @@ public class Article implements Parcelable {
 
                     bodyHTML = Helpers.wrapInHTML(EntityUtils.toString(response.getEntity(), "UTF-8"));
 
-                    File dir = new File(MainActivity.applicationContext.getFilesDir() + "/" + Integer.toString(getIssueID()) + "/", Integer.toString(getID()));
+                    File dir = new File(Helpers.getStorageDirectory() + "/" + Integer.toString(getIssueID()) + "/", Integer.toString(getID()));
 
                     dir.mkdirs();
 

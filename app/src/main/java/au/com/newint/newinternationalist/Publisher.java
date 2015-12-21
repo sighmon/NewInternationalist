@@ -171,7 +171,7 @@ public enum Publisher {
     public ArrayList<Issue> getIssuesFromFilesystem() {
 
         if (issuesList == null) {
-            File dir = MainActivity.applicationContext.getFilesDir();
+            File dir = Helpers.getStorageDirectory();
             issuesList = buildIssuesFromDir(dir);
             Collections.sort(issuesList, new Comparator<Issue>() {
                 @Override
@@ -217,7 +217,7 @@ public enum Publisher {
         // Return issue.json for id handed in
         File issueJson;
 
-        File dir = new File(MainActivity.applicationContext.getFilesDir(), Integer.toString(id));
+        File dir = new File(Helpers.getStorageDirectory(), Integer.toString(id));
 
         issueJson = new File(dir,"issue.json");
 
@@ -283,7 +283,7 @@ public enum Publisher {
     // DEBUG FUNCTIONS
 
     public boolean deleteDirectory(Issue issue) {
-        File dir = new File(MainActivity.applicationContext.getFilesDir().getPath() + "/" + issue.getID());
+        File dir = new File(Helpers.getStorageDirectory().getPath() + "/" + issue.getID());
 
         boolean success = false;
 

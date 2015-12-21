@@ -48,7 +48,7 @@ public class ArticleJsonCacheStreamFactory extends CacheStreamFactory {
     }
 
     private File getCacheFile() {
-        File dir = new File(MainActivity.applicationContext.getFilesDir() + "/" + Integer.toString(this.source.getID()) + "/", Integer.toString(this.id));
+        File dir = new File(Helpers.getStorageDirectory() + "/" + Integer.toString(this.source.getID()) + "/", Integer.toString(this.id));
 
         dir.mkdirs();
 

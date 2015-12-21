@@ -198,7 +198,7 @@ public class Issue implements Parcelable {
 
     public File getCoverLocationOnFilesystem() {
 
-        File issueDir =  new File(MainActivity.applicationContext.getFilesDir(), Integer.toString(getID()));
+        File issueDir =  new File(Helpers.getStorageDirectory(), Integer.toString(getID()));
         String[] pathComponents = getCoverURL().getPath().split("/");
         String coverFilename = pathComponents[pathComponents.length - 1];
 
@@ -207,7 +207,7 @@ public class Issue implements Parcelable {
 
     public File getEditorsLetterLocationOnFilesystem() {
 
-        File issueDir =  new File(MainActivity.applicationContext.getFilesDir(), Integer.toString(getID()));
+        File issueDir =  new File(Helpers.getStorageDirectory(), Integer.toString(getID()));
         String[] pathComponents = getEditorsPhotoURL().getPath().split("/");
         String editorsPhotoFilename = pathComponents[pathComponents.length - 1];
 
@@ -216,7 +216,7 @@ public class Issue implements Parcelable {
 
     public Uri getCoverUriOnFilesystem() {
 
-        String issueDir =  MainActivity.applicationContext.getFilesDir() + Integer.toString(getID());
+        String issueDir =  Helpers.getStorageDirectory() + Integer.toString(getID());
         String[] pathComponents = getCoverURL().getPath().split("/");
         String coverFilename = pathComponents[pathComponents.length - 1];
         Uri.Builder uri = new Uri.Builder();
@@ -300,7 +300,7 @@ public class Issue implements Parcelable {
 
         if (articles == null || articles.size() == 0) {
             // assumes that all articles have been downloaded..
-            File dir = new File(MainActivity.applicationContext.getFilesDir() + "/" + Integer.toString(getID()) + "/");
+            File dir = new File(Helpers.getStorageDirectory() + "/" + Integer.toString(getID()) + "/");
             articles = buildArticlesFromDir(dir);
             // TODO: Sort into sections by category
             Collections.sort(articles, new Comparator<Article>() {
@@ -375,7 +375,7 @@ public class Issue implements Parcelable {
     }
 
     public boolean deleteCache() {
-        File dir = new File(MainActivity.applicationContext.getFilesDir().getPath() + "/" + this.getID());
+        File dir = new File(Helpers.getStorageDirectory().getPath() + "/" + this.getID());
 
         boolean success = false;
 
@@ -571,7 +571,7 @@ public class Issue implements Parcelable {
                         e.printStackTrace();
                     }
 
-                    File saveDir = new File(MainActivity.applicationContext.getFilesDir() + "/" + Integer.toString(getID()));
+                    File saveDir = new File(Helpers.getStorageDirectory() + "/" + Integer.toString(getID()));
 
                     if (zipInputStream != null) {
                         try {

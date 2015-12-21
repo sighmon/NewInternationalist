@@ -9,6 +9,7 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Build;
+import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
@@ -23,6 +24,7 @@ import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
 
 import java.io.Console;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -78,6 +80,22 @@ public class Helpers {
         roundedBitmapDrawable.setAntiAlias(true);
         roundedBitmapDrawable.setCornerRadius(Math.max(bitmap.getWidth(), bitmap.getHeight()) / 2.0f);
         return roundedBitmapDrawable;
+    }
+
+    public static File getStorageDirectory() {
+        File externalStorage = MainActivity.applicationContext.getExternalFilesDir(null);
+        boolean emulated = Environment.isExternalStorageEmulated();
+        boolean mounted = Environment.getExternalStorageState().equals("MEDIA_MOUNTED");
+
+        // TODO: See what happens when the app is installed on external storage, but then the storage is removed etc..
+
+        if (externalStorage != null && !emulated && mounted) {
+            // This device has external storage, so use that to store data
+            return externalStorage;
+        } else {
+            // This device doesn't have external storage, so use internal
+            return MainActivity.applicationContext.getFilesDir();
+        }
     }
 
     public static String getSiteURL() {
