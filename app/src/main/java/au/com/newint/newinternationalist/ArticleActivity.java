@@ -6,56 +6,42 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
-import android.database.DataSetObserver;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.net.Uri;
 import android.os.Build;
-import android.support.v4.app.NavUtils;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v4.view.GestureDetectorCompat;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.text.Html;
-import android.util.AttributeSet;
 import android.util.Log;
 import android.view.ContextThemeWrapper;
+import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.Button;
-import android.widget.GridView;
-import android.widget.LinearLayout;
-import android.widget.ListAdapter;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.google.android.gms.analytics.HitBuilders;
-import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 
 import org.apache.http.HttpResponse;
-import org.apache.http.util.EntityUtils;
-import org.w3c.dom.Text;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.io.InputStreamReader;
-import java.lang.reflect.Array;
 import java.net.MalformedURLException;
-import java.net.URL;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Locale;
 
 import au.com.newint.newinternationalist.util.IabException;
@@ -65,13 +51,14 @@ import au.com.newint.newinternationalist.util.Inventory;
 import au.com.newint.newinternationalist.util.Purchase;
 
 
-public class ArticleActivity extends ActionBarActivity {
+public class ArticleActivity extends AppCompatActivity {
 
     static Article article;
     static Issue issue;
     static IabHelper mHelper;
     static Inventory inventory = null;
     static ArrayList<Purchase> purchases = null;
+    private GestureDetectorCompat mDetector;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,6 +74,21 @@ public class ArticleActivity extends ActionBarActivity {
         issue = getIntent().getParcelableExtra("issue");
 
         setTitle(issue.getTitle());
+
+        mDetector = new GestureDetectorCompat(this, new ArticleGestureListener());
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        article = getIntent().getParcelableExtra("article");
+        issue = getIntent().getParcelableExtra("issue");
+    }
+
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent event) {
+        this.mDetector.onTouchEvent(event);
+        return super.dispatchTouchEvent(event);
     }
 
     @Override
@@ -218,8 +220,96 @@ public class ArticleActivity extends ActionBarActivity {
         Helpers.sendGoogleAnalyticsEvent("Article", "Share", url);
     }
 
+    class ArticleGestureListener extends GestureDetector.SimpleOnGestureListener {
+        private static final String DEBUG_TAG = "Gestures";
+
+//        @Override
+//        public boolean onDown(MotionEvent event) {
+//            Helpers.debugLog(DEBUG_TAG, "onDown: " + event.toString());
+//            return true;
+//        }
+
+        @Override
+        public boolean onFling(MotionEvent event1, MotionEvent event2, float velocityX, float velocityY) {
+
+            // TODO: Write code to handle swipe left/right
+            // http://developer.android.com/training/gestures/detector.html#detect
+
+            float FLING_TRIGGER_POINT = 100;
+            float FLING_VERTICAL_SLOP = 50;
+
+            float deltaX = event1.getX() - event2.getX();
+            float deltaY = event1.getY() - event2.getY();
+            Helpers.debugLog(DEBUG_TAG, "onFling: " + deltaX + " , " + deltaY);
+
+            if (deltaX > FLING_TRIGGER_POINT && Math.abs(deltaY) < FLING_VERTICAL_SLOP) {
+                // Intent to next article
+                Article nextArticle = article.getNextArticle();
+                Helpers.debugLog(DEBUG_TAG, "Fling intent to next article: " + nextArticle);
+                if (nextArticle != null) {
+                    Intent articleIntent = new Intent(getApplicationContext(), ArticleActivity.class);
+                    articleIntent.putExtra("issue", issue);
+                    articleIntent.putExtra("article", nextArticle);
+                    startActivity(articleIntent);
+                } else {
+                    // Alert at last article.
+                    Helpers.debugLog(DEBUG_TAG, "At last article...");
+                    lastArticleAlert();
+                }
+            } else if (deltaX < -FLING_TRIGGER_POINT && Math.abs(deltaY) < FLING_VERTICAL_SLOP) {
+                // Intent to previous article
+                Helpers.debugLog(DEBUG_TAG, "Fling finish this article...");
+                finish();
+            }
+
+            return true;
+        }
+
+        public void lastArticleAlert() {
+            AlertDialog.Builder builder = new AlertDialog.Builder(ArticleActivity.this);
+            builder.setMessage(R.string.last_article_dialog_message).setTitle(R.string.last_article_dialog_title);
+            builder.setPositiveButton(R.string.last_article_dialog_ok_button, new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                    // User clicked to share their achievement
+                    Intent shareIntent = new Intent();
+                    shareIntent.setAction(Intent.ACTION_SEND);
+                    // Send issue share information here...
+                    DateFormat dateFormat = new SimpleDateFormat("MMMM yyyy", Locale.getDefault());
+                    String magazineInformation = issue.getTitle()
+                            + " - New Internationalist magazine, "
+                            + dateFormat.format(issue.getRelease());
+                    shareIntent.putExtra(Intent.EXTRA_TEXT, "I just finished reading "
+                                    + magazineInformation
+                                    + ".\n\n"
+                                    + issue.getWebURL()
+                                    + "\n\nSent from New Internationalist Android app:\n"
+                                    + Helpers.GOOGLE_PLAY_APP_URL
+                    );
+                    shareIntent.setType("text/plain");
+                    shareIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, magazineInformation);
+                    startActivity(Intent.createChooser(shareIntent, getResources().getText(R.string.action_share_toc)));
+
+                    // Send analytics event if user permits
+                    Helpers.sendGoogleAnalyticsEvent("Issue", "Share", issue.getWebURL().toString());
+                    dialog.dismiss();
+                }
+            });
+            builder.setNegativeButton(R.string.last_article_dialog_cancel_button, new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                    // User clicked to go back to the contents page
+                    Intent contentsPageIntent = new Intent(getApplicationContext(), TableOfContentsActivity.class);
+                    contentsPageIntent.putExtra("issue", issue);
+                    startActivity(contentsPageIntent);
+                    dialog.dismiss();
+                }
+            });
+            AlertDialog dialog = builder.create();
+            dialog.show();
+        }
+    }
+
     /**
-     * A placeholder fragment containing a simple view.
+     * Article Fragment
      */
     public static class ArticleFragment extends Fragment {
 

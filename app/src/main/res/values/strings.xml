@@ -156,5 +156,10 @@
     <string name="login_error_no_internet">It doesn\'t look like you have internet access.</string>
     <string name="categories_refresh">Reload articles for each category.</string>
     <string name="categories_no_items">When you read a magazine, the articles will be categorised here. To categorise all of the available articles from our website, tap the refresh button in the menu bar.</string>
+    <string name="last_article_dialog_title">Last article for this magazine</string>
+    <string name="last_article_dialog_message">Looks like you\'ve read the last article in this magazine. What would you like to do now?</string>
+    <string name="last_article_dialog_ok_button">Share this issue</string>
+    <string name="last_article_dialog_cancel_button">Contents page</string>
+    <string name="last_article_dialog_neutral_button">Do nothing</string>
 
 </resources>

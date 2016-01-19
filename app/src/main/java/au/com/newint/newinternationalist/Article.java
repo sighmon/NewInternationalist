@@ -39,6 +39,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.ListIterator;
 import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -290,6 +291,19 @@ public class Article implements Parcelable {
 //            Helpers.debugLog("GetKeynote", e.toString());
         }
         return keynote;
+    }
+
+    public Article getNextArticle() {
+        Article nextArticle = null;
+        ArrayList<Article> articles = parentIssue.getArticles();
+        ListIterator<Article> articleListIterator = articles.listIterator();
+
+        for (int i = 0; i < articles.size(); i++) {
+            if (articles.get(i).getID() == this.getID() && i + 1 != articles.size()) {
+                nextArticle = articles.get(i + 1);
+            }
+        }
+        return nextArticle;
     }
 
     public String getFeaturedImageCaption() {
