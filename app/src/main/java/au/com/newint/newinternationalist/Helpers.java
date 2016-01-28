@@ -147,6 +147,13 @@ public class Helpers {
         editor.apply();
     }
 
+    public static void saveToPrefs(String key, boolean value) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(MainActivity.applicationContext);
+        final SharedPreferences.Editor editor = prefs.edit();
+        editor.putBoolean(key,value);
+        editor.apply();
+    }
+
     public static String getFromPrefs(String key, String defaultValue) {
         // Default value will be returned of no value found or error occurred.
         SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(MainActivity.applicationContext);

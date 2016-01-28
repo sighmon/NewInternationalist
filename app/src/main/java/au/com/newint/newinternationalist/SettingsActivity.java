@@ -20,6 +20,7 @@ import android.preference.RingtonePreference;
 import android.text.TextUtils;
 import android.view.MenuItem;
 import android.support.v4.app.NavUtils;
+import android.view.ViewGroup;
 
 
 import java.io.File;
@@ -121,6 +122,13 @@ public class SettingsActivity extends PreferenceActivity {
                         // Send failure alert
                         Helpers.debugLog("MoveStorage", "FAILED TO MOVE FILES!");
                     }
+                } else {
+                    // No space available, so switch pref back...
+                    getPreferenceManager().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
+                    Helpers.saveToPrefs(key, !userRequestsExternalStorage);
+                    getPreferenceManager().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
+
+                    // TODO: reset switch back
                 }
             }
         }
