@@ -89,9 +89,12 @@ public class Helpers {
         boolean emulated = Environment.isExternalStorageEmulated();
         boolean mounted = Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED);
 
+        // Get user choice of storage location
+        boolean userRequestsExternalStorage = Helpers.getFromPrefs(MainActivity.applicationContext.getResources().getString(R.string.use_external_storage), false);
+
         if (Build.VERSION.SDK_INT >= 21) {
             // If API is >= 21 check to see if external SD card is present, not emulated and mounted
-            File[] externalFilesDirs = MainActivity.applicationContext.getExternalCacheDirs();
+            File[] externalFilesDirs = MainActivity.applicationContext.getExternalFilesDirs(null);
             if (externalFilesDirs != null) {
                 for (File dir : externalFilesDirs) {
                     if (!Environment.isExternalStorageEmulated(dir) && Environment.getExternalStorageState(dir).equals(Environment.MEDIA_MOUNTED)) {
@@ -104,9 +107,7 @@ public class Helpers {
             }
         }
 
-        // TODO: See what happens when the app is installed on external storage, but then the storage is removed etc..
-
-        if (externalStorage != null && !emulated && mounted) {
+        if (userRequestsExternalStorage && externalStorage != null && !emulated && mounted) {
             // This device has external storage, so use that to store data
             return externalStorage;
         } else {
