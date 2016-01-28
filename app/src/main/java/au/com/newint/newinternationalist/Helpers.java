@@ -23,6 +23,8 @@ import com.google.android.gms.analytics.GoogleAnalytics;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
 
+import org.apache.commons.io.FileUtils;
+
 import java.io.Console;
 import java.io.File;
 import java.io.IOException;
@@ -362,6 +364,17 @@ public class Helpers {
         if (allowAnonymousStatistics) {
             AdWordsConversionReporter.registerReferrer(MainActivity.applicationContext, intent.getData());
         }
+    }
+
+    public static boolean moveDirectoryToDirectory(File sourceDirectory, File targetDirectory) {
+        try {
+            FileUtils.copyDirectoryToDirectory(sourceDirectory, targetDirectory);
+            FileUtils.deleteDirectory(sourceDirectory);
+        } catch (IOException e) {
+            Helpers.debugLog("moveDirectoryToDirectory", "IOException: "+e.toString());
+            return false;
+        }
+        return true;
     }
 
     public static void debugLog(String tag, String msg) {
