@@ -39,6 +39,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.Properties;
 import java.util.logging.Logger;
 
@@ -396,8 +397,9 @@ public class Helpers {
 
     public static long directorySize(File target) {
         long sum = 0;
-        Collection<File> allFiles = FileUtils.listFiles(target, TrueFileFilter.INSTANCE, TrueFileFilter.INSTANCE);
-        for (File f : allFiles) {
+        Iterator<File> fileIterator = FileUtils.iterateFiles(target, TrueFileFilter.INSTANCE, TrueFileFilter.INSTANCE);
+        while(fileIterator.hasNext()) {
+            File f = fileIterator.next();
             sum += f.length();
         }
         return sum;
