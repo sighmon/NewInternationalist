@@ -1,5 +1,6 @@
 package au.com.newint.newinternationalist;
 
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -10,6 +11,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.os.Environment;
+import android.os.StatFs;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
@@ -24,6 +26,7 @@ import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.filefilter.TrueFileFilter;
 
 import java.io.Console;
 import java.io.File;
@@ -34,6 +37,7 @@ import java.net.URLDecoder;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Properties;
 import java.util.logging.Logger;
@@ -378,6 +382,27 @@ public class Helpers {
         }
         return true;
     }
+
+
+
+    public static long bytesAvailable(File f) {
+        StatFs stat = new StatFs(f.getPath());
+        if (Build.VERSION.SDK_INT >= 18) {
+            return stat.getAvailableBytes();
+        } else {
+            return stat.getAvailableBlocks() * stat.getBlockSize();
+        }
+        //return (long)stat.getBlockSizeLong() * (long)stat.getAvailableBlocksLong();
+    }
+
+    public static long directorySize(File target) {
+        long sum = 0;
+        Collection<File> allFiles = FileUtils.listFiles(target, TrueFileFilter.INSTANCE, TrueFileFilter.INSTANCE);
+        for (File f : allFiles) {
+            sum += f.length();
+        }
+        return sum;
+    } 
 
     public static void debugLog(String tag, String msg) {
         if (BuildConfig.DEBUG) {
