@@ -90,12 +90,13 @@ public class Helpers {
     }
 
     public static File getStorageDirectory() {
+        return getStorageDirectory(Helpers.getFromPrefs(MainActivity.applicationContext.getResources().getString(R.string.use_external_storage), false));
+    }
+
+    public static File getStorageDirectory(boolean userRequestsExternalStorage) {
         File externalStorage = MainActivity.applicationContext.getExternalFilesDir(null);
         boolean emulated = Environment.isExternalStorageEmulated();
         boolean mounted = Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED);
-
-        // Get user choice of storage location
-        boolean userRequestsExternalStorage = Helpers.getFromPrefs(MainActivity.applicationContext.getResources().getString(R.string.use_external_storage), false);
 
         if (Build.VERSION.SDK_INT >= 21) {
             // If API is >= 21 check to see if external SD card is present, not emulated and mounted

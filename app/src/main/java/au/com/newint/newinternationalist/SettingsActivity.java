@@ -22,6 +22,7 @@ import android.view.MenuItem;
 import android.support.v4.app.NavUtils;
 
 
+import java.io.File;
 import java.util.List;
 import java.util.Map;
 
@@ -94,6 +95,27 @@ public class SettingsActivity extends PreferenceActivity {
             if (pref instanceof EditTextPreference) {
                 EditTextPreference editTextPref = (EditTextPreference) pref;
                 pref.setSummary(editTextPref.getText());
+            }
+
+            // If preference change is to external storage, move directory over.
+            String externalStorageKey = MainActivity.applicationContext.getResources().getString(R.string.use_external_storage);
+            if (key.equals(externalStorageKey)) {
+                // Get user choice of storage location
+                boolean userRequestsExternalStorage = Helpers.getFromPrefs(externalStorageKey, false);
+                File originalDir = Helpers.getStorageDirectory(!userRequestsExternalStorage);
+                File destinationDir = Helpers.getStorageDirectory(userRequestsExternalStorage);
+
+                // TODO: Check if there's space available
+                boolean spaceAvailable = false;
+                if (spaceAvailable) {
+                    // Move magazine data
+                    boolean moveSuccessful = Helpers.moveDirectoryToDirectory(originalDir, destinationDir);
+                    if (moveSuccessful) {
+                        // Send success alert
+                    } else {
+                        // Send failure alert
+                    }
+                }
             }
         }
     }
