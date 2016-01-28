@@ -21,6 +21,8 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import org.w3c.dom.Text;
+
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -110,10 +112,12 @@ public class SearchActivity extends ActionBarActivity {
         public SearchFragment() {
         }
 
+        static View rootView = null;
+
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
-            View rootView = inflater.inflate(R.layout.fragment_search, container, false);
+            rootView = inflater.inflate(R.layout.fragment_search, container, false);
 
             // Recycler view search results as cards and headers
             final RecyclerView recList = (RecyclerView) rootView.findViewById(R.id.search_results_card_list);
@@ -182,6 +186,14 @@ public class SearchActivity extends ActionBarActivity {
                         // After loading finishes dismiss the loading dialog
                         loadingProgressDialog.dismiss();
                         notifyDataSetChanged();
+
+                        // Show empty notice if no results
+                        TextView emptyView = (TextView)rootView.findViewById(R.id.empty_view);
+                        if (listElements.size() > 0) {
+                            emptyView.setVisibility(View.GONE);
+                        } else {
+                            emptyView.setVisibility(View.VISIBLE);
+                        }
                     }
                 }.execute();
             }

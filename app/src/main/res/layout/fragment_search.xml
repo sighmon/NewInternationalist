@@ -12,4 +12,14 @@
         android:paddingBottom="@dimen/toc_margin_top"
         android:clipToPadding="false" />
 
+    <TextView
+        android:id="@+id/empty_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="@dimen/categories_no_items_padding"
+        android:gravity="center"
+        android:textSize="@dimen/categories_no_items_text_size"
+        android:text="@string/search_no_items"
+        android:visibility="gone" />
+
 </RelativeLayout>

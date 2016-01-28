@@ -161,5 +161,6 @@
     <string name="last_article_dialog_ok_button">Share this issue</string>
     <string name="last_article_dialog_cancel_button">Contents page</string>
     <string name="last_article_dialog_neutral_button">Do nothing</string>
+    <string name="search_no_items">Sorry, there aren\'t any articles that match your search terms. Try opening a magazine to have its articles indexed by the search.</string>
 
 </resources>
