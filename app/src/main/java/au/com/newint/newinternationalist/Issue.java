@@ -104,7 +104,7 @@ public class Issue implements Parcelable {
             e.printStackTrace();
         }
 
-        File cacheDir = MainActivity.applicationContext.getCacheDir();
+        File cacheDir = Helpers.getStorageDirectory();
 
         File cacheFile = new File(cacheDir, this.getID() + ".json");
 
