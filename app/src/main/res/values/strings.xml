@@ -156,5 +156,7 @@
     <string name="login_error_no_internet">It doesn\'t look like you have internet access.</string>
     <string name="categories_refresh">Reload articles for each category.</string>
     <string name="categories_no_items">When you read a magazine, the articles will be categorised here. To categorise all of the available articles from our website, tap the refresh button in the menu bar.</string>
+    <string name="use_external_storage">use_external_storage</string>
+    <string name="use_external_storage_title">Use external storage?</string>
 
 </resources>
