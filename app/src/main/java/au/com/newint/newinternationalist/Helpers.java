@@ -374,7 +374,7 @@ public class Helpers {
 
     public static boolean moveDirectoryToDirectory(File sourceDirectory, File targetDirectory) {
         try {
-            FileUtils.copyDirectoryToDirectory(sourceDirectory, targetDirectory);
+            FileUtils.copyDirectoryToDirectory(sourceDirectory, targetDirectory.getParentFile());
             FileUtils.deleteDirectory(sourceDirectory);
         } catch (IOException e) {
             Helpers.debugLog("moveDirectoryToDirectory", "IOException: "+e.toString());

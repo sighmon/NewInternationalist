@@ -105,15 +105,21 @@ public class SettingsActivity extends PreferenceActivity {
                 File originalDir = Helpers.getStorageDirectory(!userRequestsExternalStorage);
                 File destinationDir = Helpers.getStorageDirectory(userRequestsExternalStorage);
 
-                // TODO: Check if there's space available
-                boolean spaceAvailable = false;
+                // Check if there's space available
+                float originSpaceAvailable = Helpers.directorySize(originalDir);
+                float destinationSpaceAvailable = Helpers.bytesAvailable(destinationDir);
+                Helpers.debugLog("MoveStorage", "Origin: " + originSpaceAvailable + " Destination: " + destinationSpaceAvailable);
+                boolean spaceAvailable = destinationSpaceAvailable > originSpaceAvailable;
                 if (spaceAvailable) {
                     // Move magazine data
                     boolean moveSuccessful = Helpers.moveDirectoryToDirectory(originalDir, destinationDir);
                     if (moveSuccessful) {
                         // Send success alert
+                        Helpers.debugLog("MoveStorage", "Move successful!");
+                        // TODO: Reset app to home screen to avoid crashes of changed object file locations
                     } else {
                         // Send failure alert
+                        Helpers.debugLog("MoveStorage", "FAILED TO MOVE FILES!");
                     }
                 }
             }
