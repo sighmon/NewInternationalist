@@ -1,7 +1,11 @@
 package au.com.newint.newinternationalist;
 
 import android.annotation.TargetApi;
+import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.media.Ringtone;
@@ -20,8 +24,10 @@ import android.preference.RingtonePreference;
 import android.text.TextUtils;
 import android.view.MenuItem;
 import android.support.v4.app.NavUtils;
+import android.view.ViewGroup;
 
 
+import java.io.File;
 import java.util.List;
 import java.util.Map;
 
@@ -37,6 +43,9 @@ import java.util.Map;
  * API Guide</a> for more information on developing a Settings UI.
  */
 public class SettingsActivity extends PreferenceActivity {
+
+    static ProgressDialog progressDialog;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -47,6 +56,8 @@ public class SettingsActivity extends PreferenceActivity {
                 .commit();
 
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
+
+        progressDialog = new ProgressDialog(this);
     }
 
     /*** App Preferences Fragment ***/
@@ -95,6 +106,104 @@ public class SettingsActivity extends PreferenceActivity {
                 EditTextPreference editTextPref = (EditTextPreference) pref;
                 pref.setSummary(editTextPref.getText());
             }
+
+            // If preference change is to external storage, move directory over.
+            String externalStorageKey = MainActivity.applicationContext.getResources().getString(R.string.use_external_storage);
+            if (key.equals(externalStorageKey)) {
+                // Get user choice of storage location
+                boolean userRequestsExternalStorage = Helpers.getFromPrefs(externalStorageKey, false);
+                File originalDir = Helpers.getStorageDirectory(!userRequestsExternalStorage);
+                File destinationDir = Helpers.getStorageDirectory(userRequestsExternalStorage);
+
+                // Alert user to tell them how it went
+                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+
+                if (originalDir.equals(destinationDir)) {
+                    // No external storage.
+                    Helpers.debugLog("MoveStorage", "No external storage!");
+                    resetPreference(key, !userRequestsExternalStorage);
+                    builder.setMessage(R.string.move_storage_no_external_dialog_message).setTitle(R.string.move_storage_no_external_dialog_title);
+                    builder.setPositiveButton(R.string.move_storage_dialog_ok_button, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            // User clicked OK button
+                        }
+                    });
+                    AlertDialog dialog = builder.create();
+                    dialog.show();
+
+                } else {
+                    // Check if there's space available
+                    float spaceNeeded = Helpers.directorySize(originalDir) / 1024 / 1024;
+                    float destinationSpaceAvailable = Helpers.bytesAvailable(destinationDir) / 1024 / 1024;
+                    Helpers.debugLog("MoveStorage", "Space needed: " + spaceNeeded + "MB. Space available: " + destinationSpaceAvailable + "MB.");
+                    boolean spaceAvailable = destinationSpaceAvailable > spaceNeeded;
+
+                    if (spaceAvailable) {
+                        // Move magazine data
+                        progressDialog.setTitle(getResources().getString(R.string.move_directory_progress_title));
+                        progressDialog.setMessage(getResources().getString(R.string.move_directory_progress_message));
+                        progressDialog.show();
+                        boolean moveSuccessful = Helpers.moveDirectoryToDirectory(originalDir, destinationDir);
+                        progressDialog.dismiss();
+
+                        if (moveSuccessful) {
+                            // Send success alert
+                            Helpers.debugLog("MoveStorage", "Move successful!");
+                            builder.setMessage(R.string.move_storage_success_dialog_message).setTitle(R.string.move_storage_success_dialog_title);
+                            builder.setPositiveButton(R.string.move_storage_dialog_ok_button, new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                    // User clicked OK button
+                                }
+                            });
+                            AlertDialog dialog = builder.create();
+                            dialog.show();
+
+                            // Reset app to home screen to avoid crashes of changed object file locations
+                            Intent intent = new Intent(MainActivity.applicationContext, MainActivity.class);
+                            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                            startActivity(intent);
+                        } else {
+                            // Failed to move files, so reset pref back
+                            resetPreference(key, !userRequestsExternalStorage);
+
+                            // Send failure alert
+                            Helpers.debugLog("MoveStorage", "FAILED TO MOVE FILES!");
+                            builder.setMessage(R.string.move_storage_failed_dialog_message).setTitle(R.string.move_storage_failed_dialog_title);
+                            builder.setPositiveButton(R.string.move_storage_dialog_ok_button, new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                    // User clicked OK button
+                                }
+                            });
+                            AlertDialog dialog = builder.create();
+                            dialog.show();
+                        }
+                    } else {
+                        // No space available, so switch pref back...
+                        resetPreference(key, !userRequestsExternalStorage);
+
+                        // Send failure alert
+                        Helpers.debugLog("MoveStorage", "No space available!");
+                        builder.setMessage(R.string.move_storage_failed_no_space_dialog_message + " Space needed: " + spaceNeeded + "MB. Space available: " + destinationSpaceAvailable + "MB.").setTitle(R.string.move_storage_failed_no_space_dialog_title);
+                        builder.setPositiveButton(R.string.move_storage_dialog_ok_button, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                // User clicked OK button
+                            }
+                        });
+                        AlertDialog dialog = builder.create();
+                        dialog.show();
+                    }
+                }
+            }
+        }
+
+        public void resetPreference(String key, boolean originalSetting) {
+            getPreferenceManager().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
+            Helpers.saveToPrefs(key, originalSetting);
+            getPreferenceManager().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
+
+            // Reset switch back in the UI
+            setPreferenceScreen(null);
+            addPreferencesFromResource(R.xml.preferences);
         }
     }
 }

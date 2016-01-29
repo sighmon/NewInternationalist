@@ -11,6 +11,10 @@
             android:key="@string/show_help_alerts_key"
             android:title="@string/show_help_alerts_switch_title"
             android:defaultValue="true" />
+        <SwitchPreference
+            android:key="@string/use_external_storage"
+            android:title="@string/use_external_storage_title"
+            android:defaultValue="false" />
     </PreferenceCategory>
 
     <PreferenceCategory

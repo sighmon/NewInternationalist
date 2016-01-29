@@ -1,5 +1,6 @@
 package au.com.newint.newinternationalist;
 
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -9,6 +10,8 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Build;
+import android.os.Environment;
+import android.os.StatFs;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
@@ -22,7 +25,11 @@ import com.google.android.gms.analytics.GoogleAnalytics;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.filefilter.TrueFileFilter;
+
 import java.io.Console;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -30,7 +37,9 @@ import java.net.URLDecoder;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.Properties;
 import java.util.logging.Logger;
 
@@ -80,6 +89,39 @@ public class Helpers {
         return roundedBitmapDrawable;
     }
 
+    public static File getStorageDirectory() {
+        return getStorageDirectory(Helpers.getFromPrefs(MainActivity.applicationContext.getResources().getString(R.string.use_external_storage), false));
+    }
+
+    public static File getStorageDirectory(boolean userRequestsExternalStorage) {
+        File externalStorage = MainActivity.applicationContext.getExternalFilesDir(null);
+        boolean emulated = Environment.isExternalStorageEmulated();
+        boolean mounted = Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED);
+
+        if (Build.VERSION.SDK_INT >= 21) {
+            // If API is >= 21 check to see if external SD card is present, not emulated and mounted
+            File[] externalFilesDirs = MainActivity.applicationContext.getExternalFilesDirs(null);
+            if (externalFilesDirs != null) {
+                for (File dir : externalFilesDirs) {
+                    if (!Environment.isExternalStorageEmulated(dir) && Environment.getExternalStorageState(dir).equals(Environment.MEDIA_MOUNTED)) {
+                        emulated = false;
+                        mounted = true;
+                        externalStorage = dir;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (userRequestsExternalStorage && externalStorage != null && !emulated && mounted) {
+            // This device has external storage, so use that to store data
+            return externalStorage;
+        } else {
+            // This device doesn't have external storage, so use internal
+            return MainActivity.applicationContext.getFilesDir();
+        }
+    }
+
     public static String getSiteURL() {
         return getVariableFromConfig("SITE_URL");
     }
@@ -102,6 +144,13 @@ public class Helpers {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(MainActivity.applicationContext);
         final SharedPreferences.Editor editor = prefs.edit();
         editor.putString(key,value);
+        editor.apply();
+    }
+
+    public static void saveToPrefs(String key, boolean value) {
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(MainActivity.applicationContext);
+        final SharedPreferences.Editor editor = prefs.edit();
+        editor.putBoolean(key,value);
         editor.apply();
     }
 
@@ -330,6 +379,39 @@ public class Helpers {
             AdWordsConversionReporter.registerReferrer(MainActivity.applicationContext, intent.getData());
         }
     }
+
+    public static boolean moveDirectoryToDirectory(File sourceDirectory, File targetDirectory) {
+        try {
+            FileUtils.copyDirectoryToDirectory(sourceDirectory, targetDirectory.getParentFile());
+            FileUtils.deleteDirectory(sourceDirectory);
+        } catch (IOException e) {
+            Helpers.debugLog("moveDirectoryToDirectory", "IOException: "+e.toString());
+            return false;
+        }
+        return true;
+    }
+
+
+
+    public static long bytesAvailable(File f) {
+        StatFs stat = new StatFs(f.getPath());
+        if (Build.VERSION.SDK_INT >= 18) {
+            return stat.getAvailableBytes();
+        } else {
+            return stat.getAvailableBlocks() * stat.getBlockSize();
+        }
+        //return (long)stat.getBlockSizeLong() * (long)stat.getAvailableBlocksLong();
+    }
+
+    public static long directorySize(File target) {
+        long sum = 0;
+        Iterator<File> fileIterator = FileUtils.iterateFiles(target, TrueFileFilter.INSTANCE, TrueFileFilter.INSTANCE);
+        while(fileIterator.hasNext()) {
+            File f = fileIterator.next();
+            sum += f.length();
+        }
+        return sum;
+    } 
 
     public static void debugLog(String tag, String msg) {
         if (BuildConfig.DEBUG) {

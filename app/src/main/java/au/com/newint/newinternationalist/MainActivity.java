@@ -425,7 +425,7 @@ public class MainActivity extends ActionBarActivity {
 
                                 int id = jsonObject.get("id").getAsInt();
 
-                                File dir = new File(applicationContext.getFilesDir(), Integer.toString(id));
+                                File dir = new File(Helpers.getStorageDirectory(), Integer.toString(id));
                                 dir.mkdirs();
 
                                 File file = new File(dir, "issue.json");
