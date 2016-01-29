@@ -157,6 +157,17 @@
     <string name="categories_refresh">Reload articles for each category.</string>
     <string name="categories_no_items">When you read a magazine, the articles will be categorised here. To categorise all of the available articles from our website, tap the refresh button in the menu bar.</string>
     <string name="use_external_storage">use_external_storage</string>
-    <string name="use_external_storage_title">Use external storage?</string>
+    <string name="use_external_storage_title">Use external storage</string>
+    <string name="move_directory_progress_title">Moving files...</string>
+    <string name="move_directory_progress_message">Moving your magazine files now. If you\'ve read a lot of magazines this could take a little while.</string>
+    <string name="move_storage_success_dialog_title">Success!</string>
+    <string name="move_storage_success_dialog_message">Your magazines were successfully moved.</string>
+    <string name="move_storage_dialog_ok_button">OK</string>
+    <string name="move_storage_failed_dialog_title">Error!</string>
+    <string name="move_storage_failed_dialog_message">Sorry, something went wrong moving your magazine files. They\'re in their original location.</string>
+    <string name="move_storage_failed_no_space_dialog_title">Error!</string>
+    <string name="move_storage_failed_no_space_dialog_message">Your magazine data couldn\'t be moved because there isn\'t enough space on the destination location.</string>
+    <string name="move_storage_no_external_dialog_title">Sorry...</string>
+    <string name="move_storage_no_external_dialog_message">It doesn\'t look like you have any external storage available on this device.</string>
 
 </resources>
