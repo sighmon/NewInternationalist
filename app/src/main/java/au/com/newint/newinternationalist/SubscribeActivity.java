@@ -398,50 +398,61 @@ public class SubscribeActivity extends ActionBarActivity {
                 } else if (holder instanceof SubscribeViewHolder) {
                     // In-app product
                     SkuDetails product = mProducts.get(position);
+                    String productSku = product.getSku();
                     final SubscribeViewHolder viewHolder = ((SubscribeViewHolder) holder);
 
                     // Setup product image
-                    int issuePosition = position - (mProducts.size() - (mIssueList.size() - 1)); // missueList -1 for the fake last issue
-                    if (issuePosition >= 0) {
-                        // We've passed the subscriptions, so load the issue cover
-                        int coverWidth = Math.round(getResources().getDimension(R.dimen.subscribe_cover_width));
-                        Issue issue = mIssueList.get(issuePosition);
-                        issue.getCoverCacheStreamFactoryForSize(coverWidth).preload(new CacheStreamFactory.CachePreloadCallback() {
-                            @Override
-                            public void onLoad(byte[] payload) {
-                                if (payload != null && payload.length > 0) {
-                                    final Bitmap coverBitmap = Helpers.bitmapDecode(payload);
+                    if (productSku.contains("single")) {
+                        // It's a single magazine purchase, so load the cover
+                        int productID = Integer.parseInt(productSku.replaceAll("\\D+",""));
+                        int issueListPosition = 0;
+                        boolean issueFound = false;
+                        for (int i = 0; i < mIssueList.size(); i++) {
+                            if (mIssueList.get(i).getNumber() == productID) {
+                                issueListPosition = i;
+                                issueFound = true;
+                            }
+                        }
+                        if (issueFound) {
+                            Issue issue = mIssueList.get(issueListPosition);
+                            int coverWidth = Math.round(getResources().getDimension(R.dimen.subscribe_cover_width));
+                            issue.getCoverCacheStreamFactoryForSize(coverWidth).preload(new CacheStreamFactory.CachePreloadCallback() {
+                                @Override
+                                public void onLoad(byte[] payload) {
+                                    if (payload != null && payload.length > 0) {
+                                        final Bitmap coverBitmap = Helpers.bitmapDecode(payload);
 
-                                    Animation fadeOutAnimation = new AlphaAnimation(1.0f, 0.0f);
-                                    final Animation fadeInAnimation = new AlphaAnimation(0.0f, 1.0f);
-                                    fadeOutAnimation.setDuration(100);
-                                    fadeInAnimation.setDuration(200);
-                                    fadeOutAnimation.setAnimationListener(new Animation.AnimationListener() {
-                                        @Override
-                                        public void onAnimationStart(Animation animation) {
+                                        Animation fadeOutAnimation = new AlphaAnimation(1.0f, 0.0f);
+                                        final Animation fadeInAnimation = new AlphaAnimation(0.0f, 1.0f);
+                                        fadeOutAnimation.setDuration(100);
+                                        fadeInAnimation.setDuration(200);
+                                        fadeOutAnimation.setAnimationListener(new Animation.AnimationListener() {
+                                            @Override
+                                            public void onAnimationStart(Animation animation) {
 
-                                        }
+                                            }
 
-                                        @Override
-                                        public void onAnimationEnd(Animation animation) {
-                                            viewHolder.productImage.setImageBitmap(coverBitmap);
-                                            viewHolder.productImage.startAnimation(fadeInAnimation);
-                                        }
+                                            @Override
+                                            public void onAnimationEnd(Animation animation) {
+                                                viewHolder.productImage.setImageBitmap(coverBitmap);
+                                                viewHolder.productImage.startAnimation(fadeInAnimation);
+                                            }
 
-                                        @Override
-                                        public void onAnimationRepeat(Animation animation) {
+                                            @Override
+                                            public void onAnimationRepeat(Animation animation) {
 
-                                        }
-                                    });
-                                    viewHolder.productImage.startAnimation(fadeOutAnimation);
+                                            }
+                                        });
+                                        viewHolder.productImage.startAnimation(fadeOutAnimation);
+                                    }
                                 }
-                            }
 
-                            @Override
-                            public void onLoadBackground(byte[] payload) {
+                                @Override
+                                public void onLoadBackground(byte[] payload) {
 
-                            }
-                        });
+                                }
+                            });
+                        }
                     }
 
                     // Setup product
