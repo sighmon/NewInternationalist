@@ -106,7 +106,7 @@ public class TableOfContentsActivity extends ActionBarActivity {
                                 purchases.add(purchase);
                             }
                         }
-                    } catch (IabException e) {
+                    } catch (Exception e) {
                         e.printStackTrace();
                     }
                 }

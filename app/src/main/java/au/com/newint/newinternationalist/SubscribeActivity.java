@@ -177,7 +177,7 @@ public class SubscribeActivity extends ActionBarActivity {
                                 if (purchase != null) {
                                     mHelper.consumeAsync(inventory.getPurchase("android.test.purchased"), null);
                                 }
-                            } catch (IabException e) {
+                            } catch (Exception e) {
                                 e.printStackTrace();
                             }
                         }
@@ -219,7 +219,7 @@ public class SubscribeActivity extends ActionBarActivity {
                                                 mProducts.add(product);
                                             }
                                         }
-                                    } catch (IabException e) {
+                                    } catch (Exception e) {
                                         e.printStackTrace();
                                     }
                                 }

@@ -179,7 +179,11 @@ public class MainActivity extends ActionBarActivity {
                             }
                         }
                     };
-                    mHelper.queryInventoryAsync(true, additionalSkuList, mQueryFinishedListener);
+                    try {
+                        mHelper.queryInventoryAsync(true, additionalSkuList, mQueryFinishedListener);
+                    } catch (Exception e) {
+                        // Handle no in-app purchase available
+                    }
                 }
             });
         }

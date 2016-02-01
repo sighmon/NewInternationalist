@@ -356,7 +356,7 @@ public class ArticleActivity extends AppCompatActivity {
                                     purchases.add(purchase);
                                 }
                             }
-                        } catch (IabException e) {
+                        } catch (Exception e) {
                             e.printStackTrace();
                         }
 
