@@ -484,7 +484,7 @@ public class MainActivity extends ActionBarActivity {
                         loadingSpinner.setVisibility(View.GONE);
                     } else {
 
-                        if (latestIssueOnFileBeforeUpdate == null || (latestIssueOnFileBeforeUpdate != null && latestIssueOnFileBeforeUpdate != latestIssueOnFile)) {
+                        if (latestIssueOnFileBeforeUpdate == null || (latestIssueOnFileBeforeUpdate != null && latestIssueOnFileBeforeUpdate.getID() != latestIssueOnFile.getID())) {
 
                             latestIssueOnFile.coverCacheStreamFactory.preload(new CacheStreamFactory.CachePreloadCallback() {
 

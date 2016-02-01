@@ -159,9 +159,10 @@ public class SettingsActivity extends PreferenceActivity {
                             dialog.show();
 
                             // Reset app to home screen to avoid crashes of changed object file locations
-                            Intent intent = new Intent(MainActivity.applicationContext, MainActivity.class);
-                            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                            startActivity(intent);
+                            // Update: Nope. This is causing a crash on devices with external storage..
+//                            Intent intent = new Intent(MainActivity.applicationContext, MainActivity.class);
+//                            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+//                            startActivity(intent);
                         } else {
                             // Failed to move files, so reset pref back
                             resetPreference(key, !userRequestsExternalStorage);
