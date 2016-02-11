@@ -1,6 +1,8 @@
 package au.com.newint.newinternationalist;
 
 import android.annotation.TargetApi;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -150,7 +152,7 @@ public class Helpers {
     public static void saveToPrefs(String key, boolean value) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(MainActivity.applicationContext);
         final SharedPreferences.Editor editor = prefs.edit();
-        editor.putBoolean(key,value);
+        editor.putBoolean(key, value);
         editor.apply();
     }
 
@@ -417,5 +419,17 @@ public class Helpers {
         if (BuildConfig.DEBUG) {
             Log.i(tag,msg);
         }
+    }
+
+    public static void restartApp(Context context) {
+        Log.e("Helpers", "Restarting app");
+        Intent restartIntent = context.getPackageManager()
+                .getLaunchIntentForPackage(context.getPackageName());
+        restartIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, restartIntent, PendingIntent.FLAG_ONE_SHOT);
+        AlarmManager manager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        manager.set(AlarmManager.RTC, System.currentTimeMillis() + 500, pendingIntent);
+        restartIntent.putExtra("EXIT", true);
+        context.startActivity(restartIntent);
     }
 }

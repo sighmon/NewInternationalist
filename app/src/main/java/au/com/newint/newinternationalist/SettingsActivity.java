@@ -99,7 +99,7 @@ public class SettingsActivity extends PreferenceActivity {
         }
 
         public void onSharedPreferenceChanged(SharedPreferences sharedPreferences,
-                                              String key) {
+                                              final String key) {
             Preference pref = findPreference(key);
             // Set summary to be the user-description for the selected value
             if (pref instanceof EditTextPreference) {
@@ -111,12 +111,12 @@ public class SettingsActivity extends PreferenceActivity {
             String externalStorageKey = MainActivity.applicationContext.getResources().getString(R.string.use_external_storage);
             if (key.equals(externalStorageKey)) {
                 // Get user choice of storage location
-                boolean userRequestsExternalStorage = Helpers.getFromPrefs(externalStorageKey, false);
-                File originalDir = Helpers.getStorageDirectory(!userRequestsExternalStorage);
-                File destinationDir = Helpers.getStorageDirectory(userRequestsExternalStorage);
+                final boolean userRequestsExternalStorage = Helpers.getFromPrefs(externalStorageKey, false);
+                final File originalDir = Helpers.getStorageDirectory(!userRequestsExternalStorage);
+                final File destinationDir = Helpers.getStorageDirectory(userRequestsExternalStorage);
 
                 // Alert user to tell them how it went
-                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
 
                 if (originalDir.equals(destinationDir)) {
                     // No external storage.
@@ -143,41 +143,55 @@ public class SettingsActivity extends PreferenceActivity {
                         progressDialog.setTitle(getResources().getString(R.string.move_directory_progress_title));
                         progressDialog.setMessage(getResources().getString(R.string.move_directory_progress_message));
                         progressDialog.show();
-                        boolean moveSuccessful = Helpers.moveDirectoryToDirectory(originalDir, destinationDir);
-                        progressDialog.dismiss();
+                        builder.setMessage(R.string.move_storage_question_dialog_message).setTitle(R.string.move_storage_question_dialog_title);
+                        builder.setPositiveButton(R.string.move_storage_dialog_ok_button, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialogInterface, int id) {
+                                // User clicked OK button
+                                boolean moveSuccessful = Helpers.moveDirectoryToDirectory(originalDir, destinationDir);
+                                if (moveSuccessful) {
+                                    // Send success alert
+                                    progressDialog.dismiss();
+                                    Helpers.debugLog("MoveStorage", "Move successful!");
+                                    AlertDialog.Builder successBuilder = new AlertDialog.Builder(getActivity());
+                                    successBuilder.setMessage(R.string.move_storage_success_dialog_message).setTitle(R.string.move_storage_success_dialog_title);
+                                    successBuilder.setPositiveButton(R.string.move_storage_dialog_ok_button, new DialogInterface.OnClickListener() {
+                                        public void onClick(DialogInterface dialog, int id) {
+                                            // User clicked OK button
+                                            // Restart app
+                                            Helpers.restartApp(getActivity());
+                                        }
+                                    });
+                                    AlertDialog dialog = successBuilder.create();
+                                    dialog.show();
 
-                        if (moveSuccessful) {
-                            // Send success alert
-                            Helpers.debugLog("MoveStorage", "Move successful!");
-                            builder.setMessage(R.string.move_storage_success_dialog_message).setTitle(R.string.move_storage_success_dialog_title);
-                            builder.setPositiveButton(R.string.move_storage_dialog_ok_button, new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int id) {
-                                    // User clicked OK button
+                                } else {
+                                    // Failed to move files, so reset pref back
+                                    resetPreference(key, !userRequestsExternalStorage);
+                                    progressDialog.dismiss();
+
+                                    // Send failure alert
+                                    Helpers.debugLog("MoveStorage", "FAILED TO MOVE FILES!");
+                                    builder.setMessage(R.string.move_storage_failed_dialog_message).setTitle(R.string.move_storage_failed_dialog_title);
+                                    builder.setPositiveButton(R.string.move_storage_dialog_ok_button, new DialogInterface.OnClickListener() {
+                                        public void onClick(DialogInterface dialog, int id) {
+                                            // User clicked OK button
+                                        }
+                                    });
+                                    AlertDialog dialog = builder.create();
+                                    dialog.show();
                                 }
-                            });
-                            AlertDialog dialog = builder.create();
-                            dialog.show();
+                            }
+                        });
+                        builder.setNegativeButton(R.string.move_storage_dialog_cancel_button, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                // User clicked Cancel button
+                                progressDialog.dismiss();
+                                resetPreference(key, !userRequestsExternalStorage);
+                            }
+                        });
+                        AlertDialog dialog = builder.create();
+                        dialog.show();
 
-                            // Reset app to home screen to avoid crashes of changed object file locations
-                            // Update: Nope. This is causing a crash on devices with external storage..
-//                            Intent intent = new Intent(MainActivity.applicationContext, MainActivity.class);
-//                            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-//                            startActivity(intent);
-                        } else {
-                            // Failed to move files, so reset pref back
-                            resetPreference(key, !userRequestsExternalStorage);
-
-                            // Send failure alert
-                            Helpers.debugLog("MoveStorage", "FAILED TO MOVE FILES!");
-                            builder.setMessage(R.string.move_storage_failed_dialog_message).setTitle(R.string.move_storage_failed_dialog_title);
-                            builder.setPositiveButton(R.string.move_storage_dialog_ok_button, new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int id) {
-                                    // User clicked OK button
-                                }
-                            });
-                            AlertDialog dialog = builder.create();
-                            dialog.show();
-                        }
                     } else {
                         // No space available, so switch pref back...
                         resetPreference(key, !userRequestsExternalStorage);
