@@ -101,9 +101,9 @@ public class Helpers {
         if (Build.VERSION.SDK_INT >= 21) {
             // If API is >= 21 check to see if external SD card is present, not emulated and mounted
             File[] externalFilesDirs = MainActivity.applicationContext.getExternalFilesDirs(null);
-            if (externalFilesDirs != null) {
+            if (externalFilesDirs != null && externalFilesDirs.length > 0) {
                 for (File dir : externalFilesDirs) {
-                    if (!Environment.isExternalStorageEmulated(dir) && Environment.getExternalStorageState(dir).equals(Environment.MEDIA_MOUNTED)) {
+                    if (dir != null && !Environment.isExternalStorageEmulated(dir) && Environment.getExternalStorageState(dir).equals(Environment.MEDIA_MOUNTED)) {
                         emulated = false;
                         mounted = true;
                         externalStorage = dir;
