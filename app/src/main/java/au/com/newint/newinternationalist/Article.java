@@ -197,17 +197,19 @@ public class Article implements Parcelable {
                 } else if (option.equalsIgnoreCase("centre")) {
                     cssClass = "all-article-images article-image-cartoon article-image-centre";
                     imageWidth = "300";
-                } else if (option.equalsIgnoreCase("small")) {
-                    cssClass = "article-image article-image-small";
-                    imageWidth = "150";
                 }
             }
 
             // Check for no shadow and left options
             if (Arrays.asList(options).contains("ns")) {
                 cssClass += " no-shadow";
-            } else if (Arrays.asList(options).contains("left")) {
+            }
+            if (Arrays.asList(options).contains("left")) {
                 cssClass += " article-image-float-none";
+            }
+            if (Arrays.asList(options).contains("small")) {
+                cssClass += " article-image-small";
+                imageWidth = "150";
             }
 
             String credit_div = null;
