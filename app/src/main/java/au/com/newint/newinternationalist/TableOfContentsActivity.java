@@ -431,6 +431,10 @@ public class TableOfContentsActivity extends ActionBarActivity {
                             "columns/steve-parry",
                             "columns/kate-smurthwaite"
                     });
+
+            // Add category articles
+            layoutList.add("Blogs");
+            addArticlesToLayoutListWithCategoryName(articles, "blog");
         }
 
         private void addArticlesToLayoutListWithCategoryNameWithExclusions(ArrayList<Article> articles, String categoryName, String[] exclusions) {
@@ -755,6 +759,7 @@ public class TableOfContentsActivity extends ActionBarActivity {
                     super(itemView);
                     editorImageView = (ImageView) itemView.findViewById(R.id.toc_editor_image);
                     editorsLetterTextView = (TextView) itemView.findViewById(R.id.toc_editors_letter);
+                    // TODO: Make editorsLetterTextView into a webview so links can be clicked.
                     editorsNameTextView = (TextView) itemView.findViewById(R.id.toc_editors_name);
                     editorImageView.setOnClickListener(this);
                 }

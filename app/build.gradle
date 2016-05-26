@@ -2,13 +2,13 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 21
-    buildToolsVersion '21.0.0'
+    buildToolsVersion '21.1.2'
     defaultConfig {
         applicationId "au.com.newint.newinternationalist"
         minSdkVersion 15
         targetSdkVersion 21
-        versionCode 53
-        versionName '1.1.6'
+        versionCode 54
+        versionName '1.1.7'
     }
     buildTypes {
         release {
