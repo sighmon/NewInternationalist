@@ -390,12 +390,22 @@ public class Issue implements Parcelable {
                         success = new File(childFile, childDirChild).delete();
                     }
                 } else {
-                    if (!child.contains("json")) {
-                        // Don't delete the .json
-                        success = new File(dir, child).delete();
-                    }
+                    // We used to delete everything apart from the .json
+                    // But then we can't get updates to the editor's letter
+                    // So deleting everything now
+//                    if (!child.contains("json")) {
+//                        // Don't delete the .json
+//                        success = new File(dir, child).delete();
+//                    }
+                    // Delete all files, including issue.json
+                    success = new File(dir, child).delete();
                 }
             }
+        }
+
+        if (success) {
+            // Recreate issue.json from issues.json
+            Publisher.INSTANCE.recreateIssueJsonForId(this.getID());
         }
 
         return success;

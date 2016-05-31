@@ -238,6 +238,64 @@ public enum Publisher {
         }
     }
 
+    public void recreateIssueJsonForId(final int id) {
+
+        // Recreates a magazine's issue.json file from issues.json
+        // Updates editor's letter too.
+
+        issuesJSONCacheStreamFactory.preload(null, null, new CacheStreamFactory.CachePreloadCallback() {
+            @Override
+            public void onLoad(byte[] payload) {
+
+                Helpers.debugLog("Recreate issue.json", "onLoad");
+            }
+
+            @Override
+            public void onLoadBackground(byte[] payload) {
+
+                Helpers.debugLog("Recreate issue.json", "onLoadBackground");
+
+                JsonArray magazines = null;
+
+                if (payload.length > 0) {
+
+                    JsonElement root = new JsonParser().parse(new String(payload));
+                    //TODO: throws an exception (which one?) if the payload is empty instead of returning null
+                    // IllegalStateException
+
+                    magazines = root.getAsJsonArray();
+                }
+
+                if (magazines != null) {
+
+                    for (JsonElement magazine : magazines) {
+
+                        if (magazine.getAsJsonObject().get("id").getAsInt() == id) {
+
+                            JsonObject jsonObject = magazine.getAsJsonObject();
+
+                            // Write issue.json
+                            File dir = new File(Helpers.getStorageDirectory(), Integer.toString(id));
+                            dir.mkdirs();
+
+                            File file = new File(dir, "issue.json");
+
+                            try {
+                                Writer w = new FileWriter(file);
+
+                                new Gson().toJson(jsonObject, w);
+
+                                w.close();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
     public Issue latestIssue() {
         // assuming this array is sorted
         ArrayList<Issue> issuesArray = getIssuesFromFilesystem();
