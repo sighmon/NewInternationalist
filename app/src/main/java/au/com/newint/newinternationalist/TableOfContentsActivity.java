@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Html;
+import android.text.method.LinkMovementMethod;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -650,7 +651,12 @@ public class TableOfContentsActivity extends ActionBarActivity {
                         });
                     }
 
-                    ((TableOfContentsFooterViewHolder) holder).editorsLetterTextView.setText(Html.fromHtml(issue.getEditorsLetterHtml()));
+                    // Parse in-app links and prepend newint:/ to them.
+                    String editorsLetterString = issue.getEditorsLetterHtml();
+                    editorsLetterString = editorsLetterString.replaceAll("(['\"])/issues/(\\d+)", "$1newint://issues/$2");
+
+                    ((TableOfContentsFooterViewHolder) holder).editorsLetterTextView.setMovementMethod(LinkMovementMethod.getInstance());
+                    ((TableOfContentsFooterViewHolder) holder).editorsLetterTextView.setText(Html.fromHtml(editorsLetterString));
                     ((TableOfContentsFooterViewHolder) holder).editorsNameTextView.setText("Edited by:\n" + issue.getEditorsName());
                 }
             }
@@ -759,7 +765,6 @@ public class TableOfContentsActivity extends ActionBarActivity {
                     super(itemView);
                     editorImageView = (ImageView) itemView.findViewById(R.id.toc_editor_image);
                     editorsLetterTextView = (TextView) itemView.findViewById(R.id.toc_editors_letter);
-                    // TODO: Make editorsLetterTextView into a webview so links can be clicked.
                     editorsNameTextView = (TextView) itemView.findViewById(R.id.toc_editors_name);
                     editorImageView.setOnClickListener(this);
                 }
@@ -768,6 +773,7 @@ public class TableOfContentsActivity extends ActionBarActivity {
                 public void onClick(View v) {
                     Intent imageIntent = new Intent(MainActivity.applicationContext, ImageActivity.class);
                     // Pass image url through as a Parcel
+                    Helpers.debugLog("TableOfContents", "View clicked: " + v);
                     imageIntent.putExtra("url", issue.getEditorsLetterLocationOnFilesystem().getAbsolutePath());
                     imageIntent.putExtra("issue", issue);
                     startActivity(imageIntent);
