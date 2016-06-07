@@ -178,5 +178,8 @@
     <string name="move_storage_question_dialog_message">Moving your magazine data to another storage option will take some time, and the app will need to restart after it\'s finished. Do you want to continue?</string>
     <string name="move_storage_question_dialog_title">Move data?</string>
     <string name="move_storage_dialog_cancel_button">Cancel</string>
+    <string name="gcm_defaultSenderId" />
+    <string name="gcm_send_message">Token retrieved and sent to server!</string>
+    <string name="token_error_message">An error occurred while either fetching the InstanceID token,         sending the fetched token to the server or subscribing to the PubSub topic.</string>
 
 </resources>

@@ -158,32 +158,35 @@
                 android:value="au.com.newint.newinternationalist.MainActivity" />
         </activity>
 
-        <!-- Push notifications setup -->
-
-        <service android:name="com.parse.PushService" />
-        <receiver android:name="com.parse.ParseBroadcastReceiver">
+        <!-- TODO: Push notifications setup -->
+        <receiver
+            android:name="com.google.android.gms.gcm.GcmReceiver"
+            android:exported="true"
+            android:permission="com.google.android.c2dm.permission.SEND" >
             <intent-filter>
-                <action android:name="android.intent.action.BOOT_COMPLETED" />
-                <action android:name="android.intent.action.USER_PRESENT" />
+                <action android:name="com.google.android.c2dm.intent.RECEIVE" />
+                <category android:name="com.example.gcm" />
             </intent-filter>
         </receiver>
-        <receiver android:name="com.parse.GcmBroadcastReceiver"
-            android:permission="com.google.android.c2dm.permission.SEND">
+        <service
+            android:name="au.com.newint.newinternationalist.util.MyGcmListenerService"
+            android:exported="false" >
             <intent-filter>
                 <action android:name="com.google.android.c2dm.intent.RECEIVE" />
                 <action android:name="com.google.android.c2dm.intent.REGISTRATION" />
-                <category android:name="au.com.newint.newinternationalist" />
             </intent-filter>
-        </receiver>
-        <receiver android:name="au.com.newint.newinternationalist.util.PushNotificationReceiver" android:exported="false">
+        </service>
+        <service
+            android:name="au.com.newint.newinternationalist.util.MyInstanceIDListenerService"
+            android:exported="false">
             <intent-filter>
-                <action android:name="com.parse.push.intent.RECEIVE" />
-                <action android:name="com.parse.push.intent.DELETE" />
-                <action android:name="com.parse.push.intent.OPEN" />
+                <action android:name="com.google.android.gms.iid.InstanceID" />
             </intent-filter>
-        </receiver>
+        </service>
+
+
         <!-- Push icon identifier -->
-        <meta-data android:name="com.parse.push.notification_icon" android:resource="@drawable/ni_notification"/>
+        <meta-data android:name="au.com.newint.newinternationalist.notification_icon" android:resource="@drawable/ni_notification"/>
 
         <!-- Google Analytics setup - can be turned off by user -->
 

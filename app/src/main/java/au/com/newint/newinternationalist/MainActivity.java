@@ -3,15 +3,18 @@ package au.com.newint.newinternationalist;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.app.SearchManager;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
@@ -29,6 +32,8 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 
 import com.google.ads.conversiontracking.AdWordsConversionReporter;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -59,6 +64,7 @@ import au.com.newint.newinternationalist.util.IabHelper;
 import au.com.newint.newinternationalist.util.IabResult;
 import au.com.newint.newinternationalist.util.Inventory;
 import au.com.newint.newinternationalist.util.Purchase;
+import au.com.newint.newinternationalist.util.RegistrationIntentService;
 import au.com.newint.newinternationalist.util.SkuDetails;
 
 
@@ -74,8 +80,14 @@ public class MainActivity extends ActionBarActivity {
 
     static ProgressBar loadingSpinner;
 
+    private static final int PLAY_SERVICES_RESOLUTION_REQUEST = 9000;
+    private static final String TAG = "MainActivity";
+
+    private BroadcastReceiver mRegistrationBroadcastReceiver;
+    private boolean isReceiverRegistered;
+
     @Override
-    public void onResume() {
+    protected void onResume() {
         super.onResume();
 
         // Send Google Analytics if the user allows it
@@ -85,11 +97,45 @@ public class MainActivity extends ActionBarActivity {
         if (this.getIntent().getData() != null) {
             Helpers.registerGoogleConversionsReferrer(this.getIntent());
         }
+
+        // Register the push notification receiver
+        registerReceiver();
+    }
+
+    @Override
+    protected void onPause() {
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mRegistrationBroadcastReceiver);
+        isReceiverRegistered = false;
+        super.onPause();
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Setup push notifications
+        
+        mRegistrationBroadcastReceiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                boolean sentToken = Helpers.getFromPrefs(RegistrationIntentService.SENT_TOKEN_TO_SERVER, false);
+
+                if (sentToken) {
+                    Helpers.debugLog("BroadcastReceiver", getString(R.string.gcm_send_message));
+                } else {
+                    Helpers.debugLog("BroadcastReceiver", getString(R.string.token_error_message));
+                }
+            }
+        };
+
+        // Registering BroadcastReceiver
+        registerReceiver();
+
+        if (checkPlayServices()) {
+            // Start IntentService to register this application with GCM.
+            Intent intent = new Intent(this, RegistrationIntentService.class);
+            startService(intent);
+        }
 
         if (getIntent().getBooleanExtra("EXIT", false)) {
             System.exit(0);
@@ -187,20 +233,6 @@ public class MainActivity extends ActionBarActivity {
                 }
             });
         }
-
-        // Setup push notifications
-//        Parse.initialize(this, Helpers.getVariableFromConfig("PARSE_APP_ID"), Helpers.getVariableFromConfig("PARSE_CLIENT_KEY"));
-//        ParseInstallation.getCurrentInstallation().saveInBackground();
-//        ParsePush.subscribeInBackground("", new SaveCallback() {
-//            @Override
-//            public void done(ParseException e) {
-//                if (e == null) {
-//                    Log.d("com.parse.push", "Successfully subscribed to the broadcast channel.");
-//                } else {
-//                    Log.e("com.parse.push", "Failed to subscribe for push", e);
-//                }
-//            }
-//        });
 
         // Search intent
         Intent intent = getIntent();
@@ -668,6 +700,35 @@ public class MainActivity extends ActionBarActivity {
             super.onPause();
             Publisher.INSTANCE.removeDownloadCompleteListener(listener);
         }
+    }
+
+    // Push notifications
+    private void registerReceiver(){
+        if(!isReceiverRegistered) {
+            LocalBroadcastManager.getInstance(this).registerReceiver(mRegistrationBroadcastReceiver,
+                    new IntentFilter(RegistrationIntentService.REGISTRATION_COMPLETE));
+            isReceiverRegistered = true;
+        }
+    }
+    /**
+     * Check the device to make sure it has the Google Play Services APK. If
+     * it doesn't, display a dialog that allows users to download the APK from
+     * the Google Play Store or enable it in the device's system settings.
+     */
+    private boolean checkPlayServices() {
+        GoogleApiAvailability apiAvailability = GoogleApiAvailability.getInstance();
+        int resultCode = apiAvailability.isGooglePlayServicesAvailable(this);
+        if (resultCode != ConnectionResult.SUCCESS) {
+            if (apiAvailability.isUserResolvableError(resultCode)) {
+                apiAvailability.getErrorDialog(this, resultCode, PLAY_SERVICES_RESOLUTION_REQUEST)
+                        .show();
+            } else {
+                Helpers.debugLog(TAG, "This device is not supported.");
+                finish();
+            }
+            return false;
+        }
+        return true;
     }
 
     // User login to Rails in the background, but silently fail
