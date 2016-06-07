@@ -11,7 +11,6 @@ import android.util.Log;
 import com.google.android.gms.analytics.GoogleAnalytics;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
-import com.parse.Parse;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -36,8 +35,8 @@ public class App extends Application {
         MainActivity.applicationResources = getResources();
 
         // Setup push notifications
-        Parse.enableLocalDatastore(this);
-        Parse.initialize(this, getVariableFromConfig("PARSE_APP_ID"), getVariableFromConfig("PARSE_CLIENT_KEY"));
+//        Parse.enableLocalDatastore(this);
+//        Parse.initialize(this, getVariableFromConfig("PARSE_APP_ID"), getVariableFromConfig("PARSE_CLIENT_KEY"));
 
         // Setup google analytics if the user has allowed it
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);

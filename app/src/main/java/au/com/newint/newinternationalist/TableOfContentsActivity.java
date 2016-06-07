@@ -207,7 +207,9 @@ public class TableOfContentsActivity extends ActionBarActivity {
                             Helpers.debugLog("PreloadArticles", "Total Articles: " + articles.size());
                             Helpers.debugLog("PreloadArticles", "LayoutList: " + layoutList.size());
 //                            Helpers.debugLog("PreloadArticles", layoutList.toString());
-                            adapter.notifyItemChanged(1);
+//                            adapter.notifyItemChanged(1);
+//                            adapter.notifyDataSetChanged();
+                            adapter.notifyItemInserted(1);
                             Helpers.debugLog("PreloadArticles", "Articles ready, so refreshing first article.");
                         } else {
                             Log.e("PreloadArticles", "Table of contents PreloadArticles returned null.");

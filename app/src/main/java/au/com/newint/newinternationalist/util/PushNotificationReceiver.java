@@ -3,18 +3,18 @@ package au.com.newint.newinternationalist.util;
 import android.content.Context;
 import android.content.Intent;
 
-import com.parse.ParsePushBroadcastReceiver;
+//import com.parse.ParsePushBroadcastReceiver;
 
 import au.com.newint.newinternationalist.MainActivity;
 
 /**
  * Created by New Internationalist on 4/06/15.
  */
-public class PushNotificationReceiver extends ParsePushBroadcastReceiver {
+public class PushNotificationReceiver { //extends ParsePushBroadcastReceiver {
 
-    // Handle Parse push notifications
+    // TODO: Update this to handle push notifications?
 
-    @Override
+//    @Override
     public void onPushOpen(Context context, Intent intent) {
         Intent i = new Intent(context, MainActivity.class);
         i.putExtras(intent.getExtras());

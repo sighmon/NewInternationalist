@@ -16,12 +16,6 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.TextView;
 
-import com.parse.Parse;
-import com.parse.ParseInstallation;
-import com.parse.ParseObject;
-import com.parse.ParseQuery;
-import com.parse.ParseUser;
-
 
 public class AboutActivity extends ActionBarActivity {
 
@@ -67,8 +61,8 @@ public class AboutActivity extends ActionBarActivity {
 
             @Override
             public boolean onLongClick(View v) {
-                // Show the parse ID
-                String parseID = ParseInstallation.getCurrentInstallation().getObjectId();
+                // TODO: get the GCM token/id
+                String parseID = "TODO: GET GCM TOKEN";
                 AlertDialog.Builder builder = new AlertDialog.Builder(v.getContext());
                 builder.setMessage(parseID).setTitle(R.string.parse_id_dialog_title);
                 builder.setPositiveButton(R.string.parse_id_dialog_ok_button, new DialogInterface.OnClickListener() {

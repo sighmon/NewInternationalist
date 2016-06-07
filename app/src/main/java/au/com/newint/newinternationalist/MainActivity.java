@@ -61,11 +61,6 @@ import au.com.newint.newinternationalist.util.Inventory;
 import au.com.newint.newinternationalist.util.Purchase;
 import au.com.newint.newinternationalist.util.SkuDetails;
 
-import com.parse.Parse;
-import com.parse.ParseException;
-import com.parse.ParseInstallation;
-import com.parse.ParsePush;
-import com.parse.SaveCallback;
 
 public class MainActivity extends ActionBarActivity {
 
@@ -194,18 +189,18 @@ public class MainActivity extends ActionBarActivity {
         }
 
         // Setup push notifications
-        Parse.initialize(this, Helpers.getVariableFromConfig("PARSE_APP_ID"), Helpers.getVariableFromConfig("PARSE_CLIENT_KEY"));
-        ParseInstallation.getCurrentInstallation().saveInBackground();
-        ParsePush.subscribeInBackground("", new SaveCallback() {
-            @Override
-            public void done(ParseException e) {
-                if (e == null) {
-                    Log.d("com.parse.push", "Successfully subscribed to the broadcast channel.");
-                } else {
-                    Log.e("com.parse.push", "Failed to subscribe for push", e);
-                }
-            }
-        });
+//        Parse.initialize(this, Helpers.getVariableFromConfig("PARSE_APP_ID"), Helpers.getVariableFromConfig("PARSE_CLIENT_KEY"));
+//        ParseInstallation.getCurrentInstallation().saveInBackground();
+//        ParsePush.subscribeInBackground("", new SaveCallback() {
+//            @Override
+//            public void done(ParseException e) {
+//                if (e == null) {
+//                    Log.d("com.parse.push", "Successfully subscribed to the broadcast channel.");
+//                } else {
+//                    Log.e("com.parse.push", "Failed to subscribe for push", e);
+//                }
+//            }
+//        });
 
         // Search intent
         Intent intent = getIntent();
