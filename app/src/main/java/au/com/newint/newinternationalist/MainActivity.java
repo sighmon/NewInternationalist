@@ -34,6 +34,8 @@ import android.widget.ProgressBar;
 import com.google.ads.conversiontracking.AdWordsConversionReporter;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
+import com.google.firebase.crash.FirebaseCrash;
+import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -64,7 +66,7 @@ import au.com.newint.newinternationalist.util.IabHelper;
 import au.com.newint.newinternationalist.util.IabResult;
 import au.com.newint.newinternationalist.util.Inventory;
 import au.com.newint.newinternationalist.util.Purchase;
-import au.com.newint.newinternationalist.util.RegistrationIntentService;
+//import au.com.newint.newinternationalist.util.RegistrationIntentService;
 import au.com.newint.newinternationalist.util.SkuDetails;
 
 
@@ -99,13 +101,11 @@ public class MainActivity extends ActionBarActivity {
         }
 
         // Register the push notification receiver
-        registerReceiver();
+//        registerReceiver();
     }
 
     @Override
     protected void onPause() {
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(mRegistrationBroadcastReceiver);
-        isReceiverRegistered = false;
         super.onPause();
     }
 
@@ -113,29 +113,20 @@ public class MainActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        // Crash reporting example
+//        Helpers.crashLog("Newint crash log test.");
+//        Helpers.crash("Newint non-fatal test crash!");
+
+        // Get install ID from Firebase
+        Helpers.debugLog(TAG, "InstanceID token: " + FirebaseInstanceId.getInstance().getToken());
+
         // Setup push notifications
-        
-        mRegistrationBroadcastReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                boolean sentToken = Helpers.getFromPrefs(RegistrationIntentService.SENT_TOKEN_TO_SERVER, false);
-
-                if (sentToken) {
-                    Helpers.debugLog("BroadcastReceiver", getString(R.string.gcm_send_message));
-                } else {
-                    Helpers.debugLog("BroadcastReceiver", getString(R.string.token_error_message));
-                }
-            }
-        };
-
-        // Registering BroadcastReceiver
-        registerReceiver();
-
-        if (checkPlayServices()) {
-            // Start IntentService to register this application with GCM.
-            Intent intent = new Intent(this, RegistrationIntentService.class);
-            startService(intent);
-        }
+        // TODO: Check for PlayServices?
+//        if (checkPlayServices()) {
+//            // Start IntentService to register this application with GCM.
+//            Intent intent = new Intent(this, RegistrationIntentService.class);
+//            startService(intent);
+//        }
 
         if (getIntent().getBooleanExtra("EXIT", false)) {
             System.exit(0);
@@ -703,13 +694,6 @@ public class MainActivity extends ActionBarActivity {
     }
 
     // Push notifications
-    private void registerReceiver(){
-        if(!isReceiverRegistered) {
-            LocalBroadcastManager.getInstance(this).registerReceiver(mRegistrationBroadcastReceiver,
-                    new IntentFilter(RegistrationIntentService.REGISTRATION_COMPLETE));
-            isReceiverRegistered = true;
-        }
-    }
     /**
      * Check the device to make sure it has the Google Play Services APK. If
      * it doesn't, display a dialog that allows users to download the APK from

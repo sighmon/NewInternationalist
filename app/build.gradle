@@ -1,7 +1,6 @@
 apply plugin: 'com.android.application'
 
 // Push notifications
-//apply plugin: 'com.google.gms.google-services'
 
 android {
     compileSdkVersion 23
@@ -36,4 +35,9 @@ dependencies {
     compile 'com.parse.bolts:bolts-android:1+'
     compile 'com.google.android.gms:play-services-appindexing:9.0.2'
     compile 'com.google.android.gms:play-services-gcm:9.0.2'
+    compile 'com.google.firebase:firebase-core:9.0.2'
+    compile 'com.google.firebase:firebase-crash:9.0.2'
+    compile 'com.google.firebase:firebase-messaging:9.0.2'
 }
+
+apply plugin: 'com.google.gms.google-services'

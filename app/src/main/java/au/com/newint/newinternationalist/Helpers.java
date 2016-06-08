@@ -26,6 +26,7 @@ import com.google.ads.conversiontracking.AdWordsConversionReporter;
 import com.google.android.gms.analytics.GoogleAnalytics;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
+import com.google.firebase.crash.FirebaseCrash;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.TrueFileFilter;
@@ -431,5 +432,17 @@ public class Helpers {
         manager.set(AlarmManager.RTC, System.currentTimeMillis() + 500, pendingIntent);
         restartIntent.putExtra("EXIT", true);
         context.startActivity(restartIntent);
+    }
+
+    public static String getNotificationTitle() {
+        return "New Internationalist magazine";
+    }
+
+    public static void crash(String exceptionMessage) {
+        FirebaseCrash.report(new Exception(exceptionMessage));
+    }
+
+    public static void crashLog(String message) {
+        FirebaseCrash.log(message);
     }
 }
