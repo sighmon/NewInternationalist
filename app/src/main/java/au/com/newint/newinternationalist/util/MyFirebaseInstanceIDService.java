@@ -21,6 +21,8 @@ import android.util.Log;
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.iid.FirebaseInstanceIdService;
 
+import au.com.newint.newinternationalist.Helpers;
+
 
 public class MyFirebaseInstanceIDService extends FirebaseInstanceIdService {
 
@@ -36,7 +38,7 @@ public class MyFirebaseInstanceIDService extends FirebaseInstanceIdService {
     public void onTokenRefresh() {
         // Get updated InstanceID token.
         String refreshedToken = FirebaseInstanceId.getInstance().getToken();
-        Log.d(TAG, "Refreshed token: " + refreshedToken);
+        Helpers.debugLog(TAG, "Refreshed token: " + refreshedToken);
 
         // TODO: Implement this method to send any registration to your app's servers.
         sendRegistrationToServer(refreshedToken);
@@ -53,5 +55,6 @@ public class MyFirebaseInstanceIDService extends FirebaseInstanceIdService {
      */
     private void sendRegistrationToServer(String token) {
         // Add custom implementation, as needed.
+        Helpers.debugLog(TAG, "TODO: Send token to server: " + token);
     }
 }
