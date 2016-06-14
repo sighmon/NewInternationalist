@@ -28,6 +28,9 @@ import android.util.Log;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import au.com.newint.newinternationalist.Helpers;
 import au.com.newint.newinternationalist.MainActivity;
 import au.com.newint.newinternationalist.R;
@@ -44,32 +47,40 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     // [START receive_message]
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
-        // TODO(developer): Handle FCM messages here.
+        // Handle FCM messages here.
         // If the application is in the foreground handle both data and notification messages here.
         // Also if you intend on generating your own notifications as a result of a received FCM
         // message, here is where that should be initiated. See sendNotification method below.
         Helpers.debugLog(TAG, "From: " + remoteMessage.getFrom());
         Helpers.debugLog(TAG, "Notification Message Body: " + remoteMessage.getNotification().getBody());
-        sendNotification(remoteMessage.getNotification().getBody(), Helpers.getNotificationTitle());
+        sendNotification(remoteMessage.getData());
     }
     // [END receive_message]
 
     /**
      * Create and show a simple notification containing the received FCM message.
      *
-     * @param messageBody FCM message body received.
+     * @param data FCM data received.
      */
-    private void sendNotification(String messageBody, String messageTitle) {
+    private void sendNotification(Map<String, String> data) {
         Intent intent = new Intent(this, MainActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+
+        // TODO: setting the issueID only works when the app is open.. how do we do this for the background?
+        if (data.get("issueID") != null && data.get("articleID") != null) {
+            intent.setData(Uri.parse("newint://issues/" + data.get("issueID") + "/articles/" + data.get("articleID")));
+        } else if (data.get("railsID") != null) {
+            intent.setData(Uri.parse("newint://issues/" + data.get("railsID")));
+        }
+
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0 /* Request code */, intent,
                 PendingIntent.FLAG_ONE_SHOT);
 
         Uri defaultSoundUri= RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this)
                 .setSmallIcon(R.drawable.ni_notification)
-                .setContentTitle(messageTitle)
-                .setContentText(messageBody)
+                .setContentTitle(data.get("title"))
+                .setContentText(data.get("body"))
                 .setAutoCancel(true)
                 .setSound(defaultSoundUri)
                 .setContentIntent(pendingIntent);
