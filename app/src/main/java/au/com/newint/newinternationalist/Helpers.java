@@ -466,9 +466,7 @@ public class Helpers {
                 URL url = null;
                 try {
                     url = new URL(Helpers.getSiteURL() + "push_registrations");
-                    // Test server
-//                    url = new URL("http://192.168.178.47:3000/push_registrations");
-                    HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+                    HttpsURLConnection urlConnection = (HttpsURLConnection) url.openConnection();
                     try {
                         urlConnection.setDoOutput(true);
                         urlConnection.setChunkedStreamingMode(0);
@@ -494,9 +492,7 @@ public class Helpers {
                     } finally {
                         urlConnection.disconnect();
                     }
-                } catch (MalformedURLException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
+                } catch (Exception e) {
                     e.printStackTrace();
                 }
 
