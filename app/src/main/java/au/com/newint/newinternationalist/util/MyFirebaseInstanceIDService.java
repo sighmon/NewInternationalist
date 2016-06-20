@@ -16,10 +16,25 @@
 
 package au.com.newint.newinternationalist.util;
 
+import android.net.Uri;
+import android.os.AsyncTask;
 import android.util.Log;
 
 import com.google.firebase.iid.FirebaseInstanceId;
 import com.google.firebase.iid.FirebaseInstanceIdService;
+
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+
+import javax.net.ssl.HttpsURLConnection;
 
 import au.com.newint.newinternationalist.Helpers;
 
@@ -40,7 +55,7 @@ public class MyFirebaseInstanceIDService extends FirebaseInstanceIdService {
         String refreshedToken = FirebaseInstanceId.getInstance().getToken();
         Helpers.debugLog(TAG, "Refreshed token: " + refreshedToken);
 
-        // TODO: Implement this method to send any registration to your app's servers.
+        // Send to our Rails server
         sendRegistrationToServer(refreshedToken);
     }
     // [END refresh_token]
@@ -53,8 +68,10 @@ public class MyFirebaseInstanceIDService extends FirebaseInstanceIdService {
      *
      * @param token The new token.
      */
-    private void sendRegistrationToServer(String token) {
-        // Add custom implementation, as needed.
-        Helpers.debugLog(TAG, "TODO: Send token to server: " + token);
+    private void sendRegistrationToServer(final String token) {
+
+        Helpers.debugLog(TAG, "Sending token to server: " + token);
+
+        Helpers.sendPushRegistrationToServer(token);
     }
 }

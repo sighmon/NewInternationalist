@@ -11,6 +11,8 @@ import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Environment;
 import android.os.StatFs;
@@ -31,11 +33,18 @@ import com.google.firebase.crash.FirebaseCrash;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.TrueFileFilter;
 
+import java.io.BufferedOutputStream;
+import java.io.BufferedWriter;
 import java.io.Console;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.net.URLDecoder;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -49,6 +58,7 @@ import java.util.logging.Logger;
 import javax.crypto.Cipher;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.SecretKeySpec;
+import javax.net.ssl.HttpsURLConnection;
 
 import au.com.newint.newinternationalist.util.IabHelper;
 import au.com.newint.newinternationalist.util.Purchase;
@@ -444,5 +454,60 @@ public class Helpers {
 
     public static void crashLog(String message) {
         FirebaseCrash.log(message);
+    }
+
+    public static void sendPushRegistrationToServer(final String token) {
+        new AsyncTask<Void, Void, Void>() {
+
+            @Override
+            protected Void doInBackground(Void... params) {
+
+                // Try posting to the server
+                URL url = null;
+                try {
+                    url = new URL(Helpers.getSiteURL() + "push_registrations");
+                    // Test server
+//                    url = new URL("http://192.168.178.47:3000/push_registrations");
+                    HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+                    try {
+                        urlConnection.setDoOutput(true);
+                        urlConnection.setChunkedStreamingMode(0);
+                        urlConnection.setRequestMethod("POST");
+
+                        OutputStream out = new BufferedOutputStream(urlConnection.getOutputStream());
+
+                        Uri.Builder builder = new Uri.Builder()
+                                .appendQueryParameter("token", token)
+                                .appendQueryParameter("device", "android");
+                        String query = builder.build().getEncodedQuery();
+
+                        BufferedWriter writer = new BufferedWriter(
+                                new OutputStreamWriter(out, "UTF-8"));
+                        writer.write(query);
+                        writer.flush();
+                        writer.close();
+
+                        Helpers.debugLog("PushRegistrations", "Response from server: " + urlConnection.getResponseCode());
+
+//                        InputStream in = new BufferedInputStream(urlConnection.getInputStream());
+//                        readStream(in);
+                    } finally {
+                        urlConnection.disconnect();
+                    }
+                } catch (MalformedURLException e) {
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(Void unused) {
+                //
+
+            }
+        }.execute();
     }
 }

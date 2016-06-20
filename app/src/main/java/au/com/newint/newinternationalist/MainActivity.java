@@ -117,8 +117,10 @@ public class MainActivity extends ActionBarActivity {
 //        Helpers.crashLog("Newint crash log test.");
 //        Helpers.crash("Newint non-fatal test crash!");
 
-        // Get install ID from Firebase
-        Helpers.debugLog(TAG, "InstanceID token: " + FirebaseInstanceId.getInstance().getToken());
+        // Get install ID from Firebase and send to our server asyncrynously.
+        String pushRegistrationToken = FirebaseInstanceId.getInstance().getToken();
+        Helpers.debugLog(TAG, "Sending Push Registration token to server: " + pushRegistrationToken);
+        Helpers.sendPushRegistrationToServer(pushRegistrationToken);
 
         // Setup push notifications
         // TODO: Check for PlayServices?
