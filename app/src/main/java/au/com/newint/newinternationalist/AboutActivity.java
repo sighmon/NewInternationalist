@@ -16,6 +16,8 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.TextView;
 
+import com.google.firebase.iid.FirebaseInstanceId;
+
 
 public class AboutActivity extends ActionBarActivity {
 
@@ -61,8 +63,8 @@ public class AboutActivity extends ActionBarActivity {
 
             @Override
             public boolean onLongClick(View v) {
-                // TODO: get the GCM token/id
-                String parseID = "TODO: GET GCM TOKEN";
+                // get the GCM token/id
+                String parseID = FirebaseInstanceId.getInstance().getToken();
                 AlertDialog.Builder builder = new AlertDialog.Builder(v.getContext());
                 builder.setMessage(parseID).setTitle(R.string.parse_id_dialog_title);
                 builder.setPositiveButton(R.string.parse_id_dialog_ok_button, new DialogInterface.OnClickListener() {
