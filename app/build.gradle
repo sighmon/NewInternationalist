@@ -10,12 +10,12 @@ android {
         applicationId "au.com.newint.newinternationalist"
         minSdkVersion 15
         targetSdkVersion 23
-        versionCode 55
-        versionName '1.1.8'
+        versionCode 56
+        versionName '1.2.0'
     }
     buildTypes {
         release {
-            minifyEnabled false
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
@@ -39,5 +39,8 @@ dependencies {
     compile 'com.google.firebase:firebase-crash:9.0.2'
     compile 'com.google.firebase:firebase-messaging:9.0.2'
 }
+
+
+
 
 apply plugin: 'com.google.gms.google-services'
