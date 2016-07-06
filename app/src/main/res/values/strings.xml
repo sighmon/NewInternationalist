@@ -149,7 +149,7 @@
     <string name="login_forgotten_password">Forgot your password?</string>
     <string name="login_sign_up">Sign-up</string>
     <string name="preload_articles_failed_dialog_title">Error!</string>
-    <string name="preload_articles_failed_dialog_message">I\'m very sorry, but it looks like there\'s some trouble connecting with our server. You can either try again or send us an email to let us know.</string>
+    <string name="preload_articles_failed_dialog_message">Do you have internet access? I\'m very sorry, but it looks like there\'s some trouble connecting with our server. You can either try again or send us an email to let us know.</string>
     <string name="preload_articles_failed_dialog_email_subject">Android app error - preload articles failed...</string>
     <string name="preload_articles_dialog_email_body">Hi, the preload articles on the table of contents failed:</string>
     <string name="login_error_server_error">Sorry, it looks like our server has a problem. Please try again later.</string>

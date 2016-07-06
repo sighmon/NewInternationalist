@@ -247,9 +247,14 @@ public class Issue implements Parcelable {
 
                 ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(payload);
                 InputStreamReader inputStreamReader = new InputStreamReader(byteArrayInputStream);
-                JsonElement root = new JsonParser().parse(inputStreamReader);
+                JsonElement root = null;
+                try {
+                    root = new JsonParser().parse(inputStreamReader);
+                } catch (Exception e) {
+                    Log.e("Issue", "Preload articles got error: " + e);
+                }
 
-                if (root.isJsonNull()) {
+                if (root == null || root.isJsonNull()) {
                     //TODO: got null json, now what?
                     // doing nothing seems to work...
                     Log.e("Issue", "Preload articles returned a JsonNull root.");

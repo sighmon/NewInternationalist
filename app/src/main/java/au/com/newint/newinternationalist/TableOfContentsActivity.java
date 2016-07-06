@@ -202,7 +202,7 @@ public class TableOfContentsActivity extends ActionBarActivity {
                         // Articles have preloaded, so sort them into the layoutList
                         ArrayList<Article> articles = issue.getArticles();
 
-                        if (articles != null) {
+                        if (articles != null && articles.size() > 0) {
                             populateLayoutListFromArticles(articles);
                             Helpers.debugLog("PreloadArticles", "Total Articles: " + articles.size());
                             Helpers.debugLog("PreloadArticles", "LayoutList: " + layoutList.size());
