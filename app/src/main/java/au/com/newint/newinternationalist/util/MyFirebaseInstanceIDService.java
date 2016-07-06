@@ -70,8 +70,6 @@ public class MyFirebaseInstanceIDService extends FirebaseInstanceIdService {
      */
     private void sendRegistrationToServer(final String token) {
 
-        Helpers.debugLog(TAG, "Sending token to server: " + token);
-
         Helpers.sendPushRegistrationToServer(token);
     }
 }

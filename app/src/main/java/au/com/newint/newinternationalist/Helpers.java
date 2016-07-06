@@ -79,7 +79,7 @@ public class Helpers {
     public static final int GOOGLE_PLAY_MAX_SKU_LIST_SIZE = 16;
     public static final String GOOGLE_PLAY_APP_URL = "https://play.google.com/store/apps/details?id=" + ((MainActivity.applicationContext.getPackageName() == null) ? "" : MainActivity.applicationContext.getPackageName());
 
-    public static final boolean debugMode = (MainActivity.applicationContext.getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0;
+    public static final boolean debugMode = BuildConfig.DEBUG;
 
     public static boolean emulator = Build.FINGERPRINT.contains("generic");
 
@@ -465,7 +465,16 @@ public class Helpers {
                 // Try posting to the server
                 URL url = null;
                 try {
-                    url = new URL(Helpers.getSiteURL() + "push_registrations");
+                    String pushRegistrationsString = "";
+                    if (BuildConfig.DEBUG) {
+                        // Local debug site
+                        pushRegistrationsString = getVariableFromConfig("DEBUG_SITE_URL") + "push_registrations";
+                    } else {
+                        // Real server
+                        pushRegistrationsString = Helpers.getSiteURL() + "push_registrations";
+                    }
+                    Helpers.debugLog("PushRegistrations", "Sending token: " + token + ", to server: " + pushRegistrationsString);
+                    url = new URL(pushRegistrationsString);
                     HttpsURLConnection urlConnection = (HttpsURLConnection) url.openConnection();
                     try {
                         urlConnection.setDoOutput(true);

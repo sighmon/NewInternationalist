@@ -389,7 +389,7 @@ public class ArticleActivity extends AppCompatActivity {
                 final WebView articleBody = (WebView) rootView.findViewById(R.id.article_body);
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                    if (0 != (MainActivity.applicationContext.getApplicationInfo().flags &= ApplicationInfo.FLAG_DEBUGGABLE)) {
+                    if (BuildConfig.DEBUG) {
                         // Allow debugging via chrome if app is in debug build
                         WebView.setWebContentsDebuggingEnabled(true);
                     }
