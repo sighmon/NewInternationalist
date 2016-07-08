@@ -367,12 +367,16 @@ public class Helpers {
         boolean allowAnonymousStatistics = getFromPrefs(MainActivity.applicationContext.getResources().getString(R.string.allow_anonymous_statistics_key), false);
         if (allowAnonymousStatistics && App.tracker != null) {
             // Send analytics event
-            App.tracker.send(new HitBuilders.EventBuilder()
-                    .setCategory(category)
-                    .setAction(action)
-                    .setLabel(label)
-                    .setValue((long) Float.parseFloat(value))
-                    .build());
+            try {
+                App.tracker.send(new HitBuilders.EventBuilder()
+                        .setCategory(category)
+                        .setAction(action)
+                        .setLabel(label)
+                        .setValue((long) Float.parseFloat(value))
+                        .build());
+            } catch (Exception e) {
+                Helpers.debugLog("Analytics", "ERROR: Couldn't send inapp purchase analytics - " + e);
+            }
         }
     }
 
@@ -384,10 +388,14 @@ public class Helpers {
             if (productPurchased != null) {
                 purchasePrice = productPurchased.getPrice();
             }
-            AdWordsConversionReporter.reportWithConversionId(MainActivity.applicationContext,
-                    Helpers.getVariableFromConfig("ADWORDS_ID"),
-                    Helpers.getVariableFromConfig("ADWORDS_KEY"),
-                    purchasePrice, true);
+            try {
+                AdWordsConversionReporter.reportWithConversionId(MainActivity.applicationContext,
+                        Helpers.getVariableFromConfig("ADWORDS_ID"),
+                        Helpers.getVariableFromConfig("ADWORDS_KEY"),
+                        purchasePrice, true);
+            } catch (Exception e) {
+                Helpers.debugLog("Analytics", "ERROR: Couldn't send inapp purchase adwords conversion - " + e);
+            }
         }
     }
 
