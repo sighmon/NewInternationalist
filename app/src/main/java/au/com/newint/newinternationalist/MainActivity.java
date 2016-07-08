@@ -778,6 +778,13 @@ public class MainActivity extends ActionBarActivity {
 
                     Helpers.savePassword(mPassword);
 
+                    // Let listener know
+                    for (Publisher.LoginListener listener : Publisher.INSTANCE.loginListeners) {
+                        Helpers.debugLog("Login", "Sending listener login success: True");
+                        // Pass in login success boolean
+                        listener.onUpdate(success);
+                    }
+
                 } else if (responseStatusCode > 400 && responseStatusCode < 500) {
                     // Login was incorrect.
                     Helpers.debugLog("Home login", "Failed with code: " + responseStatusCode);

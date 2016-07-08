@@ -282,27 +282,27 @@ public class SubscribeActivity extends ActionBarActivity {
                                     // Update subscription status.
                                     Helpers.debugLog("Subscribe", "Purchase succeeded: " + purchase.getItemType());
                                     // Send analytics event if user permits
-                                    Helpers.sendGoogleAnalyticsEvent("Google Play", "Purchase", purchase.getItemType());
                                     SkuDetails productPurchased = null;
                                     productPurchased = getProductForPurchase(purchase);
+                                    Helpers.sendGoogleAnalyticsEvent("Google Play", "Subscription", purchase.getItemType(), productPurchased.getPrice());
                                     Helpers.sendGoogleAdwordsConversion(productPurchased);
 
                                 } else if (purchase.getSku().equals(Helpers.ONE_MONTH_SUBSCRIPTION_ID)) {
                                     // Update subscription status.
                                     Helpers.debugLog("Subscribe", "Purchase succeeded: " + purchase.getItemType());
                                     // Send analytics event if user permits
-                                    Helpers.sendGoogleAnalyticsEvent("Google Play", "Purchase", purchase.getItemType());
                                     SkuDetails productPurchased = null;
                                     productPurchased = getProductForPurchase(purchase);
+                                    Helpers.sendGoogleAnalyticsEvent("Google Play", "Subscription", purchase.getItemType(), productPurchased.getPrice());
                                     Helpers.sendGoogleAdwordsConversion(productPurchased);
                                 } else {
                                     // Handle individual purchases
                                     Helpers.debugLog("Subscribe", "Individual purchase: " + purchase.getItemType());
                                     adapter.notifyDataSetChanged();
                                     // Send analytics event if user permits
-                                    Helpers.sendGoogleAnalyticsEvent("Google Play", "Purchase", purchase.getItemType());
                                     SkuDetails productPurchased = null;
                                     productPurchased = getProductForPurchase(purchase);
+                                    Helpers.sendGoogleAnalyticsEvent("Google Play", "Purchase", purchase.getItemType(), productPurchased.getPrice());
                                     Helpers.sendGoogleAdwordsConversion(productPurchased);
                                 }
                             }

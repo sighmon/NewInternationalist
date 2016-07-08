@@ -360,6 +360,10 @@ public class Helpers {
     }
 
     public static void sendGoogleAnalyticsEvent(String category, String action, String label) {
+        sendGoogleAnalyticsEvent(category, action, label, "0");
+    }
+
+    public static void sendGoogleAnalyticsEvent(String category, String action, String label, String value) {
         boolean allowAnonymousStatistics = getFromPrefs(MainActivity.applicationContext.getResources().getString(R.string.allow_anonymous_statistics_key), false);
         if (allowAnonymousStatistics && App.tracker != null) {
             // Send analytics event
@@ -367,6 +371,7 @@ public class Helpers {
                     .setCategory(category)
                     .setAction(action)
                     .setLabel(label)
+                    .setValue((long) Float.parseFloat(value))
                     .build());
         }
     }
