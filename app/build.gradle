@@ -10,8 +10,8 @@ android {
         applicationId "au.com.newint.newinternationalist"
         minSdkVersion 15
         targetSdkVersion 23
-        versionCode 58
-        versionName '1.2.0'
+        versionCode 59
+        versionName '1.2.1'
     }
     buildTypes {
         release {
@@ -40,6 +40,9 @@ dependencies {
     compile 'com.google.firebase:firebase-crash:9.0.2'
     compile 'com.google.firebase:firebase-messaging:9.0.2'
 }
+
+
+
 
 
 
