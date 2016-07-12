@@ -357,8 +357,8 @@ public class Helpers {
             try {
                 Bundle bundle = new Bundle();
 //                bundle.putString(FirebaseAnalytics.Param.ITEM_ID, id);
-                bundle.putString(FirebaseAnalytics.Param.ITEM_NAME, screenName);
-                bundle.putString(FirebaseAnalytics.Param.CONTENT_TYPE, "pageView");
+                bundle.putString(FirebaseAnalytics.Param.ITEM_NAME, "pageView");
+                bundle.putString(FirebaseAnalytics.Param.CONTENT_TYPE, screenName);
                 mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle);
             } catch (Exception e) {
                 Log.e("FirebaseAnalytics", "ERROR: Failed to log event. " + e);
