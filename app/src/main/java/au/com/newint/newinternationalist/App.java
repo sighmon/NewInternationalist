@@ -11,6 +11,7 @@ import android.util.Log;
 import com.google.android.gms.analytics.GoogleAnalytics;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
+import com.google.firebase.analytics.FirebaseAnalytics;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,8 +25,8 @@ public class App extends Application {
     // Avoid a crash when you receive a push notification while the app is shut
 
     // Google Analytics
-    public static GoogleAnalytics analytics;
-    public static Tracker tracker;
+//    public static GoogleAnalytics analytics;
+//    public static Tracker tracker;
 
     @Override
     public void onCreate() {
@@ -40,21 +41,13 @@ public class App extends Application {
 
         // Setup google analytics if the user has allowed it
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        boolean allowAnonymousStatistics = sharedPreferences.getBoolean(getResources().getString(R.string.allow_anonymous_statistics_key), false);
+        boolean allowAnonymousStatistics = sharedPreferences.getBoolean(getResources().getString(R.string.allow_anonymous_statistics_key), true);
+        FirebaseAnalytics firebaseAnalytics = FirebaseAnalytics.getInstance(MainActivity.applicationContext);
         if (allowAnonymousStatistics) {
-            analytics = GoogleAnalytics.getInstance(this);
-            analytics.setLocalDispatchPeriod(1800);
-            String analyticsID = getVariableFromConfig("GOOGLE_ANALYTICS");
-            if (BuildConfig.DEBUG) {
-                analyticsID = getVariableFromConfig("GOOGLE_ANALYTICS_DEV");
-            }
-            tracker = analytics.newTracker(analyticsID);
-            tracker.enableExceptionReporting(true);
-            tracker.enableAdvertisingIdCollection(true);
-            tracker.enableAutoActivityTracking(false);
-            // Not sending app launched analytics anymore.. seems to be called a lot, perhaps in low memory situations.
-            // tracker.setScreenName(getResources().getString(R.string.app_launched_analytics));
-            // tracker.send(new HitBuilders.ScreenViewBuilder().build());
+            // Now using Firebase.
+            firebaseAnalytics.setAnalyticsCollectionEnabled(true);
+        } else {
+            firebaseAnalytics.setAnalyticsCollectionEnabled(false);
         }
     }
 

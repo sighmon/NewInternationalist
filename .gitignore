@@ -11,3 +11,5 @@ manifest-merger-release-report.txt
 config.properties
 notes.txt
 google-services.json
+projectFilesBackup/*
+

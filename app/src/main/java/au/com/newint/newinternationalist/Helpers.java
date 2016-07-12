@@ -14,6 +14,7 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.Environment;
 import android.os.StatFs;
 import android.preference.PreferenceManager;
@@ -28,6 +29,7 @@ import com.google.ads.conversiontracking.AdWordsConversionReporter;
 import com.google.android.gms.analytics.GoogleAnalytics;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
+import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.crash.FirebaseCrash;
 
 import org.apache.commons.io.FileUtils;
@@ -82,6 +84,8 @@ public class Helpers {
     public static final boolean debugMode = BuildConfig.DEBUG;
 
     public static boolean emulator = Build.FINGERPRINT.contains("generic");
+
+    private static FirebaseAnalytics mFirebaseAnalytics;
 
     public static float screenHeight() {
         DisplayMetrics displayMetrics = MainActivity.applicationContext.getResources().getDisplayMetrics();
@@ -346,16 +350,19 @@ public class Helpers {
 
     public static void sendGoogleAnalytics(String screenName) {
         boolean allowAnonymousStatistics = getFromPrefs(MainActivity.applicationContext.getResources().getString(R.string.allow_anonymous_statistics_key), false);
-        if (allowAnonymousStatistics && App.tracker != null) {
+        if (allowAnonymousStatistics) {
 
-            // Get tracker.
-            Tracker t = App.tracker;
-
-            // Set screen name.
-            t.setScreenName(screenName);
-
-            // Send a screen view.
-            t.send(new HitBuilders.ScreenViewBuilder().build());
+            // Obtain the FirebaseAnalytics instance.
+            mFirebaseAnalytics = FirebaseAnalytics.getInstance(MainActivity.applicationContext);
+            try {
+                Bundle bundle = new Bundle();
+//                bundle.putString(FirebaseAnalytics.Param.ITEM_ID, id);
+                bundle.putString(FirebaseAnalytics.Param.ITEM_NAME, screenName);
+                bundle.putString(FirebaseAnalytics.Param.CONTENT_TYPE, "pageView");
+                mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle);
+            } catch (Exception e) {
+                Log.e("FirebaseAnalytics", "ERROR: Failed to log event. " + e);
+            }
         }
     }
 
@@ -365,17 +372,29 @@ public class Helpers {
 
     public static void sendGoogleAnalyticsEvent(String category, String action, String label, String value) {
         boolean allowAnonymousStatistics = getFromPrefs(MainActivity.applicationContext.getResources().getString(R.string.allow_anonymous_statistics_key), false);
-        if (allowAnonymousStatistics && App.tracker != null) {
+        if (allowAnonymousStatistics) {
             // Send analytics event
+//            try {
+//                App.tracker.send(new HitBuilders.EventBuilder()
+//                        .setCategory(category)
+//                        .setAction(action)
+//                        .setLabel(label)
+//                        .setValue((long) Float.parseFloat(value))
+//                        .build());
+//            } catch (Exception e) {
+//                Helpers.debugLog("Analytics", "ERROR: Couldn't send inapp purchase analytics - " + e);
+//            }
+
+            mFirebaseAnalytics = FirebaseAnalytics.getInstance(MainActivity.applicationContext);
             try {
-                App.tracker.send(new HitBuilders.EventBuilder()
-                        .setCategory(category)
-                        .setAction(action)
-                        .setLabel(label)
-                        .setValue((long) Float.parseFloat(value))
-                        .build());
+                Bundle bundle = new Bundle();
+                bundle.putString(FirebaseAnalytics.Param.ITEM_CATEGORY, category);
+                bundle.putString(FirebaseAnalytics.Param.ITEM_NAME, action);
+                bundle.putString(FirebaseAnalytics.Param.CONTENT_TYPE, label);
+                bundle.putString(FirebaseAnalytics.Param.VALUE, value);
+                mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.ECOMMERCE_PURCHASE, bundle);
             } catch (Exception e) {
-                Helpers.debugLog("Analytics", "ERROR: Couldn't send inapp purchase analytics - " + e);
+                Log.e("FirebaseAnalytics", "ERROR: Failed to log event. " + e);
             }
         }
     }
