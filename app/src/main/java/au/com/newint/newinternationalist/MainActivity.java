@@ -117,20 +117,6 @@ public class MainActivity extends ActionBarActivity {
 //        Helpers.crashLog("Newint crash log test.");
 //        Helpers.crash("Newint non-fatal test crash!");
 
-        // Get install ID from Firebase and send to our server asyncrynously.
-        // Don't need to do this in the end.. first install will also call onTokenRefresh();
-//        String pushRegistrationToken = FirebaseInstanceId.getInstance().getToken();
-//        Helpers.debugLog(TAG, "Sending Push Registration token to server: " + pushRegistrationToken);
-//        Helpers.sendPushRegistrationToServer(pushRegistrationToken);
-
-        // Setup push notifications
-        // TODO: Check for PlayServices?
-//        if (checkPlayServices()) {
-//            // Start IntentService to register this application with GCM.
-//            Intent intent = new Intent(this, RegistrationIntentService.class);
-//            startService(intent);
-//        }
-
         if (getIntent().getBooleanExtra("EXIT", false)) {
             System.exit(0);
         }
@@ -247,7 +233,19 @@ public class MainActivity extends ActionBarActivity {
     protected void onNewIntent(Intent intent) {
         String action = intent.getAction();
         String data = intent.getDataString();
-        if (Intent.ACTION_VIEW.equals(action) && data != null) {
+        Bundle extras = intent.getExtras();
+        if (data == null && extras != null) {
+            // Push notification - handle extras
+            String railsID = (String) extras.get("railsID");
+            String issueID = (String) extras.get("issueID");
+            String articleID = (String) extras.get("articleID");
+            if (railsID != null) {
+                data = "/issues/" + railsID;
+            } else if (issueID != null && articleID != null) {
+                data = "/issues/" + issueID + "/articles/" + articleID;
+            }
+        }
+        if (data != null && (Intent.ACTION_VIEW.equals(action) || Intent.ACTION_MAIN.equals(action))) {
             // Parse magazine and or article ID and start intent
             if (data.matches("(.*)/issues/(\\d+)/articles/(\\d+)") || data.matches("(.*)/issues/(\\d+)/articles/(\\d+)/")) {
                 // It's an article deep link
