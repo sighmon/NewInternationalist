@@ -1,5 +1,6 @@
 package au.com.newint.newinternationalist;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -214,31 +215,34 @@ public class TableOfContentsActivity extends ActionBarActivity {
                         } else {
                             Log.e("PreloadArticles", "Table of contents PreloadArticles returned null.");
                             // Alert the user of the error.
-                            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-                            builder.setMessage(getResources().getString(R.string.preload_articles_failed_dialog_message)).setTitle(R.string.preload_articles_failed_dialog_title);
-                            builder.setPositiveButton(R.string.zip_download_dialog_ok_button, new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int id) {
-                                    // User clicked OK button
-                                    getActivity().finish();
-                                }
-                            });
-                            builder.setNeutralButton(R.string.zip_download_dialog_email_dev_button, new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int id) {
-                                    // User wants to let us know about it...
-                                    Intent intent = new Intent(Intent.ACTION_SEND);
-                                    String[] email = new String[]{Helpers.getVariableFromConfig("EMAIL_ADDRESS")};
-                                    intent.setType("text/plain");
-                                    intent.putExtra(Intent.EXTRA_EMAIL, email);
-                                    intent.putExtra(Intent.EXTRA_SUBJECT, getResources().getString(R.string.preload_articles_failed_dialog_email_subject));
-                                    intent.putExtra(Intent.EXTRA_TEXT, getResources().getString(R.string.preload_articles_dialog_email_body)
-                                            + "' For IssueID: " + issue.getID());
+                            Activity activity = getActivity();
+                            if (activity != null) {
+                                AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+                                builder.setMessage(getResources().getString(R.string.preload_articles_failed_dialog_message)).setTitle(R.string.preload_articles_failed_dialog_title);
+                                builder.setPositiveButton(R.string.zip_download_dialog_ok_button, new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int id) {
+                                        // User clicked OK button
+                                        getActivity().finish();
+                                    }
+                                });
+                                builder.setNeutralButton(R.string.zip_download_dialog_email_dev_button, new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int id) {
+                                        // User wants to let us know about it...
+                                        Intent intent = new Intent(Intent.ACTION_SEND);
+                                        String[] email = new String[]{Helpers.getVariableFromConfig("EMAIL_ADDRESS")};
+                                        intent.setType("text/plain");
+                                        intent.putExtra(Intent.EXTRA_EMAIL, email);
+                                        intent.putExtra(Intent.EXTRA_SUBJECT, getResources().getString(R.string.preload_articles_failed_dialog_email_subject));
+                                        intent.putExtra(Intent.EXTRA_TEXT, getResources().getString(R.string.preload_articles_dialog_email_body)
+                                                + "' For IssueID: " + issue.getID());
 
-                                    startActivity(Intent.createChooser(intent, getResources().getString(R.string.zip_download_dialog_email_chooser)));
-                                }
-                            });
-                            AlertDialog dialog = builder.create();
-                            dialog.show();
+                                        startActivity(Intent.createChooser(intent, getResources().getString(R.string.zip_download_dialog_email_chooser)));
+                                    }
+                                });
+                                AlertDialog dialog = builder.create();
+                                dialog.show();
+                            }
                         }
                     }
 
