@@ -395,11 +395,12 @@ public class MainActivity extends ActionBarActivity {
         Publisher.UpdateListener listener;
         Publisher.LoginListener loginListener;
         Publisher.SubscriptionListener subscriptionListener;
+        static View rootView;
 
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container,
                                  Bundle savedInstanceState) {
-            final View rootView = inflater.inflate(R.layout.fragment_main, container, false);
+            rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
             // Setup loading spinner
             loadingSpinner = (ProgressBar) rootView.findViewById(R.id.home_cover_loading_spinner);
@@ -545,8 +546,7 @@ public class MainActivity extends ActionBarActivity {
             // Check if we're logged in
             if (Publisher.INSTANCE.loggedIn) {
                 // Set login text to Logged in
-                Button loginButton = (Button) rootView.findViewById(R.id.home_login);
-                loginButton.setText("Logged in");
+                setLoginTextToLoggedIn();
             }
 
             // Add listener for login successful!
@@ -554,8 +554,15 @@ public class MainActivity extends ActionBarActivity {
 
                 @Override
                 public void onUpdate(Object object) {
-                    Button loginButton = (Button) rootView.findViewById(R.id.home_login);
-                    loginButton.setText("Logged in");
+                    getActivity().runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+
+                            // Set login text.
+                            setLoginTextToLoggedIn();
+
+                        }
+                    });
                 }
             };
             Publisher.INSTANCE.setLoggedInListener(loginListener);
@@ -714,6 +721,11 @@ public class MainActivity extends ActionBarActivity {
             return false;
         }
         return true;
+    }
+
+    public static void setLoginTextToLoggedIn() {
+        Button loginButton = (Button) MainFragment.rootView.findViewById(R.id.home_login);
+        loginButton.setText("Logged in");
     }
 
     // User login to Rails in the background, but silently fail
