@@ -1,5 +1,6 @@
 package au.com.newint.newinternationalist;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.app.SearchManager;
@@ -554,15 +555,18 @@ public class MainActivity extends ActionBarActivity {
 
                 @Override
                 public void onUpdate(Object object) {
-                    getActivity().runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
+                    Activity mainActivity = getActivity();
+                    if (mainActivity != null) {
+                        mainActivity.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
 
-                            // Set login text.
-                            setLoginTextToLoggedIn();
+                                // Set login text.
+                                setLoginTextToLoggedIn();
 
-                        }
-                    });
+                            }
+                        });
+                    }
                 }
             };
             Publisher.INSTANCE.setLoggedInListener(loginListener);
@@ -570,8 +574,7 @@ public class MainActivity extends ActionBarActivity {
             // Check if there's a valid subscription
             if (Publisher.INSTANCE.hasValidSubscription) {
                 // Set subscription text to Thanks for Subscribing
-                Button subscribeButton = (Button) rootView.findViewById(R.id.home_subscribe);
-                subscribeButton.setText("Thanks for subscribing");
+                setSubscribeTextToSubscribed();
             }
 
             // Add listener for subscriptions
@@ -579,8 +582,17 @@ public class MainActivity extends ActionBarActivity {
 
                 @Override
                 public void onUpdate(Object object) {
-                    Button subscribeButton = (Button) rootView.findViewById(R.id.home_subscribe);
-                    subscribeButton.setText("Thanks for subscribing");
+                    Activity mainActivity = getActivity();
+                    if (mainActivity != null) {
+                        mainActivity.runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+
+                                // Set subscribe text.
+                                setSubscribeTextToSubscribed();
+                            }
+                        });
+                    }
                 }
             };
             Publisher.INSTANCE.setSubscriptionListener(subscriptionListener);
@@ -725,7 +737,12 @@ public class MainActivity extends ActionBarActivity {
 
     public static void setLoginTextToLoggedIn() {
         Button loginButton = (Button) MainFragment.rootView.findViewById(R.id.home_login);
-        loginButton.setText("Logged in");
+        loginButton.setText(R.string.home_logged_in);
+    }
+
+    public static void setSubscribeTextToSubscribed() {
+        Button subscribeButton = (Button) MainFragment.rootView.findViewById(R.id.home_subscribe);
+        subscribeButton.setText(R.string.home_subscribed);
     }
 
     // User login to Rails in the background, but silently fail

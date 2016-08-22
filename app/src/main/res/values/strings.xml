@@ -10,6 +10,8 @@
     <string name="home_subscribe">Subscribe</string>
     <string name="home_magazine_archive">Magazines</string>
     <string name="home_login">Login</string>
+    <string name="home_logged_in">Logged in</string>
+    <string name="home_subscribed">Thanks for subscribing</string>
 
     <!-- Settings -->
     <string name="action_settings">Settings</string>
