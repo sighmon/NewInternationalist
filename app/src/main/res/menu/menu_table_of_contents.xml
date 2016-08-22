@@ -10,6 +10,12 @@
         app:showAsAction="never" />
 
     <item
+        android:id="@+id/increase_font_size"
+        android:title="@string/change_font_size"
+        android:orderInCategory="101"
+        app:showAsAction="never" />
+
+    <item
         android:id="@+id/menu_item_share"
         android:icon="@drawable/abc_ic_menu_share_mtrl_alpha"
         android:title="@string/action_share_toc"

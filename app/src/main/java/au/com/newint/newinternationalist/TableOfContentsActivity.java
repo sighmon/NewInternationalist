@@ -167,6 +167,18 @@ public class TableOfContentsActivity extends ActionBarActivity {
                 Helpers.sendGoogleAnalyticsEvent("Issue", "Share", issue.getWebURL().toString());
 
                 return true;
+            case R.id.increase_font_size:
+                // Increase font size
+                Helpers.changeFontSize(0.25f, this);
+                return true;
+            case R.id.default_font_size:
+                // Set default font size
+                Helpers.changeFontSize(1.0f, this);
+                return true;
+            case R.id.decrease_font_size:
+                // Decrease font size
+                Helpers.changeFontSize(-0.25f, this);
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }

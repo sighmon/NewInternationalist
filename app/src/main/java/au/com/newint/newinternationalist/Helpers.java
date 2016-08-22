@@ -547,4 +547,34 @@ public class Helpers {
             }
         }.execute();
     }
+
+    public static void changeFontSize(Float fontChange, Context context) {
+        if (context != null && Build.VERSION.SDK_INT >= 23) {
+            Boolean canWriteSettings = Settings.System.canWrite(context);
+            if (canWriteSettings) {
+                // Get system font scale, check it's between 0.5 and 2.0
+                Float currentFontScale = context.getResources().getConfiguration().fontScale;
+                Float newFontScale = currentFontScale + fontChange;
+                if (newFontScale < 0.5f || newFontScale > 2.0f) {
+                    // Don't change it, and use the currentFontScale
+                    newFontScale = currentFontScale;
+                }
+                if (fontChange == 1.0f) {
+                    // Reset to the default
+                    newFontScale = fontChange;
+                }
+                Helpers.debugLog("ChangeFontSize", String.format("Changing from %f to %f", currentFontScale, newFontScale));
+                Settings.System.putFloat(context.getContentResolver(),
+                        Settings.System.FONT_SCALE, newFontScale);
+            } else {
+                // Request permission
+                Intent writeIntent = new Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS);
+                context.startActivity(writeIntent);
+            }
+        } else if (context != null) {
+            // Take the user to font size settings
+            Intent settingsIntent = new Intent(Settings.ACTION_DISPLAY_SETTINGS);
+            context.startActivity(settingsIntent);
+        }
+    }
 }

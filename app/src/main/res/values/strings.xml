@@ -182,5 +182,9 @@
     <string name="move_storage_dialog_cancel_button">Cancel</string>
     <string name="gcm_send_message">Token retrieved and sent to server!</string>
     <string name="token_error_message">An error occurred while either fetching the InstanceID token,         sending the fetched token to the server or subscribing to the PubSub topic.</string>
+    <string name="increase_font_size">Bigger font size</string>
+    <string name="decrease_font_size">Smaller font size</string>
+    <string name="default_font_size">Default font size</string>
+    <string name="change_font_size">Change font size</string>
 
 </resources>

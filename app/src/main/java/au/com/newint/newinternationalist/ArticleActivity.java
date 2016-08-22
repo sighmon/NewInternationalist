@@ -6,10 +6,12 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
+import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.net.Uri;
 import android.os.Build;
+import android.provider.Settings;
 import android.support.v4.view.GestureDetectorCompat;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
@@ -104,7 +106,7 @@ public class ArticleActivity extends AppCompatActivity {
         Log.d("Subscribe", "onActivityResult(" + requestCode + "," + resultCode + "," + data);
 
         // Pass on the activity result to the helper for handling
-        if (!mHelper.handleActivityResult(requestCode, resultCode, data)) {
+        if (mHelper != null && !mHelper.handleActivityResult(requestCode, resultCode, data)) {
             // not handled, so handle it ourselves (here's where you'd
             // perform any handling of activity results not related to in-app
             // billing...
@@ -182,6 +184,18 @@ public class ArticleActivity extends AppCompatActivity {
 
         } else if (id == android.R.id.home) {
             finish();
+            return true;
+        } else if (id == R.id.increase_font_size) {
+            // Increase font size
+            Helpers.changeFontSize(0.25f, this);
+            return true;
+        } else if (id == R.id.default_font_size) {
+            // Set default font size
+            Helpers.changeFontSize(1.0f, this);
+            return true;
+        } else if (id == R.id.decrease_font_size) {
+            // Decrease font size
+            Helpers.changeFontSize(-0.25f, this);
             return true;
         }
 
