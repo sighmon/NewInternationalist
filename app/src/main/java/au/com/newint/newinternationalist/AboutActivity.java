@@ -65,7 +65,7 @@ public class AboutActivity extends ActionBarActivity {
             public boolean onLongClick(View v) {
                 // get the GCM token/id
                 String parseID = FirebaseInstanceId.getInstance().getToken();
-                AlertDialog.Builder builder = new AlertDialog.Builder(v.getContext());
+                AlertDialog.Builder builder = new AlertDialog.Builder(AboutActivity.this);
                 builder.setMessage(parseID).setTitle(R.string.parse_id_dialog_title);
                 builder.setPositiveButton(R.string.parse_id_dialog_ok_button, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
