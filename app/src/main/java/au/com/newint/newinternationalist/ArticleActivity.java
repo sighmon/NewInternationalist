@@ -530,7 +530,7 @@ public class ArticleActivity extends AppCompatActivity {
                                  Bundle savedInstanceState) {
 
             // Set a light theme
-            final Context contextThemeWrapper = new ContextThemeWrapper(getActivity(), R.style.ArticleTheme);
+            final Context contextThemeWrapper = new ContextThemeWrapper(MainActivity.applicationContext, R.style.ArticleTheme);
 
             // Clone the inflater using the ContextThemeWrapper to apply the theme
             LayoutInflater localInflater = inflater.cloneInContext(contextThemeWrapper);

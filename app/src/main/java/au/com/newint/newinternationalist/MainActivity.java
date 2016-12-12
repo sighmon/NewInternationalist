@@ -770,7 +770,7 @@ public class MainActivity extends ActionBarActivity {
             // Try to connect
             HttpContext ctx = new BasicHttpContext();
             ctx.setAttribute(ClientContext.COOKIE_STORE, Publisher.INSTANCE.cookieStore);
-            HttpPost post = new HttpPost(Helpers.getSiteURL() + "users/sign_in.json?username=" + mEmail);
+            HttpPost post = new HttpPost(Helpers.getSiteURL() + "users/sign_in.json");
             post.setHeader("Content-Type", "application/x-www-form-urlencoded");
             HttpResponse response = null;
 
