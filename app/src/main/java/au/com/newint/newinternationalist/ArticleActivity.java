@@ -1,5 +1,6 @@
 package au.com.newint.newinternationalist;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
@@ -607,31 +608,34 @@ public class ArticleActivity extends AppCompatActivity {
                             // Article request failed
                             Helpers.debugLog("ArticleBody", "Failed with code: " + responseStatusCode);
                             // Alert and intent to login.
-                            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-                            builder.setMessage(R.string.login_dialog_message_article_body).setTitle(R.string.login_dialog_title_article_body);
-                            builder.setPositiveButton(R.string.login_dialog_ok_button, new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int id) {
-                                    // User clicked OK button
-                                    Intent loginIntent = new Intent(rootView.getContext(), LoginActivity.class);
-                                    startActivity(loginIntent);
-                                }
-                            });
-                            builder.setNeutralButton(R.string.login_dialog_purchase_button, new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int id) {
-                                    // User clicked Purchase button
-                                    Intent subscribeIntent = new Intent(rootView.getContext(), SubscribeActivity.class);
-                                    startActivity(subscribeIntent);
-                                }
-                            });
-                            builder.setNegativeButton(R.string.login_dialog_cancel_button, new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int id) {
-                                    // User cancelled the dialog
-                                    getActivity().finish();
-                                }
-                            });
-                            AlertDialog dialog = builder.create();
-                            dialog.show();
+                            Activity alertActivity = getActivity();
+                            if (alertActivity != null) {
+                                AlertDialog.Builder builder = new AlertDialog.Builder(alertActivity);
+                                builder.setMessage(R.string.login_dialog_message_article_body).setTitle(R.string.login_dialog_title_article_body);
+                                builder.setPositiveButton(R.string.login_dialog_ok_button, new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int id) {
+                                        // User clicked OK button
+                                        Intent loginIntent = new Intent(rootView.getContext(), LoginActivity.class);
+                                        startActivity(loginIntent);
+                                    }
+                                });
+                                builder.setNeutralButton(R.string.login_dialog_purchase_button, new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int id) {
+                                        // User clicked Purchase button
+                                        Intent subscribeIntent = new Intent(rootView.getContext(), SubscribeActivity.class);
+                                        startActivity(subscribeIntent);
+                                    }
+                                });
+                                builder.setNegativeButton(R.string.login_dialog_cancel_button, new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int id) {
+                                        // User cancelled the dialog
+                                        getActivity().finish();
+                                    }
+                                });
+                                AlertDialog dialog = builder.create();
+                                dialog.show();
+                            }
 
                         } else {
                             // Server error.
@@ -642,7 +646,8 @@ public class ArticleActivity extends AppCompatActivity {
                     } else {
                         // Error getting article body
                         Helpers.debugLog("ArticleBody", "Failed! Response is null");
-                        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                        Activity alertActivity = getActivity();
+                        AlertDialog.Builder builder = new AlertDialog.Builder(alertActivity);
                         builder.setMessage(R.string.no_internet_dialog_message_article_body).setTitle(R.string.no_internet_dialog_title_article_body);
                         builder.setNegativeButton(R.string.no_internet_dialog_ok_button, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int id) {

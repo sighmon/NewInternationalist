@@ -494,19 +494,22 @@ public class MainActivity extends ActionBarActivity {
 
                     if (latestIssueOnFile == null) {
                         Helpers.debugLog("ArticleBody", "ERROR! No latestIssue() on fileSystem.");
-                        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-                        builder.setMessage(R.string.no_internet_dialog_message_article_body).setTitle(R.string.no_internet_dialog_title_article_body);
+                        Activity alertActivity = getActivity();
+                        if (alertActivity != null) {
+                            AlertDialog.Builder builder = new AlertDialog.Builder(alertActivity);
+                            builder.setMessage(R.string.no_internet_dialog_message_article_body).setTitle(R.string.no_internet_dialog_title_article_body);
 
-                        builder.setNegativeButton(R.string.no_internet_dialog_ok_button, new DialogInterface.OnClickListener() {
+                            builder.setNegativeButton(R.string.no_internet_dialog_ok_button, new DialogInterface.OnClickListener() {
 
-                            public void onClick(DialogInterface dialog, int id) {
-                                // User cancelled the dialog
-                                //finish();
-                            }
-                        });
+                                public void onClick(DialogInterface dialog, int id) {
+                                    // User cancelled the dialog
+                                    //finish();
+                                }
+                            });
 
-                        AlertDialog dialog = builder.create();
-                        dialog.show();
+                            AlertDialog dialog = builder.create();
+                            dialog.show();
+                        }
                         loadingSpinner.setVisibility(View.GONE);
                     } else {
 

@@ -1,5 +1,6 @@
 package au.com.newint.newinternationalist;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
@@ -244,32 +245,35 @@ public class SubscribeActivity extends ActionBarActivity {
                                 if (result.isFailure()) {
                                     if (result.getResponse() == 7) {
                                         // Already purchased!
-                                        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-                                        builder.setMessage(R.string.subscribe_already_purchased_message).setTitle(R.string.subscribe_already_purchased_title);
-                                        builder.setPositiveButton(R.string.subscribe_already_purchased_read_issue_button, new DialogInterface.OnClickListener() {
-                                            public void onClick(DialogInterface dialog, int id) {
-                                                // User clicked Read this issue button
-                                                Intent issueIntent = new Intent(rootView.getContext(), TableOfContentsActivity.class);
-                                                int issueNumber = Integer.parseInt(mProducts.get(mPositionTapped).getSku().replaceAll("[\\D]", ""));
-                                                Issue issueForIntent = null;
-                                                for (Issue issue : mIssueList) {
-                                                    if (issue.getNumber() == issueNumber) {
-                                                        issueForIntent = issue;
+                                        Activity alertActivity = getActivity();
+                                        if (alertActivity != null) {
+                                            AlertDialog.Builder builder = new AlertDialog.Builder(alertActivity);
+                                            builder.setMessage(R.string.subscribe_already_purchased_message).setTitle(R.string.subscribe_already_purchased_title);
+                                            builder.setPositiveButton(R.string.subscribe_already_purchased_read_issue_button, new DialogInterface.OnClickListener() {
+                                                public void onClick(DialogInterface dialog, int id) {
+                                                    // User clicked Read this issue button
+                                                    Intent issueIntent = new Intent(rootView.getContext(), TableOfContentsActivity.class);
+                                                    int issueNumber = Integer.parseInt(mProducts.get(mPositionTapped).getSku().replaceAll("[\\D]", ""));
+                                                    Issue issueForIntent = null;
+                                                    for (Issue issue : mIssueList) {
+                                                        if (issue.getNumber() == issueNumber) {
+                                                            issueForIntent = issue;
+                                                        }
+                                                    }
+                                                    if (issueForIntent != null) {
+                                                        issueIntent.putExtra("issue", issueForIntent);
+                                                        startActivity(issueIntent);
                                                     }
                                                 }
-                                                if (issueForIntent != null) {
-                                                    issueIntent.putExtra("issue", issueForIntent);
-                                                    startActivity(issueIntent);
+                                            });
+                                            builder.setNegativeButton(R.string.subscribe_already_purchased_cancel_button, new DialogInterface.OnClickListener() {
+                                                public void onClick(DialogInterface dialog, int id) {
+                                                    // User cancelled the dialog
                                                 }
-                                            }
-                                        });
-                                        builder.setNegativeButton(R.string.subscribe_already_purchased_cancel_button, new DialogInterface.OnClickListener() {
-                                            public void onClick(DialogInterface dialog, int id) {
-                                                // User cancelled the dialog
-                                            }
-                                        });
-                                        AlertDialog dialog = builder.create();
-                                        dialog.show();
+                                            });
+                                            AlertDialog dialog = builder.create();
+                                            dialog.show();
+                                        }
                                     } else {
                                         Log.d("Subscribe", "Error purchasing: " + result);
                                     }

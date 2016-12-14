@@ -289,92 +289,102 @@ public class TableOfContentsActivity extends ActionBarActivity {
 
                     if (response != null) {
                         responseStatusCode = response.getStatusLine().getStatusCode();
+                        Activity alertActivity = getActivity();
 
                         if (responseStatusCode >= 200 && responseStatusCode < 300) {
                             // The zip downloaded and completed!
                             // Alert the user that it was a success!
-                            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-                            builder.setMessage(R.string.zip_download_success_dialog_message).setTitle(R.string.zip_download_success_dialog_title);
-                            builder.setPositiveButton(R.string.zip_download_dialog_ok_button, new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int id) {
-                                    // User clicked OK button
-                                }
-                            });
-                            AlertDialog dialog = builder.create();
-                            dialog.show();
+                            if (alertActivity != null) {
+                                AlertDialog.Builder builder = new AlertDialog.Builder(alertActivity);
+                                builder.setMessage(R.string.zip_download_success_dialog_message).setTitle(R.string.zip_download_success_dialog_title);
+                                builder.setPositiveButton(R.string.zip_download_dialog_ok_button, new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int id) {
+                                        // User clicked OK button
+                                    }
+                                });
+                                AlertDialog dialog = builder.create();
+                                dialog.show();
+                            }
 
                         } else if (responseStatusCode > 400 && responseStatusCode < 500) {
                             // Article request failed
                             Helpers.debugLog("TOC", "Zip download failed with code: " + responseStatusCode);
                             // Alert and intent to login.
-                            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-                            builder.setMessage(R.string.login_dialog_message_article_body).setTitle(R.string.login_dialog_title_article_body);
-                            builder.setPositiveButton(R.string.login_dialog_ok_button, new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int id) {
-                                    // User clicked OK button
-                                    Intent loginIntent = new Intent(rootView.getContext(), LoginActivity.class);
-                                    startActivity(loginIntent);
-                                }
-                            });
-                            builder.setNeutralButton(R.string.login_dialog_purchase_button, new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int id) {
-                                    // User clicked Purchase button
-                                    Intent subscribeIntent = new Intent(rootView.getContext(), SubscribeActivity.class);
-                                    startActivity(subscribeIntent);
-                                }
-                            });
-                            builder.setNegativeButton(R.string.login_dialog_cancel_button, new DialogInterface.OnClickListener() {
+                            if (alertActivity != null) {
+                                AlertDialog.Builder builder = new AlertDialog.Builder(alertActivity);
+                                builder.setMessage(R.string.login_dialog_message_article_body).setTitle(R.string.login_dialog_title_article_body);
+                                builder.setPositiveButton(R.string.login_dialog_ok_button, new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int id) {
+                                        // User clicked OK button
+                                        Intent loginIntent = new Intent(rootView.getContext(), LoginActivity.class);
+                                        startActivity(loginIntent);
+                                    }
+                                });
+                                builder.setNeutralButton(R.string.login_dialog_purchase_button, new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int id) {
+                                        // User clicked Purchase button
+                                        Intent subscribeIntent = new Intent(rootView.getContext(), SubscribeActivity.class);
+                                        startActivity(subscribeIntent);
+                                    }
+                                });
+                                builder.setNegativeButton(R.string.login_dialog_cancel_button, new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int id) {
+                                        // User cancelled the dialog
+                                    }
+                                });
+                                AlertDialog dialog = builder.create();
+                                dialog.show();
+                            }
+
+                        } else {
+                            // Some other error.
+                            Helpers.debugLog("TOC", "Zip download failed with code: " + responseStatusCode + " and response: " + response.getStatusLine());
+                            // Alert the user of the error.
+                            if (alertActivity != null) {
+                                AlertDialog.Builder builder = new AlertDialog.Builder(alertActivity);
+                                builder.setMessage(getResources().getString(R.string.zip_download_dialog_message) + response.getStatusLine()).setTitle(R.string.zip_download_dialog_title);
+                                builder.setPositiveButton(R.string.zip_download_dialog_ok_button, new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int id) {
+                                        // User clicked OK button
+                                    }
+                                });
+                                builder.setNeutralButton(R.string.zip_download_dialog_email_dev_button, new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int id) {
+                                        // User wants to let us know about it...
+                                        Intent intent = new Intent(Intent.ACTION_SEND);
+                                        String[] email = new String[] {Helpers.getVariableFromConfig("EMAIL_ADDRESS")};
+                                        intent.setType("text/plain");
+                                        intent.putExtra(Intent.EXTRA_EMAIL, email);
+                                        intent.putExtra(Intent.EXTRA_SUBJECT, getResources().getString(R.string.zip_download_dialog_email_subject));
+                                        intent.putExtra(Intent.EXTRA_TEXT, getResources().getString(R.string.zip_download_dialog_email_body)
+                                                + " '" + response.getStatusLine()
+                                                + "' For IssueID: " + issue.getID());
+
+                                        startActivity(Intent.createChooser(intent, getResources().getString(R.string.zip_download_dialog_email_chooser)));
+                                    }
+                                });
+                                AlertDialog dialog = builder.create();
+                                dialog.show();
+                            }
+                        }
+
+                    } else {
+                        // Error getting zip
+                        Helpers.debugLog("TOC", "Zip download failed! Response is null");
+                        Activity alertActivity = getActivity();
+                        if (alertActivity != null) {
+                            AlertDialog.Builder builder = new AlertDialog.Builder(alertActivity);
+                            builder.setMessage(R.string.no_internet_dialog_message_article_body).setTitle(R.string.no_internet_dialog_title_article_body);
+                            builder.setNegativeButton(R.string.no_internet_dialog_ok_button, new DialogInterface.OnClickListener() {
                                 public void onClick(DialogInterface dialog, int id) {
                                     // User cancelled the dialog
                                 }
                             });
                             AlertDialog dialog = builder.create();
                             dialog.show();
-
-                        } else {
-                            // Some other error.
-                            Helpers.debugLog("TOC", "Zip download failed with code: " + responseStatusCode + " and response: " + response.getStatusLine());
-                            // Alert the user of the error.
-                            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-                            builder.setMessage(getResources().getString(R.string.zip_download_dialog_message) + response.getStatusLine()).setTitle(R.string.zip_download_dialog_title);
-                            builder.setPositiveButton(R.string.zip_download_dialog_ok_button, new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int id) {
-                                    // User clicked OK button
-                                }
-                            });
-                            builder.setNeutralButton(R.string.zip_download_dialog_email_dev_button, new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int id) {
-                                    // User wants to let us know about it...
-                                    Intent intent = new Intent(Intent.ACTION_SEND);
-                                    String[] email = new String[] {Helpers.getVariableFromConfig("EMAIL_ADDRESS")};
-                                    intent.setType("text/plain");
-                                    intent.putExtra(Intent.EXTRA_EMAIL, email);
-                                    intent.putExtra(Intent.EXTRA_SUBJECT, getResources().getString(R.string.zip_download_dialog_email_subject));
-                                    intent.putExtra(Intent.EXTRA_TEXT, getResources().getString(R.string.zip_download_dialog_email_body)
-                                            + " '" + response.getStatusLine()
-                                            + "' For IssueID: " + issue.getID());
-
-                                    startActivity(Intent.createChooser(intent, getResources().getString(R.string.zip_download_dialog_email_chooser)));
-                                }
-                            });
-                            AlertDialog dialog = builder.create();
-                            dialog.show();
                         }
-
-                    } else {
-                        // Error getting zip
-                        Helpers.debugLog("TOC", "Zip download failed! Response is null");
-                        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-                        builder.setMessage(R.string.no_internet_dialog_message_article_body).setTitle(R.string.no_internet_dialog_title_article_body);
-                        builder.setNegativeButton(R.string.no_internet_dialog_ok_button, new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int id) {
-                                // User cancelled the dialog
-                            }
-                        });
-                        AlertDialog dialog = builder.create();
-                        dialog.show();
                     }
                 }
             };
@@ -743,30 +753,33 @@ public class TableOfContentsActivity extends ActionBarActivity {
                 public boolean onLongClick(View v) {
                     Helpers.debugLog("TOC", "Cover long click detected!");
                     // Ask the user if they'd like to delete this issue's cache
-                    AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-                    builder.setMessage(R.string.toc_dialog_delete_cache_message).setTitle(R.string.toc_dialog_delete_cache_title);
-                    builder.setNeutralButton(R.string.toc_dialog_delete_cache_ok_button, new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            // User clicked OK button
-                            // Delete this issue cache
-                            issue.deleteCache();
-                            getActivity().finish();
-                        }
-                    });
-                    builder.setPositiveButton(R.string.toc_dialog_download_zip_button, new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            // Download the zip from Rails and unpack it...
-                            issue.downloadZip(purchases);
-                            zipDownloadProgressSpinner.setVisibility(View.VISIBLE);
-                        }
-                    });
-                    builder.setNegativeButton(R.string.toc_dialog_delete_cache_cancel_button, new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id) {
-                            // User cancelled the dialog, so do nothing.
-                        }
-                    });
-                    AlertDialog dialog = builder.create();
-                    dialog.show();
+                    Activity alertActivity = getActivity();
+                    if (alertActivity != null) {
+                        AlertDialog.Builder builder = new AlertDialog.Builder(alertActivity);
+                        builder.setMessage(R.string.toc_dialog_delete_cache_message).setTitle(R.string.toc_dialog_delete_cache_title);
+                        builder.setNeutralButton(R.string.toc_dialog_delete_cache_ok_button, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                // User clicked OK button
+                                // Delete this issue cache
+                                issue.deleteCache();
+                                getActivity().finish();
+                            }
+                        });
+                        builder.setPositiveButton(R.string.toc_dialog_download_zip_button, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                // Download the zip from Rails and unpack it...
+                                issue.downloadZip(purchases);
+                                zipDownloadProgressSpinner.setVisibility(View.VISIBLE);
+                            }
+                        });
+                        builder.setNegativeButton(R.string.toc_dialog_delete_cache_cancel_button, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                // User cancelled the dialog, so do nothing.
+                            }
+                        });
+                        AlertDialog dialog = builder.create();
+                        dialog.show();
+                    }
 
                     // Return true to consume the click
                     return true;
