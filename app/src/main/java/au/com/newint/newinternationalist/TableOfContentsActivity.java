@@ -274,7 +274,9 @@ public class TableOfContentsActivity extends ActionBarActivity {
                     // Check response, and respond with dialog
 
                     ProgressBar progressSpinner = (ProgressBar) rootView.findViewById(R.id.toc_zip_loading_spinner);
-                    progressSpinner.setVisibility(View.GONE);
+                    if (progressSpinner != null) {
+                        progressSpinner.setVisibility(View.GONE);
+                    }
 
                     // TODO: loop through responses instead of just getting the first one...
 

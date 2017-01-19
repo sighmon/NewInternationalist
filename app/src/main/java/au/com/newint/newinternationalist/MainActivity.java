@@ -593,6 +593,8 @@ public class MainActivity extends ActionBarActivity {
 
                                 // Set subscribe text.
                                 setSubscribeTextToSubscribed();
+                                // Set logged-in text so not to confuse in-app purchase buyers.
+                                setLoginTextToLoggedIn();
                             }
                         });
                     }
