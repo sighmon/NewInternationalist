@@ -286,11 +286,15 @@ public class MainActivity extends ActionBarActivity {
             } else if (data.matches("(.*)/issues/(\\d+)") || data.matches("(.*)/issues/(\\d+)/")) {
                 // It's a deep link to an issue
                 int issueID = Integer.parseInt(data.replaceAll("\\D+", ""));
-                Issue issueInUrl = new Issue(issueID);
-                Intent tableOfContentsIntent = new Intent(applicationContext, TableOfContentsActivity.class);
-                // Pass issue through as a Parcel
-                tableOfContentsIntent.putExtra("issue", issueInUrl);
-                startActivity(tableOfContentsIntent);
+                try {
+                    Issue issueInUrl = new Issue(issueID);
+                    Intent tableOfContentsIntent = new Intent(applicationContext, TableOfContentsActivity.class);
+                    // Pass issue through as a Parcel
+                    tableOfContentsIntent.putExtra("issue", issueInUrl);
+                    startActivity(tableOfContentsIntent);
+                } catch (Exception e) {
+                    Log.e("NewIntent", "ERROR: error finding issue: " + issueID);
+                }
             } else if (data.matches("(.*)/issues")) {
                 // It's a deep link to the magazine archive
                 Intent magazineArchiveIntent = new Intent(applicationContext, MagazineArchiveActivity.class);

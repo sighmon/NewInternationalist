@@ -289,6 +289,14 @@ blockquote.pull-left {
     text-align: left;
     float: left;
 }
+blockquote.block-quote {
+	font-size: 1em;
+	color: #555555;
+}
+blockquote > .attribution {
+	font-size: 0.9em;
+	color: #777777;
+}
 .footnotes {
     padding: 1em;
     font-size: 0.9em;
