@@ -418,7 +418,7 @@ public class MainActivity extends ActionBarActivity {
 
                     JsonArray magazines = null;
 
-                    if (payload.length > 0) {
+                    if (payload != null && payload.length > 0) {
 
                         JsonElement root = new JsonParser().parse(new String(payload));
                         //TODO: throws an exception (which one?) if the payload is empty instead of returning null

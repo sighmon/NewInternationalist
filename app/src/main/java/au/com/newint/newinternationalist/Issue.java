@@ -525,7 +525,7 @@ public class Issue implements Parcelable {
                     e.printStackTrace();
                 }
 
-                if (zipURLresponseJSONstring.length() > 0) {
+                if (zipURLresponseJSONstring != null && zipURLresponseJSONstring.length() > 0) {
                     zipURLJson = new JsonParser().parse(zipURLresponseJSONstring).getAsJsonObject();
                     zipURL = zipURLJson.get("zipURL").getAsString();
                 }
