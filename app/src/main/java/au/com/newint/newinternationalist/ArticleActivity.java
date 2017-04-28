@@ -647,16 +647,18 @@ public class ArticleActivity extends AppCompatActivity {
                         // Error getting article body
                         Helpers.debugLog("ArticleBody", "Failed! Response is null");
                         Activity alertActivity = getActivity();
-                        AlertDialog.Builder builder = new AlertDialog.Builder(alertActivity);
-                        builder.setMessage(R.string.no_internet_dialog_message_article_body).setTitle(R.string.no_internet_dialog_title_article_body);
-                        builder.setNegativeButton(R.string.no_internet_dialog_ok_button, new DialogInterface.OnClickListener() {
-                            public void onClick(DialogInterface dialog, int id) {
-                                // User cancelled the dialog
-                                getActivity().finish();
-                            }
-                        });
-                        AlertDialog dialog = builder.create();
-                        dialog.show();
+                        if (alertActivity != null) {
+                            AlertDialog.Builder builder = new AlertDialog.Builder(alertActivity);
+                            builder.setMessage(R.string.no_internet_dialog_message_article_body).setTitle(R.string.no_internet_dialog_title_article_body);
+                            builder.setNegativeButton(R.string.no_internet_dialog_ok_button, new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int id) {
+                                    // User cancelled the dialog
+                                    getActivity().finish();
+                                }
+                            });
+                            AlertDialog dialog = builder.create();
+                            dialog.show();
+                        }
                     }
 
                     articleBody.loadDataWithBaseURL("file:///android_asset/", bodyHTML, "text/html", "utf-8", null);
