@@ -82,7 +82,16 @@ public class Category {
 
     public String getSectionName() {
 
-        return Helpers.capitalize(getName().split("/")[1]);
+        String[] nameParts = getName().split("/");
+        String sectionName = "";
+
+        if (nameParts.length > 1) {
+            sectionName = Helpers.capitalize(nameParts[1]);
+        } else {
+            sectionName = Helpers.capitalize("miscellaneous");
+        }
+
+        return sectionName;
     }
 
     public ArrayList<Article> getArticles() {
