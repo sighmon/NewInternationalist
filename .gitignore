@@ -12,4 +12,5 @@ config.properties
 notes.txt
 google-services.json
 projectFilesBackup/*
+app/release*
 

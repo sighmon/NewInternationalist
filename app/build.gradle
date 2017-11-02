@@ -10,8 +10,8 @@ android {
         applicationId "au.com.newint.newinternationalist"
         minSdkVersion 15
         targetSdkVersion 26
-        versionCode 76
-        versionName '1.2.17'
+        versionCode 79
+        versionName '1.2.19'
     }
     buildTypes {
         release {
