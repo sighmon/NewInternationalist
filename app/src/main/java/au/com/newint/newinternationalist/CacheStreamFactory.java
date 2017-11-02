@@ -88,7 +88,7 @@ public abstract class CacheStreamFactory {
             String startingAt = null;
             String stoppingAt = null;
             Object lock;
-            if (params.length > 0) {
+            if (params != null && params.length > 0) {
                 lock = params[0].lock;
             } else {
                 Log.e("CacheStreamFactory","params.length <= 0");
