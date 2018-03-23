@@ -360,6 +360,7 @@ public class Helpers {
                 bundle.putString(FirebaseAnalytics.Param.ITEM_NAME, "pageView");
                 bundle.putString(FirebaseAnalytics.Param.CONTENT_TYPE, screenName);
                 mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.SELECT_CONTENT, bundle);
+                Helpers.debugLog("Analytics", "Analytics sent: " + bundle);
             } catch (Exception e) {
                 Log.e("FirebaseAnalytics", "ERROR: Failed to log event. " + e);
             }

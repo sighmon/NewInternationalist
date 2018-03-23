@@ -182,10 +182,10 @@
 
         <!-- Crash reporting - if enabled by user -->
         <meta-data android:name="firebase_crashlytics_collection_enabled" android:value="false" />
-        <meta-data
-            android:name="io.fabric.ApiKey"
-            android:value="93b57617620e351110a61806412e4a827829d162"
-            />
+        <!--<meta-data-->
+            <!--android:name="io.fabric.ApiKey"-->
+            <!--android:value="Not-Needed"-->
+            <!--/>-->
 
         <!-- Register CampaignTrackingReceiver and CampaignTrackingService to enable
              installation campaign reporting -->
