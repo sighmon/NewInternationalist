@@ -94,6 +94,7 @@ public abstract class CacheStreamFactory {
                 Log.e("CacheStreamFactory","params.length <= 0");
                 return new PreloadReturn(null,null);
             }
+            // TODO: should this also be wrapped in params != null && params.length > 0
             synchronized (lock) {
                 //callback = params[0].callback;
                 startingAt = params[0].startingAt;

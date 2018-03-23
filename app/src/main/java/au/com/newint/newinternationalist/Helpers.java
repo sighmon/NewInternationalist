@@ -325,24 +325,33 @@ public class Helpers {
 
     public static Bitmap scaledBitmapDecode(byte[] bytes, int reqWidth, int reqHeight) {
 
-        // First decode with inJustDecodeBounds=true to check dimensions
-        final BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inJustDecodeBounds = true;
-        BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
+        if (bytes != null && bytes.length > 0) {
+            // First decode with inJustDecodeBounds=true to check dimensions
+            final BitmapFactory.Options options = new BitmapFactory.Options();
+            options.inJustDecodeBounds = true;
+            BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
 
-        // Calculate inSampleSize
-        options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight);
+            // Calculate inSampleSize
+            options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight);
 
-        // Decode bitmap with inSampleSize set
-        options.inJustDecodeBounds = false;
-        return BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
+            // Decode bitmap with inSampleSize set
+            options.inJustDecodeBounds = false;
+            return BitmapFactory.decodeByteArray(bytes, 0, bytes.length, options);
+        } else {
+            return null;
+        }
     }
 
     // not actually synchronized any more
     public static Bitmap bitmapDecode(byte[] bytes) {
 
         //Helpers.debugLog("bitmapDecode", "start");
-        Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+        Bitmap bitmap = null;
+        if (bytes != null && bytes.length > 0) {
+            bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+        } else {
+            Log.e("bitmapDecode","bytes.length <= 0");
+        }
         //Helpers.debugLog("bitmapDecode", "end");
 
         return bitmap;
