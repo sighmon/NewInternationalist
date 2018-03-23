@@ -180,6 +180,13 @@
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
 
+        <!-- Crash reporting - if enabled by user -->
+        <meta-data android:name="firebase_crashlytics_collection_enabled" android:value="false" />
+        <meta-data
+            android:name="io.fabric.ApiKey"
+            android:value="93b57617620e351110a61806412e4a827829d162"
+            />
+
         <!-- Register CampaignTrackingReceiver and CampaignTrackingService to enable
              installation campaign reporting -->
         <receiver android:name="com.google.android.gms.analytics.CampaignTrackingReceiver"

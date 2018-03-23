@@ -17,6 +17,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
+import com.crashlytics.android.Crashlytics;
+import io.fabric.sdk.android.Fabric;
+
 /**
  * Created by New Internationalist on 4/06/15.
  */
@@ -42,12 +45,12 @@ public class App extends Application {
         // Setup google analytics if the user has allowed it
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         boolean allowAnonymousStatistics = sharedPreferences.getBoolean(getResources().getString(R.string.allow_anonymous_statistics_key), true);
-        FirebaseAnalytics firebaseAnalytics = FirebaseAnalytics.getInstance(MainActivity.applicationContext);
+
         if (allowAnonymousStatistics) {
-            // Now using Firebase.
-            firebaseAnalytics.setAnalyticsCollectionEnabled(true);
+            // Now using Crashlytics.
+            Fabric.with(this, new Crashlytics());
         } else {
-            firebaseAnalytics.setAnalyticsCollectionEnabled(false);
+            // TODO: do we still need to initialise here?
         }
     }
 
