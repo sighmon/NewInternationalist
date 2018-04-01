@@ -433,6 +433,7 @@ public class TableOfContentsActivity extends ActionBarActivity {
                             "mark-engler",
                             "steve-parry",
                             "kate-smurthwaite",
+                            "omar-hamdi",
                             "finally",
                             "features"
                     });
@@ -446,6 +447,7 @@ public class TableOfContentsActivity extends ActionBarActivity {
             addArticlesToLayoutListWithCategoryName(articles, "steve-parry");
             addArticlesToLayoutListWithCategoryName(articles, "mark-engler");
             addArticlesToLayoutListWithCategoryName(articles, "kate-smurthwaite");
+            addArticlesToLayoutListWithCategoryName(articles, "omar-hamdi");
 
             // Add category articles
             layoutList.add("Alternatives");
@@ -460,7 +462,8 @@ public class TableOfContentsActivity extends ActionBarActivity {
                             "columns/viewfrom",
                             "columns/mark-engler",
                             "columns/steve-parry",
-                            "columns/kate-smurthwaite"
+                            "columns/kate-smurthwaite",
+                            "columns/omar-hamdi"
                     });
 
             // Add category articles
