@@ -16,7 +16,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.preference.PreferenceManager;
 import android.support.v4.content.LocalBroadcastManager;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.util.Log;
@@ -71,7 +71,7 @@ import au.com.newint.newinternationalist.util.Purchase;
 import au.com.newint.newinternationalist.util.SkuDetails;
 
 
-public class MainActivity extends ActionBarActivity {
+public class MainActivity extends AppCompatActivity {
 
     static boolean newIssueAdded = false;
 

@@ -10,7 +10,7 @@ import android.graphics.drawable.ShapeDrawable;
 import android.graphics.drawable.shapes.RoundRectShape;
 import android.os.AsyncTask;
 import android.support.v4.app.Fragment;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
@@ -44,7 +44,7 @@ import au.com.newint.newinternationalist.util.Purchase;
 import au.com.newint.newinternationalist.util.SkuDetails;
 
 
-public class SubscribeActivity extends ActionBarActivity {
+public class SubscribeActivity extends AppCompatActivity {
 
     static IabHelper mHelper;
     static ArrayList<SkuDetails> mProducts;

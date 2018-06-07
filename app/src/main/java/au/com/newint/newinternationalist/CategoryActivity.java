@@ -3,7 +3,8 @@ package au.com.newint.newinternationalist;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.support.v4.app.Fragment;
-import android.support.v7.app.ActionBarActivity;
+//import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -26,7 +27,7 @@ import java.util.ArrayList;
 import java.util.Locale;
 
 
-public class CategoryActivity extends ActionBarActivity {
+public class CategoryActivity extends AppCompatActivity {
 
     static Category category;
     static ArrayList<Article> articles;

@@ -7,7 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.AsyncTask;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
@@ -31,7 +31,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 
-public class CategoriesActivity extends ActionBarActivity {
+public class CategoriesActivity extends AppCompatActivity {
 
     static ProgressDialog loadingProgressDialog;
     static public ArrayList<CategoriesFragment.Section> sectionsList;

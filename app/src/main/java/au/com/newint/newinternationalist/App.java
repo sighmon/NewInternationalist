@@ -6,6 +6,7 @@ import android.content.pm.ApplicationInfo;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.preference.PreferenceManager;
+import android.support.multidex.MultiDexApplication;
 import android.util.Log;
 
 import com.google.android.gms.analytics.GoogleAnalytics;
@@ -23,7 +24,7 @@ import io.fabric.sdk.android.Fabric;
 /**
  * Created by New Internationalist on 4/06/15.
  */
-public class App extends Application {
+public class App extends MultiDexApplication {
 
     // Avoid a crash when you receive a push notification while the app is shut
 
