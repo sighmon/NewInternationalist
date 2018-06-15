@@ -62,6 +62,7 @@ public class ArticleActivity extends AppCompatActivity {
     static Inventory inventory = null;
     static ArrayList<Purchase> purchases = null;
     private GestureDetectorCompat mDetector;
+    private ProgressDialog pDialog = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -94,12 +95,30 @@ public class ArticleActivity extends AppCompatActivity {
         return super.dispatchTouchEvent(event);
     }
 
+    private void showProgressDialog() {
+        if (pDialog == null) {
+            pDialog = new ProgressDialog(ArticleActivity.this);
+            pDialog.setTitle(getResources().getString(R.string.article_guest_pass_loading_title));
+            pDialog.setMessage(getResources().getString(R.string.article_guest_pass_loading_message));
+            pDialog.setIndeterminate(false);
+            pDialog.setCancelable(false);
+        }
+        pDialog.show();
+    }
+
+    private void dismissProgressDialog() {
+        if (pDialog != null && pDialog.isShowing()) {
+            pDialog.dismiss();
+        }
+    }
+
     @Override
     public void onDestroy() {
-        super.onDestroy();
         // Dispose of the in-app helper
         if (mHelper != null) mHelper.dispose();
         mHelper = null;
+        dismissProgressDialog();
+        super.onDestroy();
     }
 
     @Override
@@ -144,10 +163,7 @@ public class ArticleActivity extends AppCompatActivity {
             if (urlCacheStreamFactory != null) {
 
                 // Show loading indicator
-                final ProgressDialog loadingGuestPassDialog = new ProgressDialog(this);
-                loadingGuestPassDialog.setTitle(getResources().getString(R.string.article_guest_pass_loading_title));
-                loadingGuestPassDialog.setMessage(getResources().getString(R.string.article_guest_pass_loading_message));
-                loadingGuestPassDialog.show();
+                showProgressDialog();
 
                 urlCacheStreamFactory.preload(new CacheStreamFactory.CachePreloadCallback() {
                     @Override
@@ -164,13 +180,13 @@ public class ArticleActivity extends AppCompatActivity {
                                 Log.e("GuestPass", "NULL guest pass json from rails");
                             } else {
                                 // Build up the GuestPass URL
-                                String guestPass = "?utm_source=" + root.getAsJsonObject().get("key").getAsString();
+                                String guestPass = "?guest_pass=" + root.getAsJsonObject().get("key").getAsString();
                                 guestPassURLString = Helpers.getSiteURL() + "issues/" + issue.getID() + "/articles/" + article.getID() + guestPass;
                             }
                         }
 
                         handleGuestPassURL(guestPassURLString);
-                        loadingGuestPassDialog.dismiss();
+                        dismissProgressDialog();
                     }
 
                     @Override

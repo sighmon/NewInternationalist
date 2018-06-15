@@ -219,8 +219,8 @@ public class IabHelper {
                 if (mDisposed) return;
                 logDebug("Billing service connected.");
                 mService = IInAppBillingService.Stub.asInterface(service);
-                String packageName = mContext.getPackageName();
                 try {
+                    String packageName = mContext.getPackageName();
                     logDebug("Checking for in-app billing 3 support.");
 
                     // check for in-app billing v3 support
@@ -247,7 +247,7 @@ public class IabHelper {
 
                     mSetupDone = true;
                 }
-                catch (RemoteException e) {
+                catch (Exception e) {
                     if (listener != null) {
                         listener.onIabSetupFinished(new IabResult(IABHELPER_REMOTE_EXCEPTION,
                                                     "RemoteException while setting up in-app billing."));
