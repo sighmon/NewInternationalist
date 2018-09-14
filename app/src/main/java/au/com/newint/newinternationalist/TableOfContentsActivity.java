@@ -399,7 +399,7 @@ public class TableOfContentsActivity extends AppCompatActivity {
         private void populateLayoutListFromArticles(ArrayList<Article> articles) {
 
             // Add category articles
-            layoutList.add("Features");
+            layoutList.add("The Big Story");
             addArticlesToLayoutListWithCategoryNameWithExclusions(articles, "features",
                     new String[]{
                             "web-exclusive"

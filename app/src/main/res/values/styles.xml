@@ -18,8 +18,8 @@
     </style>
 
     <!-- Colours -->
-    <drawable name="statusbar">#D32F2F</drawable>
-    <drawable name="actionbar_background">#F44336</drawable>
+    <drawable name="statusbar">#5a595b</drawable>
+    <drawable name="actionbar_background">#5a595b</drawable>
     <drawable name="article_background">#FFFFFF</drawable>
 
 </resources>
