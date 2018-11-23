@@ -246,6 +246,16 @@ h6 {
     margin-left: auto;
     margin-right: auto;
 }
+.article-image-half {
+    float: right;
+    margin: 1em 0 1.5em 1.5em;
+}
+.article-image-half .new-image-credit,
+.article-image-half .new-image-credit {
+    margin: 1em;
+    padding-left: 1em;
+    padding-right: 1em;
+}
 .article-image-centre .new-image-credit,
 .article-image-centre .new-image-caption {
     max-width: 300px;

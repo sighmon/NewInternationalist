@@ -197,6 +197,9 @@ public class Article implements Parcelable {
                 } else if (option.equalsIgnoreCase("centre")) {
                     cssClass = "all-article-images article-image-cartoon article-image-centre";
                     imageWidth = "300";
+                } else if (option.equalsIgnoreCase("half")) {
+                    cssClass = "all-article-images article-image-half";
+                    imageWidth = "472";
                 }
             }
 
