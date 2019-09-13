@@ -40,6 +40,7 @@
     <string name="toc_editors_letter">Editors letter.</string>
     <string name="toc_editors_name">Edited by:\\nEditor\'s name</string>
     <string name="action_share_toc">Share this issue</string>
+    <string name="download_magazine">Off-line reading</string>
 
     <!-- Login -->
     <string name="title_activity_login">Login</string>

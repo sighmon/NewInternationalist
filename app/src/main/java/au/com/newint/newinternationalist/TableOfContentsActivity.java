@@ -138,6 +138,39 @@ public class TableOfContentsActivity extends AppCompatActivity {
                 Intent settingsIntent = new Intent(this, SettingsActivity.class);
                 startActivity(settingsIntent);
                 return true;
+            case R.id.download_magazine:
+                // Download dialog
+                Helpers.debugLog("TOC", "Menu tap to download the magazine!");
+                // Ask the user if they'd like to delete this issue's cache
+                final Activity alertActivity = TableOfContentsActivity.this;
+                if (alertActivity != null) {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(alertActivity);
+                    builder.setMessage(R.string.toc_dialog_delete_cache_message).setTitle(R.string.toc_dialog_delete_cache_title);
+                    builder.setNeutralButton(R.string.toc_dialog_delete_cache_ok_button, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            // User clicked OK button
+                            // Delete this issue cache
+                            issue.deleteCache();
+                            alertActivity.finish();
+                        }
+                    });
+                    builder.setPositiveButton(R.string.toc_dialog_download_zip_button, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            // Download the zip from Rails and unpack it...
+                            issue.downloadZip(purchases);
+                            ProgressBar zipDownloadProgressSpinner = (ProgressBar) findViewById(R.id.toc_zip_loading_spinner);
+                            zipDownloadProgressSpinner.setVisibility(View.VISIBLE);
+                        }
+                    });
+                    builder.setNegativeButton(R.string.toc_dialog_delete_cache_cancel_button, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            // User cancelled the dialog, so do nothing.
+                        }
+                    });
+                    AlertDialog dialog = builder.create();
+                    dialog.show();
+                }
+                return true;
             case android.R.id.home:
                 // Handles a back/up button press and returns to previous Activity
                 finish();

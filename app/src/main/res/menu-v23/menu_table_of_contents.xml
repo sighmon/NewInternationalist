@@ -10,21 +10,27 @@
         app:showAsAction="never" />
 
     <item
+        android:id="@+id/download_magazine"
+        android:title="@string/download_magazine"
+        android:orderInCategory="101"
+        app:showAsAction="never" />
+
+    <item
         android:id="@+id/increase_font_size"
         android:title="@string/increase_font_size"
-        android:orderInCategory="101"
+        android:orderInCategory="102"
         app:showAsAction="never" />
 
     <item
         android:id="@+id/default_font_size"
         android:title="@string/default_font_size"
-        android:orderInCategory="102"
+        android:orderInCategory="103"
         app:showAsAction="never" />
 
     <item
         android:id="@+id/decrease_font_size"
         android:title="@string/decrease_font_size"
-        android:orderInCategory="103"
+        android:orderInCategory="104"
         app:showAsAction="never" />
 
     <item

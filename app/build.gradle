@@ -7,14 +7,14 @@ repositories {
 
 android {
     compileSdkVersion 27
-    buildToolsVersion '27.0.3'
+    buildToolsVersion '28.0.3'
     useLibrary 'org.apache.http.legacy'
     defaultConfig {
         applicationId "au.com.newint.newinternationalist"
         minSdkVersion 15
         targetSdkVersion 27
-        versionCode 84
-        versionName '1.2.24'
+        versionCode 85
+        versionName '1.2.25'
         multiDexEnabled true
     }
     buildTypes {
