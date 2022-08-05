@@ -1,5 +1,6 @@
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -24,7 +25,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/home_cover_margin_top"
             android:layout_marginBottom="@dimen/home_cover_margin_bottom"
-            android:src="@drawable/home_cover"
+            app:srcCompat="@drawable/home_cover"
             android:contentDescription="@string/home_cover" />
 
         <ProgressBar

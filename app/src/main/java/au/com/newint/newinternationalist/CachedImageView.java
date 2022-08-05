@@ -1,12 +1,12 @@
 package au.com.newint.newinternationalist;
 
 import android.content.Context;
-import android.widget.ImageView;
+import android.support.v7.widget.AppCompatImageView;
 
 /**
  * Created by New Internationalist on 30/04/15.
  */
-public class CachedImageView extends ImageView {
+public class CachedImageView extends AppCompatImageView {
     public CacheStreamFactory cacheStreamFactory;
 
     public CachedImageView(Context context) {

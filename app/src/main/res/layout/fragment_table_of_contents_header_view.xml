@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:gravity="center_horizontal"
@@ -11,7 +12,7 @@
         android:id="@+id/toc_cover"
         android:layout_width="@dimen/toc_cover_width"
         android:layout_height="@dimen/toc_cover_height"
-        android:src="@drawable/home_cover"
+        app:srcCompat="@drawable/home_cover"
         android:paddingTop="@dimen/toc_cover_padding"
         android:paddingBottom="@dimen/toc_cover_padding"
         android:layout_centerHorizontal="true"

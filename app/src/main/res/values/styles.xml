@@ -13,7 +13,7 @@
     <!-- Article theme -->
     <style name="ArticleTheme" parent="Theme.AppCompat.Light">
 
-        <item name="android:background">@drawable/article_background</item>
+        <item name="background">@drawable/article_background</item>
 
     </style>
 

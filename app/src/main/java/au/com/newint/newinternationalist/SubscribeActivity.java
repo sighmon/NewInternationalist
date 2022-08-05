@@ -1,17 +1,15 @@
 package au.com.newint.newinternationalist;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.drawable.ShapeDrawable;
-import android.graphics.drawable.shapes.RoundRectShape;
 import android.os.AsyncTask;
-import android.support.v4.app.Fragment;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -23,17 +21,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
-import android.webkit.WebView;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.google.android.gms.analytics.HitBuilders;
-import com.google.android.gms.analytics.ecommerce.Product;
-
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import au.com.newint.newinternationalist.util.IabException;
@@ -514,7 +506,7 @@ public class SubscribeActivity extends AppCompatActivity {
                     // For testing:
                     // mHelper.launchPurchaseFlow(getActivity(), "android.test.purchased", Helpers.GOOGLE_PLAY_REQUEST_CODE, mPurchaseFinishedListener, developerPayload);
                     // For real:
-                    mHelper.launchPurchaseFlow(getActivity(), mProducts.get(getPosition()).getSku(), Helpers.GOOGLE_PLAY_REQUEST_CODE, mPurchaseFinishedListener, developerPayload);
+                    mHelper.launchPurchaseFlow((AppCompatActivity) getActivity(), mProducts.get(getPosition()).getSku(), Helpers.GOOGLE_PLAY_REQUEST_CODE, mPurchaseFinishedListener, developerPayload);
                 }
             }
 

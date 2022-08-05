@@ -22,7 +22,7 @@
             android:id="@+id/subscribe_product_image"
             android:layout_width="@dimen/subscribe_cover_width"
             android:layout_height="@dimen/subscribe_cover_height"
-            android:src="@drawable/home_cover"
+            card_view:srcCompat="@drawable/home_cover"
             android:layout_margin="@dimen/toc_article_padding_left_right"
             android:contentDescription="@string/toc_cover_description"/>
 
