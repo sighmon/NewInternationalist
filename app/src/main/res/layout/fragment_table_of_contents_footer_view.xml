@@ -25,7 +25,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:textColor="@color/wallet_bright_foreground_disabled_holo_light"
         android:layout_below="@+id/toc_editor_image" />
 
     <TextView
@@ -35,7 +34,6 @@
         android:layout_height="wrap_content"
         android:paddingTop="@dimen/toc_editors_letter_padding"
         android:paddingBottom="@dimen/toc_editors_letter_padding"
-        android:textColor="@color/wallet_bright_foreground_disabled_holo_light"
         android:layout_below="@+id/toc_editors_name" />
 
 </RelativeLayout>

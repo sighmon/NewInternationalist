@@ -1,18 +1,15 @@
 package au.com.newint.newinternationalist;
 
-import android.app.Application;
 import android.content.SharedPreferences;
-import android.content.pm.ApplicationInfo;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.preference.PreferenceManager;
-import android.support.multidex.MultiDexApplication;
+import androidx.multidex.MultiDexApplication;
 import android.util.Log;
 
 import com.google.android.gms.analytics.GoogleAnalytics;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
-import com.google.firebase.analytics.FirebaseAnalytics;
 
 import java.io.IOException;
 import java.io.InputStream;

@@ -1,7 +1,7 @@
 package au.com.newint.newinternationalist;
 
 import android.content.Context;
-import android.support.v7.widget.AppCompatImageView;
+import androidx.appcompat.widget.AppCompatImageView;
 
 /**
  * Created by New Internationalist on 30/04/15.

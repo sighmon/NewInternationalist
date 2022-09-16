@@ -1,12 +1,10 @@
 package au.com.newint.newinternationalist;
 
-import android.annotation.TargetApi;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.ApplicationInfo;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -19,8 +17,8 @@ import android.os.Environment;
 import android.os.StatFs;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
-import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
-import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
+import androidx.core.graphics.drawable.RoundedBitmapDrawable;
+import androidx.core.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.util.Base64;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -30,40 +28,31 @@ import com.google.android.gms.analytics.GoogleAnalytics;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.Tracker;
 import com.google.firebase.analytics.FirebaseAnalytics;
-import com.google.firebase.crash.FirebaseCrash;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.TrueFileFilter;
 
 import java.io.BufferedOutputStream;
 import java.io.BufferedWriter;
-import java.io.Console;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.Calendar;
-import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Properties;
-import java.util.logging.Logger;
 
 import javax.crypto.Cipher;
-import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.SecretKeySpec;
 import javax.net.ssl.HttpsURLConnection;
 
 import au.com.newint.newinternationalist.util.IabHelper;
-import au.com.newint.newinternationalist.util.Purchase;
 import au.com.newint.newinternationalist.util.SkuDetails;
 
 /**
@@ -402,7 +391,7 @@ public class Helpers {
                 bundle.putString(FirebaseAnalytics.Param.ITEM_NAME, action);
                 bundle.putString(FirebaseAnalytics.Param.CONTENT_TYPE, label);
                 bundle.putString(FirebaseAnalytics.Param.VALUE, value);
-                mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.ECOMMERCE_PURCHASE, bundle);
+//                mFirebaseAnalytics.logEvent(FirebaseAnalytics.Event.ECOMMERCE_PURCHASE, bundle);
             } catch (Exception e) {
                 Log.e("FirebaseAnalytics", "ERROR: Failed to log event. " + e);
             }
@@ -488,14 +477,6 @@ public class Helpers {
 
     public static String getNotificationTitle() {
         return "New Internationalist magazine";
-    }
-
-    public static void crash(String exceptionMessage) {
-        FirebaseCrash.report(new Exception(exceptionMessage));
-    }
-
-    public static void crashLog(String message) {
-        FirebaseCrash.log(message);
     }
 
     public static void sendPushRegistrationToServer(final String token) {

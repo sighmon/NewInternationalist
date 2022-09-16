@@ -2,14 +2,13 @@ package au.com.newint.newinternationalist;
 
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.support.v4.app.Fragment;
+import androidx.fragment.app.Fragment;
 //import android.support.v7.app.ActionBarActivity;
-import android.support.v7.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import android.text.Html;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
