@@ -1,22 +1,19 @@
 package au.com.newint.newinternationalist;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.ApplicationInfo;
-import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.net.Uri;
 import android.os.Build;
-import android.provider.Settings;
-import android.support.v4.view.GestureDetectorCompat;
-import android.support.v4.app.Fragment;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
+import androidx.fragment.app.Fragment;
+import androidx.core.view.GestureDetectorCompat;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
 import android.text.Html;
 import android.util.Log;
 import android.view.ContextThemeWrapper;
@@ -47,7 +44,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Locale;
 
-import au.com.newint.newinternationalist.util.IabException;
 import au.com.newint.newinternationalist.util.IabHelper;
 import au.com.newint.newinternationalist.util.IabResult;
 import au.com.newint.newinternationalist.util.Inventory;
@@ -427,6 +423,7 @@ public class ArticleActivity extends AppCompatActivity {
                 }
 
                 articleBody.getSettings().setJavaScriptEnabled(true);
+                articleBody.getSettings().setAllowFileAccess(true);
                 articleBody.setWebViewClient(new WebViewClient() {
                     @Override
                     public void onPageFinished (WebView view, String url) {
@@ -439,9 +436,9 @@ public class ArticleActivity extends AppCompatActivity {
                             image.fullImageCacheStreamFactory.preload(null, null, new CacheStreamFactory.CachePreloadCallback() {
                                 @Override
                                 public void onLoad(byte[] payload) {
-                                    Helpers.debugLog("ArticleBody", "Inserting image: " + image.getID());
                                     if (payload != null) {
                                         try {
+                                            Helpers.debugLog("ArticleBody", "Inserting image: " + image.getID() + ", " + image.getImageLocationOnFilesystem().toURI().toURL());
                                             String javascript = String.format("javascript:"
                                                     + "var insertBody = function () {"
                                                     + "  var id = 'image%1$s';"

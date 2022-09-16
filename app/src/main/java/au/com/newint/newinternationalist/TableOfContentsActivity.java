@@ -1,16 +1,15 @@
 package au.com.newint.newinternationalist;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
-//import android.support.v7.app.ActionBarActivity;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v4.app.Fragment;
 import android.os.Bundle;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
+import androidx.fragment.app.Fragment;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import android.text.Html;
 import android.text.method.LinkMovementMethod;
 import android.util.Log;
@@ -30,11 +29,12 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Locale;
 
-import au.com.newint.newinternationalist.util.IabException;
 import au.com.newint.newinternationalist.util.IabHelper;
 import au.com.newint.newinternationalist.util.IabResult;
 import au.com.newint.newinternationalist.util.Inventory;
 import au.com.newint.newinternationalist.util.Purchase;
+
+//import android.support.v7.app.ActionBarActivity;
 
 
 public class TableOfContentsActivity extends AppCompatActivity {

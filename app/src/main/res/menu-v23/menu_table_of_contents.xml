@@ -38,6 +38,6 @@
         android:icon="@drawable/abc_ic_menu_share_mtrl_alpha"
         android:title="@string/action_share_toc"
         app:showAsAction="ifRoom"
-        android:actionProviderClass="android.widget.ShareActionProvider" />
+        app:actionProviderClass="androidx.appcompat.widget.ShareActionProvider" />
 
 </menu>
