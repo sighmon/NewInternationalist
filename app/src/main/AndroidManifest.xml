@@ -26,6 +26,7 @@
 
         <activity
             android:name=".MainActivity"
+            android:exported="true"
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -110,6 +111,7 @@
         <activity
             android:name=".SearchActivity"
             android:label="@string/title_activity_search"
+            android:exported="true"
             android:parentActivityName=".MainActivity" >
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
@@ -161,6 +163,7 @@
 
         <!-- TODO: Push notifications setup -->
         <service
+            android:exported="true"
             android:name="au.com.newint.newinternationalist.util.MyFirebaseMessagingService">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT"/>
@@ -168,7 +171,8 @@
         </service>
 
         <service
-            android:name="au.com.newint.newinternationalist.util.MyFirebaseInstanceIDService">
+            android:exported="true"
+            android:name="au.com.newint.newinternationalist.util.MyFirebaseInstanceIdService">
             <intent-filter>
                 <action android:name="com.google.firebase.INSTANCE_ID_EVENT"/>
             </intent-filter>
