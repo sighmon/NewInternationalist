@@ -20,8 +20,8 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import com.google.firebase.iid.FirebaseInstanceId;
-import com.google.firebase.iid.FirebaseInstanceIdService;
+import com.google.firebase.messaging.FirebaseMessaging;
+import com.google.firebase.messaging.FirebaseMessagingService;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -39,7 +39,7 @@ import javax.net.ssl.HttpsURLConnection;
 import au.com.newint.newinternationalist.Helpers;
 
 
-public class MyFirebaseInstanceIDService extends FirebaseInstanceIdService {
+public class MyFirebaseInstanceIdService extends FirebaseMessagingService {
 
     private static final String TAG = "MyFirebaseIIDService";
 
@@ -50,9 +50,10 @@ public class MyFirebaseInstanceIDService extends FirebaseInstanceIdService {
      */
     // [START refresh_token]
     @Override
-    public void onTokenRefresh() {
+    public void onNewToken(String token) {
         // Get updated InstanceID token.
-        String refreshedToken = FirebaseInstanceId.getInstance().getToken();
+        super.onNewToken(token);
+        String refreshedToken = FirebaseMessaging.getInstance().getToken().getResult();
         Helpers.debugLog(TAG, "Refreshed token: " + refreshedToken);
 
         // Send to our Rails server

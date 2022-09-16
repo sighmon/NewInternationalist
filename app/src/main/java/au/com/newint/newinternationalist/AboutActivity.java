@@ -15,7 +15,7 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.TextView;
 
-import com.google.firebase.iid.FirebaseInstanceId;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 
 public class AboutActivity extends AppCompatActivity {
@@ -63,7 +63,7 @@ public class AboutActivity extends AppCompatActivity {
             @Override
             public boolean onLongClick(View v) {
                 // get the GCM token/id
-                String parseID = FirebaseInstanceId.getInstance().getToken();
+                String parseID = FirebaseMessaging.getInstance().getToken().getResult();
                 AlertDialog.Builder builder = new AlertDialog.Builder(AboutActivity.this);
                 builder.setMessage(parseID).setTitle(R.string.parse_id_dialog_title);
                 builder.setPositiveButton(R.string.parse_id_dialog_ok_button, new DialogInterface.OnClickListener() {
