@@ -7,12 +7,17 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.os.Bundle;
+
+import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -25,6 +30,17 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.android.billingclient.api.BillingClient;
+import com.android.billingclient.api.BillingResult;
+import com.android.billingclient.api.ProductDetails;
+import com.android.billingclient.api.ProductDetailsResponseListener;
+import com.android.billingclient.api.Purchase;
+import com.android.billingclient.api.PurchasesResponseListener;
+import com.android.billingclient.api.QueryProductDetailsParams;
+import com.google.common.collect.ImmutableList;
+
+import org.jetbrains.annotations.NotNull;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,17 +48,19 @@ import au.com.newint.newinternationalist.util.IabException;
 import au.com.newint.newinternationalist.util.IabHelper;
 import au.com.newint.newinternationalist.util.IabResult;
 import au.com.newint.newinternationalist.util.Inventory;
-import au.com.newint.newinternationalist.util.Purchase;
 import au.com.newint.newinternationalist.util.SkuDetails;
 
 
 public class SubscribeActivity extends AppCompatActivity {
 
+    static Billing mBilling;
     static IabHelper mHelper;
-    static ArrayList<SkuDetails> mProducts;
+    static List<ProductDetails> mProducts;
     static int mPositionTapped;
     static ArrayList<Issue> mIssueList;
     static IabHelper.OnIabPurchaseFinishedListener mPurchaseFinishedListener;
+    static SubscribeActivity.SubscribeActivityFragment.SubscribeAdapter mSubscribeAdapter;
+    static ProgressDialog mProgressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -146,166 +164,41 @@ public class SubscribeActivity extends AppCompatActivity {
 
             final SubscribeAdapter adapter = new SubscribeAdapter();
             recList.setAdapter(adapter);
+            mSubscribeAdapter = adapter;
 
             // Setup in-app billing
-            mHelper = Helpers.setupIabHelper(getActivity().getApplicationContext());
+            mProgressDialog = new ProgressDialog(getActivity());
+            mProgressDialog.setTitle(getResources().getString(R.string.subscribe_loading_progress_title));
+            mProgressDialog.setMessage(getResources().getString(R.string.subscribe_loading_progress_message));
+            mProgressDialog.show();
 
-            if (!Helpers.emulator) {
-                // Only startSetup if not running in an emulator
-                // Get inventory from Google Play
-                mHelper.startSetup(new IabHelper.OnIabSetupFinishedListener() {
-                    public void onIabSetupFinished(IabResult result) {
-                        if (!result.isSuccess()) {
-                            // Oh noes, there was a problem.
-                            Log.d("Subscribe", "Problem setting up In-app Billing: " + result);
-                        }
-                        // Hooray, IAB is fully set up!
-                        Helpers.debugLog("Subscribe", "In-app billing setup result: " + result);
-
-                        // Consume the test purchase..
-                        if (BuildConfig.DEBUG) {
-                            try {
-                                Inventory inventory = mHelper.queryInventory(false, null);
-                                Purchase purchase = inventory.getPurchase("android.test.purchased");
-                                if (purchase != null) {
-                                    mHelper.consumeAsync(inventory.getPurchase("android.test.purchased"), null);
-                                }
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-                        }
-
-                        // Ask Google Play for a products list on a background thread
-                        final ArrayList<String> additionalSkuList = new ArrayList<String>();
-                        additionalSkuList.add(Helpers.TWELVE_MONTH_SUBSCRIPTION_ID);
-                        additionalSkuList.add(Helpers.ONE_MONTH_SUBSCRIPTION_ID);
-
-                        mIssueList = Publisher.INSTANCE.getIssuesFromFilesystem();
-                        for (Issue issue : mIssueList) {
-                            additionalSkuList.add(Helpers.singleIssuePurchaseID(issue.getNumber()));
-                        }
-
-                        final ProgressDialog progress = new ProgressDialog(getActivity());
-                        progress.setTitle(getResources().getString(R.string.subscribe_loading_progress_title));
-                        progress.setMessage(getResources().getString(R.string.subscribe_loading_progress_message));
-                        progress.show();
-
-                        new AsyncTask<Void, Integer, Void>() {
-
+            // Billing v5
+            mBilling = new Billing();
+            mBilling.productDetailsResponseListener = new ProductDetailsResponseListener() {
+                @Override
+                public void onProductDetailsResponse(@NonNull BillingResult billingResult, @NonNull List<ProductDetails> list) {
+                    Helpers.debugLog("Billing", "Debug... " + billingResult.getDebugMessage());
+                    if (billingResult.getResponseCode() ==  BillingClient.BillingResponseCode.OK) {
+                        // Process returned productDetailsList
+                        Helpers.debugLog("Billing", "Product details list: " + list);
+                        Handler mainHandler = new Handler(Looper.getMainLooper());
+                        Runnable myRunnable = new Runnable() {
                             @Override
-                            protected Void doInBackground(Void... params) {
-
-                                int partitionSize = Helpers.GOOGLE_PLAY_MAX_SKU_LIST_SIZE;
-                                for (int i = 0; i < additionalSkuList.size(); i+=partitionSize) {
-                                    final int loopNumber = i;
-                                    final List<String> partition = additionalSkuList.subList(i, Math.min(i + partitionSize, additionalSkuList.size()));
-                                    try {
-                                        Inventory inventory = mHelper.queryInventory(true, partition);
-
-                                        // Check subscription inventory
-                                        Helpers.debugLog("Subscribe", "Inventory (" + loopNumber + "): " + inventory);
-
-                                        // Loop through products and add them to mProducts
-                                        for (String sku : partition) {
-                                            SkuDetails product = inventory.getSkuDetails(sku);
-                                            if (product != null) {
-                                                mProducts.add(product);
-                                            }
-                                        }
-                                    } catch (Exception e) {
-                                        e.printStackTrace();
-                                    }
-                                }
-
-                                return null;
-                            }
-
-                            @Override
-                            protected void onPostExecute(Void nothing) {
-                                super.onPostExecute(nothing);
-
-                                // Update adapter
-                                adapter.notifyDataSetChanged();
-                                progress.dismiss();
-                            }
-
-                        }.execute();
-
-                        mPurchaseFinishedListener = new IabHelper.OnIabPurchaseFinishedListener() {
-                            public void onIabPurchaseFinished(IabResult result, final Purchase purchase)
-                            {
-                                if (result.isFailure()) {
-                                    if (result.getResponse() == 7) {
-                                        // Already purchased!
-                                        Activity alertActivity = getActivity();
-                                        if (alertActivity != null) {
-                                            AlertDialog.Builder builder = new AlertDialog.Builder(alertActivity);
-                                            builder.setMessage(R.string.subscribe_already_purchased_message).setTitle(R.string.subscribe_already_purchased_title);
-                                            builder.setPositiveButton(R.string.subscribe_already_purchased_read_issue_button, new DialogInterface.OnClickListener() {
-                                                public void onClick(DialogInterface dialog, int id) {
-                                                    // User clicked Read this issue button
-                                                    Intent issueIntent = new Intent(rootView.getContext(), TableOfContentsActivity.class);
-                                                    int issueNumber = Integer.parseInt(mProducts.get(mPositionTapped).getSku().replaceAll("[\\D]", ""));
-                                                    Issue issueForIntent = null;
-                                                    for (Issue issue : mIssueList) {
-                                                        if (issue.getNumber() == issueNumber) {
-                                                            issueForIntent = issue;
-                                                        }
-                                                    }
-                                                    if (issueForIntent != null) {
-                                                        issueIntent.putExtra("issue", issueForIntent);
-                                                        startActivity(issueIntent);
-                                                    }
-                                                }
-                                            });
-                                            builder.setNegativeButton(R.string.subscribe_already_purchased_cancel_button, new DialogInterface.OnClickListener() {
-                                                public void onClick(DialogInterface dialog, int id) {
-                                                    // User cancelled the dialog
-                                                }
-                                            });
-                                            AlertDialog dialog = builder.create();
-                                            dialog.show();
-                                        }
-                                    } else {
-                                        Log.d("Subscribe", "Error purchasing: " + result);
-                                    }
-                                    return;
-                                } else if (result.getResponse() == IabHelper.IABHELPER_USER_CANCELLED) {
-                                    // User cancelled the purchase, so ignore, move on
-                                    Helpers.debugLog("Subscribe", "User cancelled purchase.");
-                                    return;
-                                } else if (purchase.getSku().equals(Helpers.TWELVE_MONTH_SUBSCRIPTION_ID)) {
-                                    // Update subscription status.
-                                    Helpers.debugLog("Subscribe", "Purchase succeeded: " + purchase.getItemType());
-                                    // Send analytics event if user permits
-                                    SkuDetails productPurchased = null;
-                                    productPurchased = getProductForPurchase(purchase);
-                                    Helpers.sendGoogleAnalyticsEvent("Google Play", "Subscription", purchase.getItemType(), productPurchased.getPrice());
-                                    Helpers.sendGoogleAdwordsConversion(productPurchased);
-
-                                } else if (purchase.getSku().equals(Helpers.ONE_MONTH_SUBSCRIPTION_ID)) {
-                                    // Update subscription status.
-                                    Helpers.debugLog("Subscribe", "Purchase succeeded: " + purchase.getItemType());
-                                    // Send analytics event if user permits
-                                    SkuDetails productPurchased = null;
-                                    productPurchased = getProductForPurchase(purchase);
-                                    Helpers.sendGoogleAnalyticsEvent("Google Play", "Subscription", purchase.getItemType(), productPurchased.getPrice());
-                                    Helpers.sendGoogleAdwordsConversion(productPurchased);
-                                } else {
-                                    // Handle individual purchases
-                                    Helpers.debugLog("Subscribe", "Individual purchase: " + purchase.getItemType());
-                                    adapter.notifyDataSetChanged();
-                                    // Send analytics event if user permits
-                                    SkuDetails productPurchased = null;
-                                    productPurchased = getProductForPurchase(purchase);
-                                    Helpers.sendGoogleAnalyticsEvent("Google Play", "Purchase", purchase.getItemType(), productPurchased.getPrice());
-                                    Helpers.sendGoogleAdwordsConversion(productPurchased);
-                                }
+                            public void run() {
+                                mProgressDialog.dismiss();
+                                mProducts.addAll(list);
+                                mSubscribeAdapter.notifyDataSetChanged();
                             }
                         };
+                        mainHandler.post(myRunnable);
+                    } else {
+                        Helpers.debugLog("Billing", "Failed... " + billingResult.getDebugMessage());
                     }
-                });
-            }
+                }
+            };
+            mBilling.setupBillingClient(getActivity().getApplicationContext());
+
+            // TODO: Purchase history? https://developer.android.com/google/play/billing/integrate#fetch
 
             return rootView;
         }
@@ -393,8 +286,8 @@ public class SubscribeActivity extends AppCompatActivity {
 
                 } else if (holder instanceof SubscribeViewHolder) {
                     // In-app product
-                    SkuDetails product = mProducts.get(position);
-                    String productSku = product.getSku();
+                    ProductDetails product = mProducts.get(position);
+                    String productSku = product.getProductId();
                     final SubscribeViewHolder viewHolder = ((SubscribeViewHolder) holder);
 
                     // Setup product image
@@ -454,21 +347,20 @@ public class SubscribeActivity extends AppCompatActivity {
                     // Setup product
                     viewHolder.productTitle.setText(product.getTitle().replace(" (New Internationalist magazine)", ""));
                     viewHolder.productDescription.setText(product.getDescription());
-                    viewHolder.productPrice.setText(product.getPrice());
+                    viewHolder.productPrice.setText("$-");
+                    try {
+                        String price = product.getSubscriptionOfferDetails().get(0).getPricingPhases().getPricingPhaseList().get(0).getFormattedPrice();
+                        viewHolder.productPrice.setText(price);
+                    } catch (Exception e) {
+                        Helpers.debugLog("Subscribe", "Setup product failed: " + e);
+                    }
 
                     // If product has been purchased
-                    try {
-                        Inventory inventory = mHelper.queryInventory(false, null);
-                        Purchase purchase = inventory.getPurchase(product.getSku());
-                        // NOTE: Purchase is double checked via Rails when actually trying to get the article body
-                        if (purchase != null) {
-                            CardView cardView = (CardView) viewHolder.itemView.findViewById(R.id.subscribe_card_view);
-                            cardView.setCardBackgroundColor(getResources().getColor(R.color.material_deep_teal_200));
-                            viewHolder.productPrice.setText(product.getPrice() + " (Purchased!)");
-                            viewHolder.setIsRecyclable(false);
-                        }
-                    } catch (IabException e) {
-                        e.printStackTrace();
+                    if (mBilling.isPurchased(product)) {
+                        CardView cardView = (CardView) viewHolder.itemView.findViewById(R.id.subscribe_card_view);
+                        cardView.setCardBackgroundColor(getResources().getColor(R.color.material_deep_teal_200));
+                        viewHolder.productPrice.setText(viewHolder.productPrice.getText() + " (Purchased!)");
+                        viewHolder.setIsRecyclable(false);
                     }
 
                 } else if (holder instanceof SubscribeFooterViewHolder) {
@@ -501,12 +393,9 @@ public class SubscribeActivity extends AppCompatActivity {
                     // Purchase product!
                     Helpers.debugLog("Subscribe", "Product tapped at position: " + getPosition());
                     mPositionTapped = getPosition();
-                    // TODO: Generate developerPayload in helper, now just returns an empty string
-                    String developerPayload = Helpers.getDeveloperPayload();
-                    // For testing:
-                    // mHelper.launchPurchaseFlow(getActivity(), "android.test.purchased", Helpers.GOOGLE_PLAY_REQUEST_CODE, mPurchaseFinishedListener, developerPayload);
-                    // For real:
-                    mHelper.launchPurchaseFlow((AppCompatActivity) getActivity(), mProducts.get(getPosition()).getSku(), Helpers.GOOGLE_PLAY_REQUEST_CODE, mPurchaseFinishedListener, developerPayload);
+
+                    // Initiate purchase
+                    mBilling.launchBillingFlow((AppCompatActivity) getActivity(), mProducts.get(getPosition()));
                 }
             }
 
@@ -530,17 +419,5 @@ public class SubscribeActivity extends AppCompatActivity {
                 }
             }
         }
-    }
-
-    private static SkuDetails getProductForPurchase(Purchase purchase) {
-        SkuDetails productPurchased = null;
-        if (mProducts != null && mProducts.size() > 0) {
-            for (SkuDetails product : mProducts) {
-                if (product.getSku().equals(purchase.getSku())) {
-                    productPurchased = product;
-                }
-            }
-        }
-        return productPurchased;
     }
 }

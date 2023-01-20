@@ -92,7 +92,7 @@
     <string name="toc_article_image_description">The featured image for this article</string>
 
     <!-- Subscribe -->
-    <string name="title_activity_subscribe">Subscribe / Purchase</string>
+    <string name="title_activity_subscribe">Subscribe</string>
     <string name="subscribe_product_title">Product title</string>
     <string name="subscribe_product_description">Product description</string>
     <string name="subscribe_product_price">$0.00</string>
