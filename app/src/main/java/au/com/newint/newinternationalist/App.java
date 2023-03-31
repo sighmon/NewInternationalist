@@ -15,8 +15,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
-import com.crashlytics.android.Crashlytics;
-import io.fabric.sdk.android.Fabric;
+import com.google.firebase.crashlytics.FirebaseCrashlytics;
 
 /**
  * Created by New Internationalist on 4/06/15.
@@ -46,7 +45,7 @@ public class App extends MultiDexApplication {
 
         if (allowAnonymousStatistics) {
             // Now using Crashlytics.
-            Fabric.with(this, new Crashlytics());
+            FirebaseCrashlytics.getInstance().setCrashlyticsCollectionEnabled(true);
         } else {
             // TODO: do we still need to initialise here?
         }
