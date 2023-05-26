@@ -109,6 +109,8 @@ public class ImageActivity extends AppCompatActivity {
 
             WebView imageWebView = (WebView) rootView.findViewById(R.id.image_web_view);
             imageWebView.getSettings().setBuiltInZoomControls(true);
+            imageWebView.getSettings().setJavaScriptEnabled(true);
+            imageWebView.getSettings().setAllowFileAccess(true);
             imageWebView.setBackgroundColor(getResources().getColor(R.color.background_material_dark));
             // Oh CSS you difficult beast. Using divs displaying as tables to centre the image
             String html = String.format("<html> <head> <style type='text/css'> body { padding: 0; margin: 0; } body img { width: 100%%; } </style> </head> <body> <div style='display: table; position: absolute; height: 100%%; width: 100%%;'> <div style=' display: table-cell; vertical-align: middle;'> <img src='%1$s' /> </div> </div> </body> </html>", url);
