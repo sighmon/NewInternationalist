@@ -42,6 +42,7 @@ import com.google.common.collect.ImmutableList;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import au.com.newint.newinternationalist.util.IabException;
@@ -174,26 +175,29 @@ public class SubscribeActivity extends AppCompatActivity {
 
             // Billing v5
             mBilling = new Billing();
-            mBilling.productDetailsResponseListener = new ProductDetailsResponseListener() {
-                @Override
-                public void onProductDetailsResponse(@NonNull BillingResult billingResult, @NonNull List<ProductDetails> list) {
-                    Helpers.debugLog("Billing", "Debug... " + billingResult.getDebugMessage());
-                    if (billingResult.getResponseCode() ==  BillingClient.BillingResponseCode.OK) {
-                        // Process returned productDetailsList
-                        Helpers.debugLog("Billing", "Product details list: " + list);
-                        Handler mainHandler = new Handler(Looper.getMainLooper());
-                        Runnable myRunnable = new Runnable() {
-                            @Override
-                            public void run() {
-                                mProgressDialog.dismiss();
-                                mProducts.addAll(list);
-                                mSubscribeAdapter.notifyDataSetChanged();
+            mBilling.productDetailsResponseListener = (billingResult, list) -> {
+                Helpers.debugLog("Billing", "Debug... " + billingResult.getDebugMessage());
+                if (billingResult.getResponseCode() ==  BillingClient.BillingResponseCode.OK) {
+                    // Process returned productDetailsList
+                    Helpers.debugLog("Billing", "Product details list: " + list);
+                    Handler mainHandler = new Handler(Looper.getMainLooper());
+                    Runnable myRunnable = new Runnable() {
+                        @Override
+                        public void run() {
+                            mProgressDialog.dismiss();
+                            for (ProductDetails item: list) {
+                                if (item.getProductType().equals(BillingClient.ProductType.INAPP)) {
+                                    mProducts.add(item);
+                                } else {
+                                    mProducts.add(0, item);
+                                }
                             }
-                        };
-                        mainHandler.post(myRunnable);
-                    } else {
-                        Helpers.debugLog("Billing", "Failed... " + billingResult.getDebugMessage());
-                    }
+                            mSubscribeAdapter.notifyDataSetChanged();
+                        }
+                    };
+                    mainHandler.post(myRunnable);
+                } else {
+                    Helpers.debugLog("Billing", "Failed... " + billingResult.getDebugMessage());
                 }
             };
             mBilling.setupBillingClient(getActivity().getApplicationContext());
@@ -296,6 +300,7 @@ public class SubscribeActivity extends AppCompatActivity {
                         int productID = Integer.parseInt(productSku.replaceAll("\\D+",""));
                         int issueListPosition = 0;
                         boolean issueFound = false;
+                        mIssueList = Publisher.INSTANCE.getIssuesFromFilesystem();
                         for (int i = 0; i < mIssueList.size(); i++) {
                             if (mIssueList.get(i).getNumber() == productID) {
                                 issueListPosition = i;
@@ -348,11 +353,20 @@ public class SubscribeActivity extends AppCompatActivity {
                     viewHolder.productTitle.setText(product.getTitle().replace(" (New Internationalist magazine)", ""));
                     viewHolder.productDescription.setText(product.getDescription());
                     viewHolder.productPrice.setText("$-");
-                    try {
-                        String price = product.getSubscriptionOfferDetails().get(0).getPricingPhases().getPricingPhaseList().get(0).getFormattedPrice();
-                        viewHolder.productPrice.setText(price);
-                    } catch (Exception e) {
-                        Helpers.debugLog("Subscribe", "Setup product failed: " + e);
+                    if (product.getProductType().equals(BillingClient.ProductType.SUBS)) {
+                        try {
+                            String price = product.getSubscriptionOfferDetails().get(0).getPricingPhases().getPricingPhaseList().get(0).getFormattedPrice();
+                            viewHolder.productPrice.setText(price);
+                        } catch (Exception e) {
+                            Helpers.debugLog("Subscribe", "Setup subscription failed: " + e);
+                        }
+                    } else {
+                        try {
+                            String price = product.getOneTimePurchaseOfferDetails().getFormattedPrice();
+                            viewHolder.productPrice.setText(price);
+                        } catch (Exception e) {
+                            Helpers.debugLog("Subscribe", "Setup product failed: " + e);
+                        }
                     }
 
                     // If product has been purchased

@@ -97,17 +97,6 @@ public class Billing {
     private void queryProducts() {
         List<QueryProductDetailsParams.Product> products  = new ArrayList();
 
-        // TODO: Why do getting INAPP purchases make the response fail?
-//        List<Issue> issues = Publisher.INSTANCE.getIssuesFromFilesystem();
-//        for (Issue issue : issues.subList(0, 5)) {
-//            products.add(
-//                QueryProductDetailsParams.Product.newBuilder()
-//                    .setProductId("single" + issue.getID())
-//                    .setProductType(BillingClient.ProductType.INAPP)
-//                    .build()
-//            );
-//        }
-
         // Add subscriptions
         products.add(
                 QueryProductDetailsParams.Product.newBuilder()
@@ -133,6 +122,30 @@ public class Billing {
             queryProductDetailsParams,
             productDetailsResponseListener
         );
+
+        // Add single issues
+        products  = new ArrayList();
+        List<Issue> issues = Publisher.INSTANCE.getIssuesFromFilesystem();
+        for (Issue issue : issues.subList(0, 10)) {
+            products.add(
+                    QueryProductDetailsParams.Product.newBuilder()
+                            .setProductId(issue.getNumber() + "single")
+                            .setProductType(BillingClient.ProductType.INAPP)
+                            .build()
+            );
+        }
+
+        queryProductDetailsParams =
+                QueryProductDetailsParams.newBuilder()
+                        .setProductList(
+                                products
+                        )
+                        .build();
+
+        billingClient.queryProductDetailsAsync(
+                queryProductDetailsParams,
+                productDetailsResponseListener
+        );
     }
 
     private void queryPurchases() {
@@ -146,16 +159,29 @@ public class Billing {
     }
 
     public void launchBillingFlow(AppCompatActivity activity, ProductDetails productDetails) {
-        ImmutableList productDetailsParamsList =
-                ImmutableList.of(
-                        BillingFlowParams.ProductDetailsParams.newBuilder()
-                                // retrieve a value for "productDetails" by calling queryProductDetailsAsync()
-                                .setProductDetails(productDetails)
-                                // to get an offer token, call ProductDetails.getSubscriptionOfferDetails()
-                                // for a list of offers that are available to the user
-                                .setOfferToken(productDetails.getSubscriptionOfferDetails().get(0).getOfferToken())
-                                .build()
-                );
+        List productDetailsParamsList;
+        if (productDetails.getProductType().equals(BillingClient.ProductType.SUBS)) {
+            productDetailsParamsList =
+                    ImmutableList.of(
+                            BillingFlowParams.ProductDetailsParams.newBuilder()
+                                    // retrieve a value for "productDetails" by calling queryProductDetailsAsync()
+                                    .setProductDetails(productDetails)
+                                    // to get an offer token, call ProductDetails.getSubscriptionOfferDetails()
+                                    // for a list of offers that are available to the user
+                                    .setOfferToken(productDetails.getSubscriptionOfferDetails().get(0).getOfferToken())
+                                    .build()
+                    );
+        } else {
+            productDetailsParamsList =
+                    ImmutableList.of(
+                            BillingFlowParams.ProductDetailsParams.newBuilder()
+                                    // retrieve a value for "productDetails" by calling queryProductDetailsAsync()
+                                    .setProductDetails(productDetails)
+                                    // to get an offer token, call ProductDetails.getSubscriptionOfferDetails()
+                                    // for a list of offers that are available to the user
+                                    .build()
+                    );
+        }
 
         BillingFlowParams billingFlowParams = BillingFlowParams.newBuilder()
                 .setProductDetailsParamsList(productDetailsParamsList)
@@ -185,6 +211,9 @@ public class Billing {
     }
 
     public boolean isPurchased(ProductDetails productDetails) {
+        if (allPurchases == null) {
+            return false;
+        }
         for (Purchase purchase : allPurchases) {
             if (purchase.getProducts().get(0).equals(productDetails.getProductId())) {
                 Helpers.debugLog("Billing", "isPurchased: " + purchase);
