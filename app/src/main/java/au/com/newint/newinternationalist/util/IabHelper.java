@@ -831,6 +831,10 @@ public class IabHelper {
 
 
     int queryPurchases(Inventory inv, String itemType) throws JSONException, RemoteException {
+        if (mContext == null) {
+            logDebug("mContext is null, aborting.");
+            return IABHELPER_VERIFICATION_FAILED;
+        }
         // Query purchases
         logDebug("Querying owned items, item type: " + itemType);
         logDebug("Package name: " + mContext.getPackageName());
@@ -895,6 +899,10 @@ public class IabHelper {
 
     int querySkuDetails(String itemType, Inventory inv, List<String> moreSkus)
                                 throws RemoteException, JSONException {
+        if (mContext == null) {
+            logDebug("mContext is null, aborting.");
+            return IABHELPER_BAD_RESPONSE;
+        }
         logDebug("Querying SKU details.");
         ArrayList<String> skuList = new ArrayList<String>();
         skuList.addAll(inv.getAllOwnedSkus(itemType));
