@@ -35,6 +35,9 @@ android {
     }
 // Temporary fix
     namespace 'au.com.newint.newinternationalist'
+    buildFeatures {
+        aidl true
+    }
 }
 
 dependencies {
