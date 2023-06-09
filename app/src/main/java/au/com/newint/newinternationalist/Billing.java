@@ -39,7 +39,11 @@ public class Billing {
             Helpers.debugLog("Billing", "Billing result: " + billingResult);
             Helpers.debugLog("Billing", "On Purchases Updated Purchases: " + purchases);
 
-            allPurchases = purchases;
+            if (allPurchases == null) {
+                allPurchases = purchases;
+            } else if (purchases != null) {
+                allPurchases.addAll(purchases);
+            }
 
             if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK && purchases != null) {
                 for (Purchase purchase : purchases) {
@@ -59,7 +63,11 @@ public class Billing {
             Helpers.debugLog("Billing", "Purchases Response Listener Billing result: " + billingResult);
             Helpers.debugLog("Billing", "Purchases Response Listener Purchases: " + purchases);
 
-            allPurchases = purchases;
+            if (allPurchases == null) {
+                allPurchases = purchases;
+            } else if (purchases != null) {
+                allPurchases.addAll(purchases);
+            }
 
             // process returned purchase list, e.g. display the plans user owns
             if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK && purchases != null) {
@@ -126,7 +134,7 @@ public class Billing {
         // Add single issues
         products  = new ArrayList();
         List<Issue> issues = Publisher.INSTANCE.getIssuesFromFilesystem();
-        for (Issue issue : issues.subList(0, 10)) {
+        for (Issue issue : issues) {
             products.add(
                     QueryProductDetailsParams.Product.newBuilder()
                             .setProductId(issue.getNumber() + "single")
@@ -153,6 +161,12 @@ public class Billing {
         billingClient.queryPurchasesAsync(
                 QueryPurchasesParams.newBuilder()
                         .setProductType(BillingClient.ProductType.SUBS)
+                        .build(),
+                purchasesResponseListener
+        );
+        billingClient.queryPurchasesAsync(
+                QueryPurchasesParams.newBuilder()
+                        .setProductType(BillingClient.ProductType.INAPP)
                         .build(),
                 purchasesResponseListener
         );

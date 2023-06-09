@@ -43,7 +43,9 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import au.com.newint.newinternationalist.util.IabException;
 import au.com.newint.newinternationalist.util.IabHelper;
@@ -185,13 +187,24 @@ public class SubscribeActivity extends AppCompatActivity {
                         @Override
                         public void run() {
                             mProgressDialog.dismiss();
+                            List<ProductDetails> productsList = new ArrayList();
                             for (ProductDetails item: list) {
-                                if (item.getProductType().equals(BillingClient.ProductType.INAPP)) {
-                                    mProducts.add(item);
-                                } else {
+                                if (item.getProductType().equals(BillingClient.ProductType.SUBS)) {
                                     mProducts.add(0, item);
                                 }
                             }
+                            for (ProductDetails item: list) {
+                                if (item.getProductType().equals(BillingClient.ProductType.INAPP)) {
+                                    productsList.add(item);
+                                }
+                            }
+                            Collections.sort(productsList, new Comparator<ProductDetails>() {
+                                @Override
+                                public int compare(ProductDetails p1, ProductDetails p2) {
+                                    return p2.getProductId().compareTo(p1.getProductId());
+                                }
+                            });
+                            mProducts.addAll(productsList);
                             mSubscribeAdapter.notifyDataSetChanged();
                         }
                     };
@@ -373,7 +386,7 @@ public class SubscribeActivity extends AppCompatActivity {
                     if (mBilling.isPurchased(product)) {
                         CardView cardView = (CardView) viewHolder.itemView.findViewById(R.id.subscribe_card_view);
                         cardView.setCardBackgroundColor(getResources().getColor(R.color.material_deep_teal_200));
-                        viewHolder.productPrice.setText(viewHolder.productPrice.getText() + " (Purchased!)");
+                        viewHolder.productPrice.setText(viewHolder.productPrice.getText() + " (Purchased)");
                         viewHolder.setIsRecyclable(false);
                     }
 
