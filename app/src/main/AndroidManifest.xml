@@ -170,14 +170,6 @@
             </intent-filter>
         </service>
 
-        <service
-            android:exported="true"
-            android:name="au.com.newint.newinternationalist.util.MyFirebaseInstanceIdService">
-            <intent-filter>
-                <action android:name="com.google.firebase.INSTANCE_ID_EVENT"/>
-            </intent-filter>
-        </service>
-
         <!-- Push icon identifier -->
         <meta-data android:name="au.com.newint.newinternationalist.notification_icon" android:resource="@drawable/ni_notification"/>
 

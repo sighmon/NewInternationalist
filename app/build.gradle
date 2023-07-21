@@ -12,7 +12,7 @@ android {
         applicationId "au.com.newint.newinternationalist"
         minSdkVersion 19
         targetSdkVersion 33
-        versionCode 95
+        versionCode 96
         versionName '1.4.1'
         multiDexEnabled true
     }

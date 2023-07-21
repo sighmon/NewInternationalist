@@ -14,6 +14,8 @@ import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
+import android.os.Looper;
 import android.os.StatFs;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
@@ -47,6 +49,8 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Properties;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
@@ -480,63 +484,57 @@ public class Helpers {
     }
 
     public static void sendPushRegistrationToServer(final String token) {
-        new AsyncTask<Void, Void, Void>() {
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        Handler handler = new Handler(Looper.getMainLooper());
 
-            @Override
-            protected Void doInBackground(Void... params) {
-
-                // Try posting to the server
-                URL url = null;
+        executor.execute(() -> {
+            // Try posting to the server
+            URL url = null;
+            try {
+                String pushRegistrationsString = "";
+                if (BuildConfig.DEBUG) {
+                    // Local debug site
+                    pushRegistrationsString = getVariableFromConfig("DEBUG_SITE_URL") + "push_registrations";
+                } else {
+                    // Real server
+                    pushRegistrationsString = Helpers.getSiteURL() + "push_registrations";
+                }
+                Helpers.debugLog("PushRegistrations", "Sending token: " + token + ", to server: " + pushRegistrationsString);
+                url = new URL(pushRegistrationsString);
+                HttpsURLConnection urlConnection = (HttpsURLConnection) url.openConnection();
                 try {
-                    String pushRegistrationsString = "";
-                    if (BuildConfig.DEBUG) {
-                        // Local debug site
-                        pushRegistrationsString = getVariableFromConfig("DEBUG_SITE_URL") + "push_registrations";
-                    } else {
-                        // Real server
-                        pushRegistrationsString = Helpers.getSiteURL() + "push_registrations";
-                    }
-                    Helpers.debugLog("PushRegistrations", "Sending token: " + token + ", to server: " + pushRegistrationsString);
-                    url = new URL(pushRegistrationsString);
-                    HttpsURLConnection urlConnection = (HttpsURLConnection) url.openConnection();
-                    try {
-                        urlConnection.setDoOutput(true);
-                        urlConnection.setChunkedStreamingMode(0);
-                        urlConnection.setRequestMethod("POST");
+                    urlConnection.setDoOutput(true);
+                    urlConnection.setChunkedStreamingMode(0);
+                    urlConnection.setRequestMethod("POST");
 
-                        OutputStream out = new BufferedOutputStream(urlConnection.getOutputStream());
+                    OutputStream out = new BufferedOutputStream(urlConnection.getOutputStream());
 
-                        Uri.Builder builder = new Uri.Builder()
-                                .appendQueryParameter("token", token)
-                                .appendQueryParameter("device", "android");
-                        String query = builder.build().getEncodedQuery();
+                    Uri.Builder builder = new Uri.Builder()
+                            .appendQueryParameter("token", token)
+                            .appendQueryParameter("device", "android");
+                    String query = builder.build().getEncodedQuery();
 
-                        BufferedWriter writer = new BufferedWriter(
-                                new OutputStreamWriter(out, "UTF-8"));
-                        writer.write(query);
-                        writer.flush();
-                        writer.close();
+                    BufferedWriter writer = new BufferedWriter(
+                            new OutputStreamWriter(out, "UTF-8"));
+                    writer.write(query);
+                    writer.flush();
+                    writer.close();
 
-                        Helpers.debugLog("PushRegistrations", "Response from server: " + urlConnection.getResponseCode());
+                    Helpers.debugLog("PushRegistrations", "Response from server: " + urlConnection.getResponseCode());
 
 //                        InputStream in = new BufferedInputStream(urlConnection.getInputStream());
 //                        readStream(in);
-                    } finally {
-                        urlConnection.disconnect();
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
+                } finally {
+                    urlConnection.disconnect();
                 }
-
-                return null;
+            } catch (Exception e) {
+                e.printStackTrace();
             }
 
-            @Override
-            protected void onPostExecute(Void unused) {
-                //
-
-            }
-        }.execute();
+            handler.post(() -> {
+                // UI Thread work here
+            });
+        });
     }
 
     public static void changeFontSize(Float fontChange, Context context) {
