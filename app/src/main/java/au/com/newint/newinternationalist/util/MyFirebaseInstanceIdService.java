@@ -20,6 +20,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.messaging.FirebaseMessaging;
 import com.google.firebase.messaging.FirebaseMessagingService;
 
@@ -53,11 +54,15 @@ public class MyFirebaseInstanceIdService extends FirebaseMessagingService {
     public void onNewToken(String token) {
         // Get updated InstanceID token.
         super.onNewToken(token);
-        String refreshedToken = FirebaseMessaging.getInstance().getToken().getResult();
-        Helpers.debugLog(TAG, "Refreshed token: " + refreshedToken);
+        FirebaseMessaging.getInstance().getToken().addOnSuccessListener(new OnSuccessListener<String>() {
+            @Override
+            public void onSuccess(String token) {
+                Helpers.debugLog(TAG, "Refreshed token: " + token);
 
-        // Send to our Rails server
-        sendRegistrationToServer(refreshedToken);
+                // Send to our Rails server
+                sendRegistrationToServer(token);
+            }
+        });
     }
     // [END refresh_token]
 

@@ -15,6 +15,7 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.TextView;
 
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.messaging.FirebaseMessaging;
 
 
@@ -63,16 +64,20 @@ public class AboutActivity extends AppCompatActivity {
             @Override
             public boolean onLongClick(View v) {
                 // get the GCM token/id
-                String parseID = FirebaseMessaging.getInstance().getToken().getResult();
-                AlertDialog.Builder builder = new AlertDialog.Builder(AboutActivity.this);
-                builder.setMessage(parseID).setTitle(R.string.parse_id_dialog_title);
-                builder.setPositiveButton(R.string.parse_id_dialog_ok_button, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        // User clicked OK button
+                FirebaseMessaging.getInstance().getToken().addOnSuccessListener(new OnSuccessListener<String>() {
+                    @Override
+                    public void onSuccess(String token) {
+                        AlertDialog.Builder builder = new AlertDialog.Builder(AboutActivity.this);
+                        builder.setMessage(token).setTitle(R.string.parse_id_dialog_title);
+                        builder.setPositiveButton(R.string.parse_id_dialog_ok_button, new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int id) {
+                                // User clicked OK button
+                            }
+                        });
+                        AlertDialog dialog = builder.create();
+                        dialog.show();
                     }
                 });
-                AlertDialog dialog = builder.create();
-                dialog.show();
                 return true;
             }
         });
