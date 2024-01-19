@@ -472,7 +472,7 @@ public class Helpers {
         Intent restartIntent = context.getPackageManager()
                 .getLaunchIntentForPackage(context.getPackageName());
         restartIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, restartIntent, PendingIntent.FLAG_ONE_SHOT);
+        PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, restartIntent, PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_IMMUTABLE);
         AlarmManager manager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         manager.set(AlarmManager.RTC, System.currentTimeMillis() + 500, pendingIntent);
         restartIntent.putExtra("EXIT", true);
