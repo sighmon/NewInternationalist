@@ -20,5 +20,7 @@
 -keep interface android.support.v7.internal.** { *; }
 -keep class android.support.v7.** { *; }
 -keep interface android.support.v7.** { *; }
+-keep class androidx.appcompat.widget.** { *; }
+-keep class android.support.v7.widget.** { *; }
 
 -printmapping build/outputs/mapping/release/mapping.txt

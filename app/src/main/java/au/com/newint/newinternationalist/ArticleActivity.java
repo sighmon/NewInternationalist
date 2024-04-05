@@ -10,6 +10,9 @@ import android.graphics.PorterDuff;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+
+import androidx.appcompat.widget.ShareActionProvider;
+import androidx.core.view.MenuItemCompat;
 import androidx.fragment.app.Fragment;
 import androidx.core.view.GestureDetectorCompat;
 import androidx.appcompat.app.AlertDialog;
@@ -59,6 +62,7 @@ public class ArticleActivity extends AppCompatActivity {
     static ArrayList<Purchase> purchases = null;
     private GestureDetectorCompat mDetector;
     private ProgressDialog pDialog = null;
+    private ShareActionProvider mshareActionProvider;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -137,6 +141,37 @@ public class ArticleActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_article, menu);
+
+        MenuItem item = menu.findItem(R.id.menu_item_share);
+        mshareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(item);
+
+        if (mshareActionProvider != null) {
+            String url = article.getWebURL().toString();
+            Intent shareIntent = new Intent(Intent.ACTION_SEND);
+            shareIntent.setType("text/plain");
+            DateFormat dateFormat = new SimpleDateFormat("MMMM yyyy", Locale.getDefault());
+            String articleInformation = article.getTitle()
+                    + " - New Internationalist magazine, "
+                    + dateFormat.format(article.getPublication());
+            shareIntent.putExtra(Intent.EXTRA_TEXT, "I'm reading "
+                    + articleInformation
+                    + ".\n\n"
+                    + "Article link:\n"
+                    + url
+                    + "\n\nMagazine link:\n"
+                    + issue.getWebURL()
+                    + "\n\nSent from New Internationalist Android app:\n"
+                    + Helpers.GOOGLE_PLAY_APP_URL
+            );
+            shareIntent.setType("text/plain");
+            shareIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, articleInformation);
+
+            // Send analytics event if user permits
+            Helpers.sendGoogleAnalyticsEvent("Article", "Share", url);
+
+            mshareActionProvider.setShareIntent(shareIntent);
+        }
+
         return true;
     }
 
