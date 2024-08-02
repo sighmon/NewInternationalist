@@ -119,6 +119,9 @@ public class ArticleActivity extends AppCompatActivity {
         mHelper = null;
         dismissProgressDialog();
         super.onDestroy();
+        if (mshareActionProvider != null) {
+            mshareActionProvider.setOnShareTargetSelectedListener(null);
+        }
     }
 
     @Override
@@ -146,33 +149,83 @@ public class ArticleActivity extends AppCompatActivity {
         mshareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(item);
 
         if (mshareActionProvider != null) {
-            String url = article.getWebURL().toString();
-            Intent shareIntent = new Intent(Intent.ACTION_SEND);
-            shareIntent.setType("text/plain");
-            DateFormat dateFormat = new SimpleDateFormat("MMMM yyyy", Locale.getDefault());
-            String articleInformation = article.getTitle()
-                    + " - New Internationalist magazine, "
-                    + dateFormat.format(article.getPublication());
-            shareIntent.putExtra(Intent.EXTRA_TEXT, "I'm reading "
-                    + articleInformation
-                    + ".\n\n"
-                    + "Article link:\n"
-                    + url
-                    + "\n\nMagazine link:\n"
-                    + issue.getWebURL()
-                    + "\n\nSent from New Internationalist Android app:\n"
-                    + Helpers.GOOGLE_PLAY_APP_URL
-            );
-            shareIntent.setType("text/plain");
-            shareIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, articleInformation);
+            mshareActionProvider.setOnShareTargetSelectedListener((source, intent) -> {
+                generateGuestPassURL(guestPassURL -> {
+                    DateFormat dateFormat = new SimpleDateFormat("MMMM yyyy", Locale.getDefault());
+                    String articleInformation = article.getTitle()
+                            + " - New Internationalist magazine, "
+                            + dateFormat.format(article.getPublication());
+                    intent.putExtra(Intent.EXTRA_TEXT, "I'm reading "
+                            + articleInformation
+                            + ".\n\n"
+                            + "Article link:\n"
+                            + guestPassURL
+                            + "\n\nMagazine link:\n"
+                            + issue.getWebURL()
+                            + "\n\nSent from New Internationalist Android app:\n"
+                            + Helpers.GOOGLE_PLAY_APP_URL
+                    );
+                    intent.setType("text/plain");
+                    intent.putExtra(Intent.EXTRA_SUBJECT, articleInformation);
 
-            // Send analytics event if user permits
-            Helpers.sendGoogleAnalyticsEvent("Article", "Share", url);
+                    // Send analytics event if user permits
+                    Helpers.sendGoogleAnalyticsEvent("Article", "Share", guestPassURL);
+                    // TOFIX: Avoid the tableOfContents intent firing too
+                    startActivity(Intent.createChooser(intent, getResources().getText(R.string.action_share_toc)));
+                });
+                return true;
+            });
 
-            mshareActionProvider.setShareIntent(shareIntent);
         }
 
         return true;
+
+    }
+
+    private void generateGuestPassURL(final GuestPassCallback callback) {
+        // Check for a login or purchase to generate a guest pass...
+        URLCacheStreamFactory urlCacheStreamFactory = article.getGuestPassURLCacheStreamFactory(purchases);
+        if (urlCacheStreamFactory != null) {
+
+            // Show loading indicator
+            showProgressDialog();
+
+            urlCacheStreamFactory.preload(new CacheStreamFactory.CachePreloadCallback() {
+                @Override
+                public void onLoad(byte[] payload) {
+                    // JSON parsing of guest pass
+                    String guestPassURLString = null;
+                    if (payload != null && payload.length > 0) {
+                        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(payload);
+                        InputStreamReader inputStreamReader = new InputStreamReader(byteArrayInputStream);
+                        JsonElement root = new JsonParser().parse(inputStreamReader);
+
+                        if (root.isJsonNull()) {
+                            // Got null guest pass from server...
+                            Log.e("GuestPass", "NULL guest pass json from rails");
+                        } else {
+                            // Build up the GuestPass URL
+                            String guestPass = "?guest_pass=" + root.getAsJsonObject().get("key").getAsString();
+                            guestPassURLString = Helpers.getSiteURL() + "issues/" + issue.getID() + "/articles/" + article.getID() + guestPass;
+                        }
+                    }
+
+                    callback.onGuestPassGenerated(guestPassURLString != null ? guestPassURLString : article.getWebURL().toString());
+                    dismissProgressDialog();
+                }
+
+                @Override
+                public void onLoadBackground(byte[] payload) {
+                    // No background loading necessary in this case
+                }
+            });
+        } else {
+            callback.onGuestPassGenerated(article.getWebURL().toString());
+        }
+    }
+
+    private interface GuestPassCallback {
+        void onGuestPassGenerated(String guestPassURL);
     }
 
     @Override
@@ -183,11 +236,7 @@ public class ArticleActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            Intent settingsIntent = new Intent(this, SettingsActivity.class);
-            startActivity(settingsIntent);
-            return true;
-        } else if (id == R.id.menu_item_share) {
+        if (id == R.id.menu_item_share) {
 
             // Check for a login or purchase to generate a guest pass...
             URLCacheStreamFactory urlCacheStreamFactory = article.getGuestPassURLCacheStreamFactory(purchases);
@@ -230,6 +279,10 @@ public class ArticleActivity extends AppCompatActivity {
             }
             return true;
 
+        } else if (id == R.id.action_settings) {
+            Intent settingsIntent = new Intent(this, SettingsActivity.class);
+            startActivity(settingsIntent);
+            return true;
         } else if (id == android.R.id.home) {
             finish();
             return true;
