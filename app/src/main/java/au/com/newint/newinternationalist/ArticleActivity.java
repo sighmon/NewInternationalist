@@ -12,6 +12,7 @@ import android.os.Build;
 import android.os.Bundle;
 
 import androidx.appcompat.widget.ShareActionProvider;
+import androidx.core.view.WindowCompat;
 import androidx.core.view.MenuItemCompat;
 import androidx.fragment.app.Fragment;
 import androidx.core.view.GestureDetectorCompat;
@@ -67,6 +68,7 @@ public class ArticleActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), true);
         setContentView(R.layout.activity_article);
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()

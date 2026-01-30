@@ -116,6 +116,15 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             }
         });
 
+        Button helpButton = (Button) findViewById(R.id.login_help);
+        helpButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent aboutIntent = new Intent(LoginActivity.this, AboutActivity.class);
+                startActivity(aboutIntent);
+            }
+        });
+
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
 
@@ -373,6 +382,5 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         }
     }
 }
-
 
 

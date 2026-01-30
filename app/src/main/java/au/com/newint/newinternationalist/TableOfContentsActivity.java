@@ -7,6 +7,7 @@ import android.graphics.Bitmap;
 import android.os.Bundle;
 
 import androidx.appcompat.widget.ShareActionProvider;
+import androidx.core.view.WindowCompat;
 import androidx.core.view.MenuItemCompat;
 import androidx.fragment.app.Fragment;
 import androidx.appcompat.app.AlertDialog;
@@ -69,6 +70,7 @@ public class TableOfContentsActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), true);
         setContentView(R.layout.activity_table_of_contents);
         final Fragment tableOfContentsFragment = new TableOfContentsFragment();
 

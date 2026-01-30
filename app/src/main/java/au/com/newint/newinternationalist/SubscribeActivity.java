@@ -1,14 +1,10 @@
 package au.com.newint.newinternationalist;
 
-import android.app.Activity;
 import android.app.ProgressDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.os.AsyncTask;
 import android.os.Bundle;
 
-import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -18,7 +14,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -31,37 +26,20 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.android.billingclient.api.BillingClient;
-import com.android.billingclient.api.BillingResult;
 import com.android.billingclient.api.ProductDetails;
-import com.android.billingclient.api.ProductDetailsResponseListener;
-import com.android.billingclient.api.Purchase;
-import com.android.billingclient.api.PurchasesResponseListener;
-import com.android.billingclient.api.QueryProductDetailsParams;
-import com.google.common.collect.ImmutableList;
-
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
-
-import au.com.newint.newinternationalist.util.IabException;
-import au.com.newint.newinternationalist.util.IabHelper;
-import au.com.newint.newinternationalist.util.IabResult;
-import au.com.newint.newinternationalist.util.Inventory;
-import au.com.newint.newinternationalist.util.SkuDetails;
 
 
 public class SubscribeActivity extends AppCompatActivity {
 
     static Billing mBilling;
-    static IabHelper mHelper;
     static List<ProductDetails> mProducts;
     static int mPositionTapped;
     static ArrayList<Issue> mIssueList;
-    static IabHelper.OnIabPurchaseFinishedListener mPurchaseFinishedListener;
     static SubscribeActivity.SubscribeActivityFragment.SubscribeAdapter mSubscribeAdapter;
     static ProgressDialog mProgressDialog;
 
@@ -84,30 +62,6 @@ public class SubscribeActivity extends AppCompatActivity {
 
         // Send Google Analytics if the user allows it
         Helpers.sendGoogleAnalytics(getResources().getString(R.string.title_activity_subscribe));
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        // Dispose of the in-app helper
-        if (mHelper != null) mHelper.dispose();
-        mHelper = null;
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Log.d("Subscribe", "onActivityResult(" + requestCode + "," + resultCode + "," + data);
-
-        // Pass on the activity result to the helper for handling
-        if (!mHelper.handleActivityResult(requestCode, resultCode, data)) {
-            // not handled, so handle it ourselves (here's where you'd
-            // perform any handling of activity results not related to in-app
-            // billing...
-            super.onActivityResult(requestCode, resultCode, data);
-        }
-        else {
-            Log.d("Subscribe", "onActivityResult handled by IABUtil.");
-        }
     }
 
     @Override
@@ -177,23 +131,24 @@ public class SubscribeActivity extends AppCompatActivity {
 
             // Billing v5
             mBilling = new Billing();
-            mBilling.productDetailsResponseListener = (billingResult, list) -> {
+            mBilling.productDetailsResponseListener = (billingResult, productDetailsResult) -> {
                 Helpers.debugLog("Billing", "Debug... " + billingResult.getDebugMessage());
                 if (billingResult.getResponseCode() ==  BillingClient.BillingResponseCode.OK) {
                     // Process returned productDetailsList
-                    Helpers.debugLog("Billing", "Product details list: " + list);
+                    List<ProductDetails> productDetailsList = productDetailsResult.getProductDetailsList();
+                    Helpers.debugLog("Billing", "Product details list: " + productDetailsList);
                     Handler mainHandler = new Handler(Looper.getMainLooper());
                     Runnable myRunnable = new Runnable() {
                         @Override
                         public void run() {
                             mProgressDialog.dismiss();
                             List<ProductDetails> productsList = new ArrayList();
-                            for (ProductDetails item: list) {
+                            for (ProductDetails item: productDetailsList) {
                                 if (item.getProductType().equals(BillingClient.ProductType.SUBS)) {
                                     mProducts.add(0, item);
                                 }
                             }
-                            for (ProductDetails item: list) {
+                            for (ProductDetails item: productDetailsList) {
                                 if (item.getProductType().equals(BillingClient.ProductType.INAPP)) {
                                     productsList.add(item);
                                 }
